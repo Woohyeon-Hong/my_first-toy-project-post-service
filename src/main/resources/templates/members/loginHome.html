@@ -87,7 +87,6 @@
                 <td th:text="${post.title}">게시물 제목</td>
                 <td th:text="${post.content.length() > 10 ? #strings.substring(post.content, 0, 10) + '...' : post.content}">게시물 내용 요약</td>
                 <td th:text="${#temporals.format(post.modifiedDate, 'yyyy년 MM월 dd일 HH:mm:SS')}">최종 수정일</td>
-                <td th:text="${post.memberId}">회원 아이디</td>
                 <td>
 
                     <div class="btn-group" role="group">
