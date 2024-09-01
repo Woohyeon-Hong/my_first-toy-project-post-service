@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>홈 페이지</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            flex-direction: column;
+        }
+        .title {
+            font-size: 32px;
+            font-weight: bold;
+            margin-bottom: 50px;
+            margin-top: -20px;
+        }
+        .container {
+            background-color: #fff;
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            width: 300px;
+        }
+        .container h1 {
+            margin-bottom: 30px;
+            font-size: 24px;
+        }
+        .btn {
+            display: inline-block;
+            margin: 20px 10px;
+            padding: 15px 30px;
+            font-size: 18px;
+            color: #fff;
+            background-color: #007bff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        .btn:hover {
+            background-color: #0056b3;
+        }
+        .footer {
+            margin-top: 20px;
+            font-size: 14px;
+            color: #888;
+        }
+    </style>
+</head>
+<body>
+    <div class="title">Post Service</div>
+
+    <div class="container">
+        <h1>환영합니다!</h1>
+        <a href="/signup.html" th:href="@{/templates/members/addMemberForm.html}" class="btn">회원 가입</a>
+        <a href="/login.html" th:href="@{/templates/members/loginForm.html}" class="btn">로그인</a>
+    </div>
+
+    <div class="footer">
+        Copyright © Woohyeon_Hong
+    </div>
+</body>
+</html>

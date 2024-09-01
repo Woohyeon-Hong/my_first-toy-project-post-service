@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <link th:href="@{/css/bootstrap.min.css}" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa; /* 페이지 배경색 설정 */
+            font-family: 'Arial', sans-serif; /* 기본 폰트 설정 */
+        }
+        .container {
+            max-width: 960px; /* 페이지 중앙에 고정된 폭 */
+            background-color: #fff; /* 컨테이너 배경색 */
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1); /* 박스 그림자 */
+            margin-top: 30px; /* 페이지 상단 여백 추가 */
+        }
+        .header, .footer {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .table th, .table td {
+            vertical-align: middle; /* 테이블 셀 수직 중앙 정렬 */
+        }
+        .btn-group-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr); /* 2열로 구성 */
+            gap: 10px; /* 버튼 간격 */
+        }
+        .btn-group {
+            display: flex;
+            gap: 5px; /* 버튼 간격 */
+        }
+        .btn-group form {
+            margin: 0; /* 폼의 기본 여백 제거 */
+        }
+        .pagination {
+            text-align: center;
+            margin-top: 20px;
+        }
+        .pagination a {
+            margin: 0 5px; /* 페이지네이션 버튼 간의 간격 */
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h2 class="mb-4">회원 홈페이지</h2>
+        <h4>환영합니다, <span id="userName" th:text="${member.name}">홍길동</span>님!</h4>
+    </div>
+
+    <!-- 버튼들을 2행 2열로 배치 -->
+    <div class="btn-group-grid mb-4">
+        <button class="btn btn-danger btn-lg" th:onclick="|location.href='@{/members/updateInfo}'|">회원정보 변경</button>
+        <button class="btn btn-primary btn-lg" th:onclick="|location.href='@{/members/updatePassword}'|">비밀번호 변경</button>
+        <form th:action="@{/members/delete}" method="post">
+            <button class="btn btn-secondary btn-lg w-100">회원 삭제</button>
+        </form>
+        <form th:action="@{/members/logout}" method="post">
+            <button class="btn btn-secondary btn-lg w-100">로그 아웃</button>
+        </form>
+    </div>
+
+    <!-- 게시물 작성 및 전체 게시물 보기 버튼 -->
+    <div class="mb-4">
+        <button class="btn btn-dark mb-3" th:onclick="|location.href='@{/posts/create}'|">게시물 작성</button>
+        <button class="btn btn-secondary mb-3" th:onclick="|location.href='@{/posts/readAll}'|">전체 게시물 보기</button>
+    </div>
+
+    <h5>작성한 게시글 목록</h5>
+
+    <!-- 테이블을 반응형으로 만들기 위해 table-responsive 사용 -->
+    <div class="table-responsive">
+        <table class="table table-bordered">
+            <thead>
+            <tr>
+                <th>제목</th>
+                <th>본문</th>
+                <th>최종 수정일</th>
+                <th>동작</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="post : ${posts}">
+                <td th:text="${post.title}">게시물 제목</td>
+                <td th:text="${post.content.length() > 10 ? #strings.substring(post.content, 0, 10) + '...' : post.content}">게시물 내용 요약</td>
+                <td th:text="${#temporals.format(post.modifiedDate, 'yyyy년 MM월 dd일 HH:mm:SS')}">최종 수정일</td>
+                <td th:text="${post.memberId}">회원 아이디</td>
+                <td>
+
+                    <div class="btn-group" role="group">
+                        <button class="btn btn-primary btn-sm" th:onclick="|location.href='@{/posts/{postId}/read(postId=${post.id})}'|">읽기</button>
+                        <button class="btn btn-warning btn-sm" th:onclick="|location.href='@{/posts/{postId}/update(postId=${post.id})}'|">변경</button>
+                        <form th:action="@{/posts/{postId}/delete(postId=${post.memberId})}" method="post" style="display: inline;">
+                            <button class="btn btn-danger btn-sm">삭제</button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- 페이지네이션 -->
+    <div class="pagination">
+        <a th:href="@{/(page=${currentPage - 1}, size=${pageSize})}" th:if="${currentPage > 1}" class="btn btn-light">이전</a>
+        <span class="mx-2"><span th:text="${currentPage}"> 페이지</span></span>
+        <a th:href="@{/(page=${currentPage + 1}, size=${pageSize})}" class="btn btn-light">다음</a>
+    </div>
+</div>
+</body>
+</html>
