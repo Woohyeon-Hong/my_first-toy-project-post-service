@@ -51,3 +51,25 @@ Spring, MyBatis 그리고 Thymeleaf 조합으로 블로그 서비스를 구현�
     - GitHub - Git 리포지토리 호스팅 서비스
     - Notion - 프로젝트 전반 관리
 
+## 개발
+
+### 1. 도메인 개발
+
+#### Member (회원)
+
+- id (Long) - DB에서 자동 생성
+- name (String)
+- loginId (String)
+- password (String)
+
+#### Post (게시물)
+
+- id (Long) - DB에서 자동 생성
+- title (String)
+- content (String)
+- ModifiedDate (LocalDateTime)
+- memberId (Long)
+
+### ERD 설계
+![Board_Project](https://github.com/user-attachments/assets/7e096a02-5ebd-45b6-9c95-715909f304ef)
+
