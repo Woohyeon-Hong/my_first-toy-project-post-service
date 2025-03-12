@@ -1,42 +1,26 @@
 package hong.postService.domain;
 
+import hong.postService.domain.baseEntity.BaseTimeEntity;
+import jakarta.persistence.*;
+import lombok.AccessLevel;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
 
-/**
- * ## Post (게시물)
- *
- * - id (Long) - DB에서 자동 생성
- * - title (String)
- * - content (String)
- * - ModifiedDate (Date)
- * - memberId (Long)
- */
+@Entity
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+public class Post extends BaseTimeEntity {
 
-@Data
-public class Post {
-
+    @Id @GeneratedValue
+    @Column(name = "post_id")
     private Long id;
+
     private String title;
     private String content;
-    private LocalDateTime modifiedDate;
-    private Long memberId;
 
-    public Post() {
-    }
-
-    public Post(String title, String content, Long memberId) {
-        this.title = title;
-        this.content = content;
-        this.memberId = memberId;
-    }
-
-    public Post(String title, String content, LocalDateTime modifiedDate, Long memberId) {
-        this.title = title;
-        this.content = content;
-        this.modifiedDate = modifiedDate;
-        this.memberId = memberId;
-    }
+    @ManyToOne
+    @JoinColumn(name = "member_id")
+    private Member writer;
 }

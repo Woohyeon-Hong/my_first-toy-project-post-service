@@ -1,30 +1,31 @@
 package hong.postService.domain;
 
-import jakarta.validation.constraints.NotEmpty;
+import hong.postService.domain.baseEntity.BaseTimeEntity;
+import jakarta.persistence.*;
+import lombok.AccessLevel;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
-/**
- * ## Member (회원)
- *
- * - id (Long) - DB에서 자동 생성
- * - name (String)
- * - loginId (String)
- * - password (String)
- */
-@Data
-public class Member {
+import java.util.ArrayList;
+import java.util.List;
 
+@Entity
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+public class Member extends BaseTimeEntity {
+
+    @Id @GeneratedValue
+    @Column(name = "member_id")
     private Long id;
-    private String name;
-    private String loginId;
+
+    private String username;
     private String password;
 
-    public Member() {
-    }
+    private String email;
+    private String nickname;
 
-    public Member(String name, String loginId, String password) {
-        this.name = name;
-        this.loginId = loginId;
-        this.password = password;
-    }
+    @Enumerated(EnumType.STRING)
+    private UserRole role;
+
+    @OneToMany(mappedBy = "writer")
+    private List<Post> posts = new ArrayList<>();
 }

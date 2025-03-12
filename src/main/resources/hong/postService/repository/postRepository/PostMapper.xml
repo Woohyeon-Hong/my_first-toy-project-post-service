@@ -1,61 +1,61 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
-        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="hong.postService.repository.postRepository.PostMapper">
-    
-    <insert id="save" keyProperty="id" useGeneratedKeys="true">
-        insert into board(title, content, modified_date, member_id)
-        values (#{title}, #{content}, #{modifiedDate}, #{memberId})
-    </insert>
+<!--<?xml version="1.0" encoding="UTF-8"?>-->
+<!--<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"-->
+<!--        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">-->
+<!--<mapper namespace="hong.postService.repository.postRepository.PostMapper">-->
+<!--    -->
+<!--    <insert id="save" keyProperty="id" useGeneratedKeys="true">-->
+<!--        insert into board(title, content, modified_date, member_id)-->
+<!--        values (#{title}, #{content}, #{modifiedDate}, #{memberId})-->
+<!--    </insert>-->
 
-    <select id="findById" resultType="Post">
-        select *
-        from board
-        where id = #{id}
-    </select>
+<!--    <select id="findById" resultType="Post">-->
+<!--        select *-->
+<!--        from board-->
+<!--        where id = #{id}-->
+<!--    </select>-->
 
-    <select id="findMemberPosts" resultType="Post">
-        select *
-        from board
-        where member_id = #{memberId}
-    </select>
+<!--    <select id="findMemberPosts" resultType="Post">-->
+<!--        select *-->
+<!--        from board-->
+<!--        where member_id = #{memberId}-->
+<!--    </select>-->
 
-    <select id="findAll" resultType="Post">
-        select *
-        from board
-    </select>
+<!--    <select id="findAll" resultType="Post">-->
+<!--        select *-->
+<!--        from board-->
+<!--    </select>-->
 
-    <update id="update">
-        update board
-        set title = #{updateParam.title},
-            content = #{updateParam.content},
-            modified_date = #{updateParam.modifiedDate}
-        where id = #{id}
-    </update>
+<!--    <update id="update">-->
+<!--        update board-->
+<!--        set title = #{updateParam.title},-->
+<!--            content = #{updateParam.content},-->
+<!--            modified_date = #{updateParam.modifiedDate}-->
+<!--        where id = #{id}-->
+<!--    </update>-->
 
-    <delete id="delete">
-        delete from board
-        where id = #{id}
-    </delete>
+<!--    <delete id="delete">-->
+<!--        delete from board-->
+<!--        where id = #{id}-->
+<!--    </delete>-->
 
-    <select id="findMemberPostsWithPaging"  resultType="hong.postService.domain.Post">
-        select *
-        from board
-        where member_id = #{memberId}
-        limit #{limit}
-        offset #{offset}
-    </select>
+<!--    <select id="findMemberPostsWithPaging"  resultType="hong.postService.domain.Post">-->
+<!--        select *-->
+<!--        from board-->
+<!--        where member_id = #{memberId}-->
+<!--        limit #{limit}-->
+<!--        offset #{offset}-->
+<!--    </select>-->
 
-    <select id="findPostsWithPaging" resultType="hong.postService.domain.Post">
-        select *
-        from board
-        limit #{limit}
-        offset #{offset}
-    </select>
+<!--    <select id="findPostsWithPaging" resultType="hong.postService.domain.Post">-->
+<!--        select *-->
+<!--        from board-->
+<!--        limit #{limit}-->
+<!--        offset #{offset}-->
+<!--    </select>-->
 
-    <select id="searchPosts" resultType="hong.postService.domain.Post">
-        select *
-        from board
-        where title like CONCAT('%', #{title}, '%')
-    </select>
-</mapper>    
+<!--    <select id="searchPosts" resultType="hong.postService.domain.Post">-->
+<!--        select *-->
+<!--        from board-->
+<!--        where title like CONCAT('%', #{title}, '%')-->
+<!--    </select>-->
+<!--</mapper>-->
