@@ -3,6 +3,7 @@ package hong.postService.domain;
 import hong.postService.domain.baseEntity.BaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
