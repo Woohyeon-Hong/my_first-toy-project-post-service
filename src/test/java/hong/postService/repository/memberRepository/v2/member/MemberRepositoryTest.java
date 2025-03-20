@@ -1,6 +1,8 @@
 package hong.postService.repository.memberRepository.v2.member;
 
 import hong.postService.domain.Member;
+import hong.postService.repository.memberRepository.v2.MemberRepository;
+import hong.postService.repository.memberRepository.v2.MemberUpdateDto;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -14,7 +16,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 @Transactional
 class MemberRepositoryTest {
 
-    @Autowired MemberRepository memberRepository;
+    @Autowired
+    MemberRepository memberRepository;
 
     @Test
     void save() {

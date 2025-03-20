@@ -1,7 +1,7 @@
 package hong.postService.service.memberService.v1;
 
 import hong.postService.domain.Member;
-import hong.postService.repository.memberRepository.v2.member.MemberUpdateDto;
+import hong.postService.repository.memberRepository.v2.MemberUpdateDto;
 
 public interface MemberService {
 

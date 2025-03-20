@@ -1,4 +1,4 @@
-package hong.postService.repository.memberRepository.v2.member;
+package hong.postService.repository.memberRepository.v2;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;

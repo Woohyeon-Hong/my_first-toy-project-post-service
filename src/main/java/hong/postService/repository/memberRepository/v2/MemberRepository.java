@@ -1,4 +1,4 @@
-package hong.postService.repository.memberRepository.v2.member;
+package hong.postService.repository.memberRepository.v2;
 
 import hong.postService.domain.Member;
 import org.springframework.data.jpa.repository.JpaRepository;
