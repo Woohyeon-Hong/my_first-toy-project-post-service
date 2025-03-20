@@ -22,7 +22,7 @@ import java.util.List;
  *Delete
  *      void delete(member) - 회원 탈퇴 시
  */
-public interface MemberRepository extends JpaRepository<Member, Long>, MemberRepositoryCustom {
+public interface MemberRepository extends JpaRepository<Member, Long> {
 
     List<Member> findAllByUsername(String username);
     List<Member> findAllByPassword(String password);
