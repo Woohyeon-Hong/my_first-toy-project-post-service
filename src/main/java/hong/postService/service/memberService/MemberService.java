@@ -1,10 +1,7 @@
 package hong.postService.service.memberService;
 
 import hong.postService.domain.Member;
-import hong.postService.domain.Post;
-import hong.postService.repository.memberRepository.MemberUpdateDto;
-
-import java.util.List;
+import hong.postService.repository.memberRepository.v2.member.MemberUpdateDto;
 
 public interface MemberService {
 

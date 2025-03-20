@@ -99,4 +99,14 @@ public class Member extends BaseTimeEntity {
         if (password == null) throw new NullPointerException("changePassword: password == null");
         this.password = password;
     }
+
+    public void changeEmail(String email) {
+        if (email == null) throw new NullPointerException("changeEmail: email == null");
+        this.email = email;
+    }
+
+    public void changeNickname(String nickname) {
+        if (nickname == null) throw new NullPointerException("changeNickname: nickname == null");
+        this.nickname = nickname;
+    }
 }
