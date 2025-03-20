@@ -1,4 +1,4 @@
-package hong.postService.service.memberService;
+package hong.postService.service.memberService.v1;
 
 import hong.postService.domain.Member;
 import hong.postService.repository.memberRepository.v2.member.MemberUpdateDto;

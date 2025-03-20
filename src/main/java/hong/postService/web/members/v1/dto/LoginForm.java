@@ -1,4 +1,4 @@
-package hong.postService.web.members.dto;
+package hong.postService.web.members.v1.dto;
 
 import jakarta.validation.constraints.NotEmpty;
 import lombok.Data;

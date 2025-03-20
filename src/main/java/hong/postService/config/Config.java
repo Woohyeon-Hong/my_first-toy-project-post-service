@@ -1,11 +1,6 @@
 package hong.postService.config;
 
-import hong.postService.repository.memberRepository.UsersRepository;
-import hong.postService.repository.postRepository.BoardRepository;
-import hong.postService.service.memberService.MemberService;
-import hong.postService.service.postService.PostService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration

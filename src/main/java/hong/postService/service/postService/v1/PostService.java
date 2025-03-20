@@ -1,12 +1,9 @@
-package hong.postService.service.postService;
+package hong.postService.service.postService.v1;
 
 import hong.postService.domain.Post;
-import hong.postService.repository.postRepository.PostUpdateDto;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
+import hong.postService.repository.postRepository.v1.PostUpdateDto;
 
 import java.util.List;
-import java.util.Map;
 
 public interface PostService {
 

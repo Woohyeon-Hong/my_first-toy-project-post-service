@@ -1,4 +1,4 @@
-package hong.postService.repository.postRepository;
+package hong.postService.repository.postRepository.v1;
 
 import lombok.Getter;
 import lombok.Setter;
