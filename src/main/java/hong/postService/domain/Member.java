@@ -39,6 +39,10 @@ public class Member extends BaseTimeEntity {
     @Builder.Default
     private List<Post> posts = new ArrayList<>();
 
+    @OneToMany(mappedBy = "writer")
+    @Builder.Default
+    private List<Comment> comments = new ArrayList<>();
+
     public static Member createNewMember(String username, String password, String email, String nickname) {
 
         if (username == null) throw new NullPointerException("createNewMember: username == null");
@@ -87,10 +91,12 @@ public class Member extends BaseTimeEntity {
     }
 
     public void changeUsername(String username) {
+        if (username == null) throw new NullPointerException("changeUsername: username == null");
         this.username = username;
     }
 
     public void changePassword(String password) {
+        if (password == null) throw new NullPointerException("changePassword: password == null");
         this.password = password;
     }
 }

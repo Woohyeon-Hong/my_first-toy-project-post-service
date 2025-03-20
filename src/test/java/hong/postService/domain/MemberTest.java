@@ -151,12 +151,14 @@ class MemberTest {
         //given
         Member member = Member.createNewMember("username", "password", null, "nickname");
         String newUsername = "new";
+        String nullUsername = null;
 
         //when
         member.changeUsername(newUsername);
 
         //then
         assertThat(member.getUsername()).isEqualTo("new");
+        assertThatThrownBy(() -> member.changeUsername(nullUsername)).isInstanceOf(NullPointerException.class);
     }
 
     @Test
@@ -164,11 +166,13 @@ class MemberTest {
         //given
         Member member = Member.createNewMember("username", "password", null, "nickname");
         String newPassword = "new";
+        String nullPassword = null;
 
         //when
         member.changePassword(newPassword);
 
         //then
         assertThat(member.getPassword()).isEqualTo("new");
+        assertThatThrownBy(() -> member.changePassword(nullPassword));
     }
 }
