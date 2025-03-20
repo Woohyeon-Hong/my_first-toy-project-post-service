@@ -40,6 +40,11 @@ public class Member extends BaseTimeEntity {
     private List<Post> posts = new ArrayList<>();
 
     public static Member createNewMember(String username, String password, String email, String nickname) {
+
+        if (username == null) throw new NullPointerException("createNewMember: username == null");
+        if (password == null) throw new NullPointerException("createNewMember: password == null");
+        if (nickname == null) throw new NullPointerException("createNewMember: nickname == null");
+
         if (validateEmailFormat(email)) {
             return Member.builder()
                     .username(username)
@@ -49,15 +54,15 @@ public class Member extends BaseTimeEntity {
                     .role(UserRole.USER)
                     .build();
         } else {
-            throw new IllegalEmailFormatException("회원가입에서 email 형식이 잘못됨");
+            throw new IllegalEmailFormatException("createNewMember: email 형식이 잘못됨");
         }
     }
 
     public static Member createNewAdmin(String username, String password, String email, String nickname) {
 
-        if (username == null) throw new NullPointerException("username이 비어있음.");
-        if (password == null) throw new NullPointerException("password가 비어있음.");
-        if (nickname == null) throw new NullPointerException("username이 비어있음.");
+        if (username == null) throw new NullPointerException("createNewAdmin: username == null");
+        if (password == null) throw new NullPointerException("createNewAdmin: password == null");
+        if (nickname == null) throw new NullPointerException("createNewAdmin: nickname == null");
 
         if (validateEmailFormat(email)) {
             return Member.builder()
@@ -68,7 +73,7 @@ public class Member extends BaseTimeEntity {
                     .role(UserRole.ADMIN)
                     .build();
         } else {
-            throw new IllegalEmailFormatException("Admin 회원가입에서 email 형식이 잘못됨");
+            throw new IllegalEmailFormatException("createNewAdmin: email 형식이 잘못됨");
         }
     }
 

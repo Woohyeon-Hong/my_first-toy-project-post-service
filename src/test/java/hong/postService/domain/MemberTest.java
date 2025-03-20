@@ -48,6 +48,30 @@ class MemberTest {
                 .nickname("nickname")
                 .build();
 
+        Member memberWithoutUsername = Member.builder()
+                .username(null)
+                .password("password")
+                .email("email@naver.com")
+                .role(UserRole.USER)
+                .nickname("nickname")
+                .build();
+
+        Member memberWithoutPassword = Member.builder()
+                .username("user")
+                .password(null)
+                .email("email@naver.com")
+                .role(UserRole.USER)
+                .nickname("nickname")
+                .build();
+
+        Member memberWithoutNickname = Member.builder()
+                .username("user")
+                .password("password")
+                .email("email@naver.com")
+                .role(UserRole.USER)
+                .nickname(null)
+                .build();
+
         //when
         Member createdMember = Member.createNewMember(member.getUsername(), member.getPassword(),
                 member.getEmail(), member.getNickname());
@@ -59,6 +83,13 @@ class MemberTest {
         assertThat(createdMember.getRole()).isEqualTo(member.getRole());
         assertThat(createdMember.getNickname()).isEqualTo(member.getNickname());
         assertThat(createdMember.getId()).isNull();
+
+        assertThatThrownBy(() -> Member.createNewMember(memberWithoutUsername.getUsername(), memberWithoutUsername.getPassword(),
+                memberWithoutUsername.getEmail(), memberWithoutUsername.getNickname())).isInstanceOf(NullPointerException.class);
+        assertThatThrownBy(() -> Member.createNewMember(memberWithoutPassword.getUsername(), memberWithoutPassword.getPassword(),
+                memberWithoutPassword.getEmail(), memberWithoutPassword.getNickname())).isInstanceOf(NullPointerException.class);
+        assertThatThrownBy(() -> Member.createNewMember(memberWithoutNickname.getUsername(), memberWithoutNickname.getPassword(),
+                memberWithoutNickname.getEmail(), memberWithoutNickname.getNickname())).isInstanceOf(NullPointerException.class);
     }
 
     @Test
@@ -72,7 +103,30 @@ class MemberTest {
                 .nickname("nickname")
                 .build();
 
-        Member newMember = Member.createNewMember(null, null, null, null);
+        Member memberWithoutUsername = Member.builder()
+                .username(null)
+                .password("password")
+                .email("email@naver.com")
+                .role(UserRole.ADMIN)
+                .nickname("nickname")
+                .build();
+
+        Member memberWithoutPassword = Member.builder()
+                .username("user")
+                .password(null)
+                .email("email@naver.com")
+                .role(UserRole.ADMIN)
+                .nickname("nickname")
+                .build();
+
+        Member memberWithoutNickname = Member.builder()
+                .username("user")
+                .password("password")
+                .email("email@naver.com")
+                .role(UserRole.ADMIN)
+                .nickname(null)
+                .build();
+
         //when
         Member createdMember = Member.createNewAdmin(member.getUsername(), member.getPassword(),
                 member.getEmail(), member.getNickname());
@@ -84,8 +138,14 @@ class MemberTest {
         assertThat(createdMember.getRole()).isEqualTo(member.getRole());
         assertThat(createdMember.getNickname()).isEqualTo(member.getNickname());
         assertThat(createdMember.getId()).isNull();
-    }
 
+        assertThatThrownBy(() -> Member.createNewAdmin(memberWithoutUsername.getUsername(), memberWithoutUsername.getPassword(),
+                memberWithoutUsername.getEmail(), memberWithoutUsername.getNickname())).isInstanceOf(NullPointerException.class);
+        assertThatThrownBy(() -> Member.createNewAdmin(memberWithoutPassword.getUsername(), memberWithoutPassword.getPassword(),
+                memberWithoutPassword.getEmail(), memberWithoutPassword.getNickname())).isInstanceOf(NullPointerException.class);
+        assertThatThrownBy(() -> Member.createNewAdmin(memberWithoutNickname.getUsername(), memberWithoutNickname.getPassword(),
+                memberWithoutNickname.getEmail(), memberWithoutNickname.getNickname())).isInstanceOf(NullPointerException.class);
+    }
     @Test
     void changeUsername() {
         //given
