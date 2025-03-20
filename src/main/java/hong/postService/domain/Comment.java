@@ -13,8 +13,7 @@ import java.util.List;
 @AllArgsConstructor
 public class Comment {
 
-    @Id
-    @GeneratedValue
+    @Id @GeneratedValue
     @Column(name = "comment_id")
     private Long id;
 
@@ -31,8 +30,7 @@ public class Comment {
     private Post post;
 
     @ManyToOne
-    @JoinColumn(name = "comment_id")
-    @Column(name = "parent_comment")
+    @JoinColumn(name = "parent_comment_id")
     private Comment parentComment;
 
     @Builder.Default
