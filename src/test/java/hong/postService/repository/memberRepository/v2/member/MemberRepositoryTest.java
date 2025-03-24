@@ -2,7 +2,7 @@ package hong.postService.repository.memberRepository.v2.member;
 
 import hong.postService.domain.Member;
 import hong.postService.repository.memberRepository.v2.MemberRepository;
-import hong.postService.repository.memberRepository.v2.MemberUpdateDto;
+import hong.postService.service.memberService.v2.MemberUpdateDto;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @SpringBootTest
 @Transactional
@@ -106,32 +107,50 @@ class MemberRepositoryTest {
     }
 
     @Test
-    void update() {
+    void updateInfo() {
         //given
         Member member = Member.createNewMember("oldUsername", "oldPassword", "old@naver.com", "oldNickname");
         memberRepository.save(member);
 
         MemberUpdateDto updateParam = MemberUpdateDto.builder()
                 .username("newUsername")
-                .password("newPassword")
                 .email("new@naver.com")
                 .nickname("newNickname")
                 .build();
 
+
         //when
         Member findMember = memberRepository.findById(member.getId()).orElseThrow();
         findMember.changeUsername(updateParam.getUsername());
-        findMember.changePassword(updateParam.getPassword());
         findMember.changeEmail(updateParam.getEmail());
         findMember.changeNickname(updateParam.getNickname());
 
         //then
         Member changedMember = memberRepository.findById(findMember.getId()).orElseThrow();
         assertThat(changedMember.getUsername()).isEqualTo(updateParam.getUsername());
-        assertThat(changedMember.getPassword()).isEqualTo(updateParam.getPassword());
         assertThat(changedMember.getEmail()).isEqualTo(updateParam.getEmail());
         assertThat(changedMember.getNickname()).isEqualTo(updateParam.getNickname());
     }
+
+    @Test
+    void updatePassword() {
+        //given
+        Member member = Member.createNewMember("oldUsername", "oldPassword", "old@naver.com", "oldNickname");
+        memberRepository.save(member);
+
+        String newPassword = "newPassword";
+        String nullPassword = null;
+
+        //when
+        Member findMember = memberRepository.findById(member.getId()).orElseThrow();
+        findMember.changePassword(newPassword);
+
+        //then
+        Member changedMember = memberRepository.findById(findMember.getId()).orElseThrow();
+        assertThat(changedMember.getPassword()).isEqualTo(newPassword);
+        assertThatThrownBy(() -> findMember.changePassword(nullPassword)).isInstanceOf(NullPointerException.class);
+    }
+
 
     @Test
     void delete() {

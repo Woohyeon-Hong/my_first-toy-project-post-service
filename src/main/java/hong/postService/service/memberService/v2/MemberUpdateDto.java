@@ -1,4 +1,4 @@
-package hong.postService.repository.memberRepository.v2;
+package hong.postService.service.memberService.v2;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
@@ -9,8 +9,6 @@ import lombok.*;
 public class MemberUpdateDto {
 
     private String username;
-    private String password;
     private String email;
     private String nickname;
-
 }
