@@ -2,12 +2,13 @@ package hong.postService.service.memberService.v2;
 
 import hong.postService.domain.Member;
 import hong.postService.repository.memberRepository.v2.MemberRepository;
-import org.assertj.core.api.Assertions;
+import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -22,6 +23,8 @@ class MemberServiceTest {
     MemberRepository memberRepository;
     @Autowired
     MemberService memberService;
+    @Autowired
+    EntityManager em;
 
     @Test
     void usernameValidate() {
@@ -139,6 +142,10 @@ class MemberServiceTest {
         memberService.updateInfo(member1.getId(), updateParam);
         memberService.updateInfo(member2.getId(), nullParam);
 
+        em.flush();
+        em.clear();
+
+
         //then
         Member changedMember = memberRepository.findById(member1.getId()).orElseThrow();
         assertThat(changedMember.getUsername()).isEqualTo(updateParam.getUsername());
@@ -166,12 +173,37 @@ class MemberServiceTest {
         memberService.updatePassword(member1.getId(), p1);
         memberService.updatePassword(member2.getId(), p2);
 
+        em.flush();
+        em.clear();
+
+
         //then
         Member changedMember = memberRepository.findById(member1.getId()).orElseThrow();
         assertThat(changedMember.getPassword()).isEqualTo(p1);
 
         Member changedMember2 = memberRepository.findById(member2.getId()).orElseThrow();
         assertThat(changedMember2.getPassword()).isNotEqualTo(p2);
+    }
+
+    @Test
+    void baseEntity() {
+        //given
+        Member member = Member.createNewMember("username", "password", null, "nickname");
+        memberRepository.save(member);
+
+        LocalDateTime oldCreatedDate = member.getCreatedDate();
+        LocalDateTime oldLastModifiedDate = member.getLastModifiedDate();
+
+        //when
+        memberService.updatePassword(member.getId(), "newPassword");
+        em.flush();
+        em.clear();
+
+        //then
+        Member changedMember = memberRepository.findById(member.getId()).orElseThrow();
+        assertThat(changedMember.getCreatedDate()).isEqualTo(oldCreatedDate);
+        assertThat(changedMember.getLastModifiedDate()).isAfter(oldLastModifiedDate);
+
     }
 
 }
