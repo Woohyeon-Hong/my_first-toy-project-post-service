@@ -16,6 +16,7 @@ public class MemberService {
 
     private final MemberRepository memberRepository;
 
+//business 로직-------------------------------------------------------------
     @Transactional
     public void signUp(Member member) {
 
@@ -50,30 +51,41 @@ public class MemberService {
         changePassword(findMember, newPassword);
     }
 
-    private void changePassword(Member member, String password) {
-        if (password != null && !password.equals(member.getPassword())) member.changePassword(password);
-
-    }
-
+//내부 로직-------------------------------------------------------------------------
     private Member findMember(Long id) {
         return memberRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("unregister: 해당 id가 없습니다."));
     }
 
-    private static void changeUsername(Member member, String username) {
-        if (username != null && !username.equals(member.getUsername())) member.changeUsername(username);
+    private void changeUsername(Member member, String username) {
+        if (username != null && !username.equals(member.getUsername())) {
+            usernameValidate(username);
+            member.changeUsername(username);
+        }
     }
 
-    private static void changeEmail(Member member, String email) {
-        if(email != null && !email.equals(member.getEmail())) member.changeEmail(email);
+    private void changeEmail(Member member, String email) {
+        if(email != null && !email.equals(member.getEmail())){
+            emailValidate(email);
+            member.changeEmail(email);
+        }
     }
 
-    private static void changeNickname(Member member, String nickname) {
-        if(nickname != null && !nickname.equals(member.getNickname())) member.changeNickname(nickname);
+    private void changeNickname(Member member, String nickname) {
+        if(nickname != null && !nickname.equals(member.getNickname())) {
+            nicknameValidate(nickname);
+            member.changeNickname(nickname);
+        }
     }
 
+    private void changePassword(Member member, String password) {
+        if (password != null && !password.equals(member.getPassword())) {
+            passwordValidate(password);
+            member.changePassword(password);
+        }
+    }
 
-
+//검증 로직-------------------------------------------------------------------------
     public void usernameValidate(String username) {
         List<Member> members = memberRepository.findAllByUsername(username);
 
