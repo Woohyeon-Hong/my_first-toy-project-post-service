@@ -6,10 +6,12 @@ import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -116,6 +118,9 @@ class MemberServiceTest {
         //then
         List<Member> members = memberRepository.findAll();
         assertThat(members).containsExactly(member3);
+
+        assertThatThrownBy(() -> memberService.unregister(member1.getId() + 1000))
+                .isInstanceOf(NoSuchElementException.class);
     }
 
     @Test
@@ -156,6 +161,9 @@ class MemberServiceTest {
         assertThat(changedMember2.getUsername()).isNotEqualTo(nullParam.getUsername());
         assertThat(changedMember2.getEmail()).isNotEqualTo(nullParam.getEmail());
         assertThat(changedMember2.getNickname()).isNotEqualTo(nullParam.getNickname());
+
+        assertThatThrownBy(() -> memberService.updateInfo(member1.getId() + 1000, updateParam))
+                .isInstanceOf(NoSuchElementException.class);
     }
 
     @Test
@@ -183,6 +191,9 @@ class MemberServiceTest {
 
         Member changedMember2 = memberRepository.findById(member2.getId()).orElseThrow();
         assertThat(changedMember2.getPassword()).isNotEqualTo(p2);
+
+        assertThatThrownBy(() -> memberService.updatePassword(member1.getId() + 1000, p1))
+                .isInstanceOf(NoSuchElementException.class);
     }
 
     @Test

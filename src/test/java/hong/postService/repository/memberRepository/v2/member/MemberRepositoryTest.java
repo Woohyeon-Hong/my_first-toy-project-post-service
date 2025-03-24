@@ -6,6 +6,7 @@ import hong.postService.service.memberService.v2.MemberUpdateDto;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
@@ -165,6 +166,8 @@ class MemberRepositoryTest {
         //then
         List<Member> members = memberRepository.findAll();
         assertThat(members).doesNotContain(member);
+
+        assertThatThrownBy(() -> memberRepository.delete(null)).isInstanceOf(InvalidDataAccessApiUsageException.class);
     }
 
 }

@@ -25,6 +25,7 @@ public class MemberService {
         nicknameValidate(member.getNickname());
 
         memberRepository.save(member);
+
     }
 
     @Transactional
