@@ -170,4 +170,22 @@ class MemberRepositoryTest {
         assertThatThrownBy(() -> memberRepository.delete(null)).isInstanceOf(InvalidDataAccessApiUsageException.class);
     }
 
+    @Test
+    void findByUsername() {
+        //given
+        Member member = Member.createNewMember("username", "password", "null@naver.com", "nickname");
+        memberRepository.save(member);
+
+        String username = "username";
+
+        //when
+        Member findMember = memberRepository.findByUsername(username);
+
+        //then
+        assertThat(findMember.getUsername()).isEqualTo(member.getUsername());
+        assertThat(findMember.getPassword()).isEqualTo(member.getPassword());
+        assertThat(findMember.getEmail()).isEqualTo(member.getEmail());
+        assertThat(findMember.getNickname()).isEqualTo(member.getNickname());
+    }
+
 }
