@@ -18,15 +18,16 @@ public class MemberService {
 
 //business 로직-------------------------------------------------------------
     @Transactional
-    public void signUp(Member member) {
+    public Long signUp(Member member) {
 
         usernameValidate(member.getUsername());
         passwordValidate(member.getPassword());
         emailValidate(member.getEmail());
         nicknameValidate(member.getNickname());
 
-        memberRepository.save(member);
+        Member saved = memberRepository.save(member);
 
+        return saved.getId();
     }
 
     @Transactional
