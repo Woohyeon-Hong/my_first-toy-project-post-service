@@ -1,7 +1,7 @@
 package hong.postService.service.postService.v1;
 
 import hong.postService.domain.Post;
-import hong.postService.repository.postRepository.v1.PostUpdateDto;
+import hong.postService.service.postService.v2.PostUpdateDto;
 
 import java.util.List;
 
