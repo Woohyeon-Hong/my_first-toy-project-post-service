@@ -177,7 +177,7 @@ class PostRepositoryTest {
                 .build();
 
         SearchCond usernameCond2 = SearchCond.builder()
-                .username("userA")
+                .username("userB")
                 .build();
 
         SearchCond titleCond = SearchCond.builder()
@@ -185,25 +185,43 @@ class PostRepositoryTest {
                 .build();
 
         SearchCond titleCond2 = SearchCond.builder()
-                .title("title9")
+                .title("title99")
                 .build();
 
-        PageRequest pageable = PageRequest.of(0, 10, Sort.by(Sort.Direction.ASC, "title"));
+        PageRequest pageable = PageRequest.of(0, 10, Sort.by(Sort.Direction.ASC, "createdDate"));
+        PageRequest pageable2 = PageRequest.of(1, 10, Sort.by(Sort.Direction.ASC, "createdDate"));
 
         //when
-        List<Post> postsWithUsernameCond = postRepository.searchPosts(usernameCond, pageable).getContent();
-        List<Post> postsWithUsernameCond2 = postRepository.searchPosts(usernameCond2, pageable).getContent();
+        Page<Post> posts1 = postRepository.searchPosts(usernameCond, pageable);
+        Page<Post> posts2 = postRepository.searchPosts(usernameCond, pageable2);
 
-        List<Post> postsWithTitleCond = postRepository.searchPosts(titleCond, pageable).getContent();
-        List<Post> postsWithTitleCond2 = postRepository.searchPosts(titleCond2, pageable).getContent();
+        Page<Post> posts3 = postRepository.searchPosts(usernameCond2, pageable);
+        Page<Post> posts4 = postRepository.searchPosts(usernameCond2, pageable2);
+
+        Page<Post> posts5 = postRepository.searchPosts(titleCond, pageable);
+        Page<Post> posts6 = postRepository.searchPosts(titleCond, pageable2);
+
+        Page<Post> posts7 = postRepository.searchPosts(titleCond2, pageable);
 
         //then
-        assertThat(postsWithUsernameCond.size()).isEqualTo(10);
-        assertThat(postsWithUsernameCond2.size()).isEqualTo(10);
-        assertThat(postsWithTitleCond.size()).isEqualTo(10);
-        assertThat(postsWithTitleCond2.size()).isEqualTo(10);
-        System.out.println(postsWithTitleCond.get(0).getWriter().getUsername());
+        assertThat(posts1.getTotalPages()).isEqualTo(10);
+        assertThat(posts3.getTotalPages()).isEqualTo(5);
+        assertThat(posts5.getTotalPages()).isEqualTo(10);
+        assertThat(posts7.getTotalPages()).isEqualTo(1);
 
+        assertThat(posts1.getSize()).isEqualTo(10);
+        assertThat(posts2.getSize()).isEqualTo(10);
+        assertThat(posts3.getSize()).isEqualTo(10);
+        assertThat(posts4.getSize()).isEqualTo(10);
+        assertThat(posts5.getSize()).isEqualTo(10);
+        assertThat(posts6.getSize()).isEqualTo(10);
+
+        assertThat(posts1.getContent().get(0).getTitle()).isEqualTo("title1");
+        assertThat(posts2.getContent().get(0).getTitle()).isEqualTo("title11");
+        assertThat(posts3.getContent().get(0).getTitle()).isEqualTo("title2");
+        assertThat(posts4.getContent().get(0).getTitle()).isEqualTo("title22");
+        assertThat(posts5.getContent().get(0).getTitle()).isEqualTo("title1");
+        assertThat(posts6.getContent().get(0).getTitle()).isEqualTo("title11");
     }
 
     @Test
