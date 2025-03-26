@@ -62,16 +62,27 @@ class PostRepositoryTest {
         }
 
         PageRequest pageable = PageRequest.of(0, 5, Sort.by(Sort.Direction.ASC, "createdDate"));
+        PageRequest pageable2 = PageRequest.of(1, 5, Sort.by(Sort.Direction.ASC, "createdDate"));
 
         //when
-        List<Post> postsOfMemberA = postRepository.findPostsByWriter(memberA, pageable).getContent();
-        List<Post> postsOfMemberB = postRepository.findPostsByWriter(memberB, pageable).getContent();
+        Page<Post> posts1 = postRepository.findPostsByWriter(memberA, pageable);
+        Page<Post> posts2 = postRepository.findPostsByWriter(memberA, pageable2);
+        Page<Post> posts3 = postRepository.findPostsByWriter(memberB, pageable);
+        Page<Post> posts4 = postRepository.findPostsByWriter(memberB, pageable2);
 
         //then
-        for (int i = 1; i <= 9; i = i + 2) {
-            assertThat(postsOfMemberA.get((i - 1) / 2).getTitle()).isEqualTo("title" + i);
-            assertThat(postsOfMemberB.get((i - 1) / 2).getTitle()).isEqualTo("title" + (i + 1));
-        }
+        assertThat(posts1.getTotalPages()).isEqualTo(10);
+        assertThat(posts2.getTotalPages()).isEqualTo(10);
+
+        assertThat(posts1.getSize()).isEqualTo(5);
+        assertThat(posts2.getSize()).isEqualTo(5);
+        assertThat(posts3.getSize()).isEqualTo(5);
+        assertThat(posts4.getSize()).isEqualTo(5);
+
+        assertThat(posts1.getContent().get(0).getTitle()).isEqualTo("title1");
+        assertThat(posts2.getContent().get(0).getTitle()).isEqualTo("title11");
+        assertThat(posts3.getContent().get(0).getTitle()).isEqualTo("title2");
+        assertThat(posts4.getContent().get(0).getTitle()).isEqualTo("title12");
     }
 
     @Test
