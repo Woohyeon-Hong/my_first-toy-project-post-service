@@ -9,15 +9,16 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 
 /**
- * 게시물 검색
+ * 게시물 Repository API
+ *
  * Create
  *     Post save(post) - 글 작성 시
  *
  * Read
  *     Post findById(id)
  *
- *     Page<Post> findMemberPosts(member, pageable) - 회원이 작성한 글 페이징 조회 시
- *     List<Post> findMemberPosts(member) - 회원이 작성한 글 단순 조회
+ *     Page<Post> findPostsByWriter(member, pageable) - 회원이 작성한 글 페이징 조회 시
+ *     List<Post>findPostsByWriter(member) - 회원이 작성한 글 단순 조회
  *
  *     Page<Post> findAll(pageable) - 전체 게시글 목록 페이징 조회 시
  *     List<Post> findAll() - 모든 게시글 단순 조회 시

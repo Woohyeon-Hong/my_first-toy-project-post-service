@@ -5,6 +5,7 @@ import hong.postService.domain.Post;
 import hong.postService.repository.memberRepository.v2.MemberRepository;
 import hong.postService.repository.postRepository.v2.PostRepository;
 import hong.postService.repository.postRepository.v2.SearchCond;
+import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -25,9 +26,10 @@ class PostServiceTest {
     MemberRepository memberRepository;
     @Autowired
     PostRepository postRepository;
-
     @Autowired
     PostService postService;
+    @Autowired
+    EntityManager em;
 
     @Test
     void write() {
@@ -175,11 +177,14 @@ class PostServiceTest {
 
         //when
         postService.update(savedId, updateParam);
+        em.flush();
+        em.clear();
 
         //then
         Post findPost = postRepository.findById(savedId).orElseThrow();
 
         assertThat(findPost.getTitle()).isEqualTo(newTitle);
         assertThat(findPost.getContent()).isEqualTo(newContent);
+        assertThat(findPost.getLastModifiedDate()).isAfter(findPost.getCreatedDate());
     }
 }

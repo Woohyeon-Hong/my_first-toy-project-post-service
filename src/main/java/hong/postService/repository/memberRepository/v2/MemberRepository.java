@@ -7,13 +7,14 @@ import java.util.List;
 
 
 /**
- * 필요한 APIs
+ * 회원 Repository API
  *
  * Create
  *      Member save(member) - 회원/어드민 가입 시
  *
  * Read
  *      Member findById(id)
+ *
  *      List<Member> findAllByUsername(String username) - username 중복 조회 시
  *      List<Member> findAllByPassword(String password) - password 중복 조회 시
  *      List<Member> findAllByEmail(String email) - email 중복 조회 시

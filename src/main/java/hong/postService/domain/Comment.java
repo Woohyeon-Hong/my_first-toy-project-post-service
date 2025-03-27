@@ -1,5 +1,6 @@
 package hong.postService.domain;
 
+import hong.postService.domain.baseEntity.BaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -11,7 +12,7 @@ import java.util.List;
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
-public class Comment {
+public class Comment extends BaseTimeEntity {
 
     @Id @GeneratedValue
     @Column(name = "comment_id")
