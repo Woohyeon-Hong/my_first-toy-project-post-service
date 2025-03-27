@@ -3,6 +3,7 @@ package hong.postService.repository.memberRepository.v2.member;
 import hong.postService.domain.Member;
 import hong.postService.repository.memberRepository.v2.MemberRepository;
 import hong.postService.service.memberService.v2.MemberUpdateDto;
+import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -21,6 +22,9 @@ class MemberRepositoryTest {
 
     @Autowired
     MemberRepository memberRepository;
+
+    @Autowired
+    EntityManager em;
 
     @Test
     void save() {
@@ -127,11 +131,15 @@ class MemberRepositoryTest {
         findMember.changeEmail(updateParam.getEmail());
         findMember.changeNickname(updateParam.getNickname());
 
+        em.flush();
+        em.clear();
+
         //then
         Member changedMember = memberRepository.findById(findMember.getId()).orElseThrow();
         assertThat(changedMember.getUsername()).isEqualTo(updateParam.getUsername());
         assertThat(changedMember.getEmail()).isEqualTo(updateParam.getEmail());
         assertThat(changedMember.getNickname()).isEqualTo(updateParam.getNickname());
+        assertThat(changedMember.getLastModifiedDate()).isAfter(changedMember.getCreatedDate());
     }
 
     @Test
@@ -147,10 +155,14 @@ class MemberRepositoryTest {
         Member findMember = memberRepository.findById(member.getId()).orElseThrow();
         findMember.changePassword(newPassword);
 
+        em.flush();
+        em.clear();
+
         //then
         Member changedMember = memberRepository.findById(findMember.getId()).orElseThrow();
         assertThat(changedMember.getPassword()).isEqualTo(newPassword);
         assertThatThrownBy(() -> findMember.changePassword(nullPassword)).isInstanceOf(NullPointerException.class);
+        assertThat(changedMember.getLastModifiedDate()).isAfter(changedMember.getCreatedDate());
     }
 
 
