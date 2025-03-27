@@ -65,10 +65,10 @@ class PostRepositoryTest {
         PageRequest pageable2 = PageRequest.of(1, 5, Sort.by(Sort.Direction.ASC, "createdDate"));
 
         //when
-        Page<Post> posts1 = postRepository.findPostsByWriter(memberA, pageable);
-        Page<Post> posts2 = postRepository.findPostsByWriter(memberA, pageable2);
-        Page<Post> posts3 = postRepository.findPostsByWriter(memberB, pageable);
-        Page<Post> posts4 = postRepository.findPostsByWriter(memberB, pageable2);
+        Page<Post> posts1 = postRepository.findAllByWriter(memberA, pageable);
+        Page<Post> posts2 = postRepository.findAllByWriter(memberA, pageable2);
+        Page<Post> posts3 = postRepository.findAllByWriter(memberB, pageable);
+        Page<Post> posts4 = postRepository.findAllByWriter(memberB, pageable2);
 
         //then
         assertThat(posts1.getTotalPages()).isEqualTo(10);
@@ -146,8 +146,8 @@ class PostRepositoryTest {
         }
 
         //when
-        List<Post> postsOfMemberA = postRepository.findPostsByWriter(memberA);
-        List<Post> postsOfMemberB = postRepository.findPostsByWriter(memberB);
+        List<Post> postsOfMemberA = postRepository.findAllByWriter(memberA);
+        List<Post> postsOfMemberB = postRepository.findAllByWriter(memberB);
 
         //then
         for (int i = 0; i < 5; i++) {

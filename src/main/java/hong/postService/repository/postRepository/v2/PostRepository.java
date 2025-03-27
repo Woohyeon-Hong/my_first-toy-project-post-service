@@ -32,6 +32,6 @@ import java.util.List;
 
 public interface PostRepository extends JpaRepository<Post, Long>, PostRepositoryCustom {
 
-    Page<Post> findPostsByWriter(Member member, Pageable pageable);
-    List<Post> findPostsByWriter(Member member);
+    Page<Post> findAllByWriter(Member member, Pageable pageable);
+    List<Post> findAllByWriter(Member member);
 }
