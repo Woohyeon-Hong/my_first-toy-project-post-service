@@ -5,7 +5,6 @@ import hong.postService.domain.Member;
 import hong.postService.domain.Post;
 import hong.postService.repository.memberRepository.v2.MemberRepository;
 import hong.postService.repository.postRepository.v2.PostRepository;
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -16,9 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
-import static org.assertj.core.api.Assertions.as;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
 @Transactional
@@ -61,7 +58,7 @@ class CommentRepositoryTest {
     }
 
     @Test
-    void findAllByPostWithoutPaging() {
+    void findByPostAndIsRemovedFalseWithoutPaging() {
         //given
         Member member = Member.createNewMember("user", "p", "e@naver.com", "nickname");
         memberRepository.save(member);
@@ -77,22 +74,24 @@ class CommentRepositoryTest {
 
             Comment comment = Comment.writeComment("title" + i, member, post);
             commentRepository.save(comment);
+
+            if (i == 25 || i == 50) comment.remove();
         }
 
         //when
-        List<Comment> commentsWithPost1 = commentRepository.findAllByPost(post1);
-        List<Comment> commentsWithPost2 = commentRepository.findAllByPost(post2);
+        List<Comment> commentsWithPost1 = commentRepository.findByPostAndIsRemovedFalse(post1);
+        List<Comment> commentsWithPost2 = commentRepository.findByPostAndIsRemovedFalse(post2);
 
         //then
-        assertThat(commentsWithPost1.size()).isEqualTo(25);
-        assertThat(commentsWithPost2.size()).isEqualTo(25);
+        assertThat(commentsWithPost1.size()).isEqualTo(24);
+        assertThat(commentsWithPost2.size()).isEqualTo(24);
 
         assertThat(commentsWithPost1.get(0).getContent()).isEqualTo("title1");
         assertThat(commentsWithPost2.get(0).getContent()).isEqualTo("title2");
     }
 
     @Test
-    void findAllByPostWitPaging() {
+    void findByPostAndIsRemovedFalseWitPaging() {
         //given
         Member member = Member.createNewMember("user", "p", "e@naver.com", "nickname");
         memberRepository.save(member);
@@ -114,10 +113,10 @@ class CommentRepositoryTest {
         PageRequest pageable2 = PageRequest.of(1, 5, Sort.by(Sort.Direction.ASC, "createdDate"));
 
         //when
-        Page<Comment> commentsWithPost1 = commentRepository.findAllByPost(post1, pageable1);
-        Page<Comment> commentsWithPost2 = commentRepository.findAllByPost(post1, pageable2);
-        Page<Comment> commentsWithPost3 = commentRepository.findAllByPost(post2, pageable1);
-        Page<Comment> commentsWithPost4 = commentRepository.findAllByPost(post2, pageable2);
+        Page<Comment> commentsWithPost1 = commentRepository.findByPostAndIsRemovedFalse(post1, pageable1);
+        Page<Comment> commentsWithPost2 = commentRepository.findByPostAndIsRemovedFalse(post1, pageable2);
+        Page<Comment> commentsWithPost3 = commentRepository.findByPostAndIsRemovedFalse(post2, pageable1);
+        Page<Comment> commentsWithPost4 = commentRepository.findByPostAndIsRemovedFalse(post2, pageable2);
 
         //then
         assertThat(commentsWithPost1.getTotalPages()).isEqualTo(5);
@@ -135,7 +134,7 @@ class CommentRepositoryTest {
     }
 
     @Test
-    void findAllByParentCommentWithoutPaging() {
+    void ffindAllByParentCommentAndIsRemovedFalseWithoutPaging() {
         //given
         Member member = Member.createNewMember("user", "p", "e@naver.com", "nickname");
         memberRepository.save(member);
@@ -156,15 +155,17 @@ class CommentRepositoryTest {
 
             Comment reply = comment.writeReply("content" + i);
             commentRepository.save(reply);
+
+            if (i == 25 || i == 50) reply.remove();
         }
 
         //when
-        List<Comment> replies1 = commentRepository.findAllByParentComment(comment1);
-        List<Comment> replies2 = commentRepository.findAllByParentComment(comment2);
+        List<Comment> replies1 = commentRepository.findAllByParentCommentAndIsRemovedFalse(comment1);
+        List<Comment> replies2 = commentRepository.findAllByParentCommentAndIsRemovedFalse(comment2);
 
         //then
-        assertThat(replies1.size()).isEqualTo(25);
-        assertThat(replies2.size()).isEqualTo(25);
+        assertThat(replies1.size()).isEqualTo(24);
+        assertThat(replies2.size()).isEqualTo(24);
 
         assertThat(replies1.get(0).getContent()).isEqualTo("content1");
         assertThat(replies2.get(0).getContent()).isEqualTo("content2");
@@ -174,7 +175,7 @@ class CommentRepositoryTest {
     }
 
     @Test
-    void findAllByParentCommentWithPaging() {
+    void findAllByParentCommentAndIsRemovedFalseWithPaging() {
         //given
         Member member = Member.createNewMember("user", "p", "e@naver.com", "nickname");
         memberRepository.save(member);
@@ -201,10 +202,10 @@ class CommentRepositoryTest {
         PageRequest pageable2 = PageRequest.of(1, 5, Sort.by(Sort.Direction.ASC, "createdDate"));
 
         //when
-        Page<Comment> replies1 = commentRepository.findAllByParentComment(comment1, pageable1);
-        Page<Comment> replies2 = commentRepository.findAllByParentComment(comment1, pageable2);
-        Page<Comment> replies3 = commentRepository.findAllByParentComment(comment2, pageable1);
-        Page<Comment> replies4 = commentRepository.findAllByParentComment(comment2, pageable2);
+        Page<Comment> replies1 = commentRepository.findAllByParentCommentAndIsRemovedFalse(comment1, pageable1);
+        Page<Comment> replies2 = commentRepository.findAllByParentCommentAndIsRemovedFalse(comment1, pageable2);
+        Page<Comment> replies3 = commentRepository.findAllByParentCommentAndIsRemovedFalse(comment2, pageable1);
+        Page<Comment> replies4 = commentRepository.findAllByParentCommentAndIsRemovedFalse(comment2, pageable2);
 
         //then
         assertThat(replies1.getTotalPages()).isEqualTo(5);

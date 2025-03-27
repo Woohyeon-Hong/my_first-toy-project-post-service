@@ -31,9 +31,9 @@ import java.util.List;
  *
  */
 public interface CommentRepository extends JpaRepository<Comment, Long> {
-    Page<Comment> findAllByPost(Post post, Pageable pageable);
-    List<Comment> findAllByPost(Post post);
+    Page<Comment> findByPostAndIsRemovedFalse(Post post, Pageable pageable);
+    List<Comment> findByPostAndIsRemovedFalse(Post post);
 
-    Page<Comment> findAllByParentComment(Comment parentComment, Pageable pageable);
-    List<Comment> findAllByParentComment(Comment parentComment);
+    Page<Comment> findAllByParentCommentAndIsRemovedFalse(Comment parentComment, Pageable pageable);
+    List<Comment> findAllByParentCommentAndIsRemovedFalse(Comment parentComment);
 }
