@@ -221,4 +221,29 @@ class CommentServiceTest {
         assertThat(replies1.getContent().get(0).getParentComment()).isEqualTo(comment1);
         assertThat(replies3.getContent().get(0).getParentComment()).isEqualTo(comment2);
     }
+
+    @Test
+    void delete() {
+        //given
+        Member member = Member.createNewMember("user", "p", "e@naver.com", "nickname");
+        memberService.signUp(member);
+
+        Post post1 = Post.writeNewPost("title1", "content1", member);
+        postService.write(post1);
+
+        Comment comment = Comment.writeComment("content", member, post1);
+        Comment reply = comment.writeReply("content2");
+
+        commentService.write(comment);
+        commentService.write(reply);
+
+        //when
+        comment.remove();
+        reply.remove();
+
+        //then
+        List<Comment> comments = commentService.getCommentsByPost(post1);
+        assertThat(comments).doesNotContain(comment);
+        assertThat(comments).doesNotContain(reply);
+    }
 }

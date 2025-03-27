@@ -24,18 +24,26 @@ public class CommentService {
     }
 
     public Page<Comment> getCommentsByPost(Post post, Pageable pageable) {
-        return commentRepository.findAllByPost(post, pageable);
+        return commentRepository.findByPostAndIsRemovedFalse(post, pageable);
     }
 
     public List<Comment> getCommentsByPost(Post post) {
-        return commentRepository.findAllByPost(post);
+        return commentRepository.findByPostAndIsRemovedFalse(post);
     }
 
     public Page<Comment> getCommentsByParentComment(Comment parentComment, Pageable pageable) {
-        return commentRepository.findAllByParentComment(parentComment, pageable);
+        return commentRepository.findAllByParentCommentAndIsRemovedFalse(parentComment, pageable);
     }
 
     public List<Comment> getCommentsByParentComment(Comment parentComment) {
-        return commentRepository.findAllByParentComment(parentComment);
+        return commentRepository.findAllByParentCommentAndIsRemovedFalse(parentComment);
+    }
+
+    @Transactional
+    public void delete(Long id) {
+        Comment comment = commentRepository.findById(id).orElseThrow(()
+                -> new IllegalArgumentException("delete: 해당 id가 없음."));
+
+        comment.remove();
     }
 }
