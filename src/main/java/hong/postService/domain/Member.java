@@ -48,18 +48,15 @@ public class Member extends BaseTimeEntity {
         if (username == null) throw new NullPointerException("createNewMember: username == null");
         if (password == null) throw new NullPointerException("createNewMember: password == null");
         if (nickname == null) throw new NullPointerException("createNewMember: nickname == null");
+        if (!validateEmailFormat(email)) throw new IllegalEmailFormatException("createNewMember: email 형식이 잘못됨");
 
-        if (validateEmailFormat(email)) {
-            return Member.builder()
-                    .username(username)
-                    .password(password)
-                    .email(email)
-                    .nickname(nickname)
-                    .role(UserRole.USER)
-                    .build();
-        } else {
-            throw new IllegalEmailFormatException("createNewMember: email 형식이 잘못됨");
-        }
+        return Member.builder()
+                .username(username)
+                .password(password)
+                .email(email)
+                .nickname(nickname)
+                .role(UserRole.USER)
+                .build();
     }
 
 //생성---------------------------------------------------------------------------------------------------
@@ -69,18 +66,15 @@ public class Member extends BaseTimeEntity {
         if (username == null) throw new NullPointerException("createNewAdmin: username == null");
         if (password == null) throw new NullPointerException("createNewAdmin: password == null");
         if (nickname == null) throw new NullPointerException("createNewAdmin: nickname == null");
+        if (!validateEmailFormat(email)) throw new IllegalEmailFormatException("createNewAdmin: email 형식이 잘못됨");
 
-        if (validateEmailFormat(email)) {
-            return Member.builder()
-                    .username(username)
-                    .password(password)
-                    .email(email)
-                    .nickname(nickname)
-                    .role(UserRole.ADMIN)
-                    .build();
-        } else {
-            throw new IllegalEmailFormatException("createNewAdmin: email 형식이 잘못됨");
-        }
+        return Member.builder()
+                .username(username)
+                .password(password)
+                .email(email)
+                .nickname(nickname)
+                .role(UserRole.ADMIN)
+                .build();
     }
 
 //검증---------------------------------------------------------------------------------------------------
