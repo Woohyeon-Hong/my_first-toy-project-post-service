@@ -8,6 +8,24 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class CommentTest {
 
+    //연관관계 편의 메소드가 정상 작동했는지에 대해서는 테스트하지 않는다.
+    @Test
+    void writeReplyWithoutJPA() {
+        //given
+        Member member = Member.createNewMember("username", "password", null, "nickname");
+        Post post = member.writeNewPost("title", "content");
+        Comment comment = post.writeComment("content2", member);
+
+        //when
+        Comment reply = comment.writeReply("content3", member);
+
+        //then
+        assertThat(reply.getContent()).isEqualTo("content3");
+        assertThatThrownBy(() -> comment.writeReply(null, member)).isInstanceOf(NullPointerException.class);
+        assertThatThrownBy(() -> comment.writeReply("content4", null)).isInstanceOf(NullPointerException.class);
+
+    }
+
     @Test
     void updateContent() {
         //given
