@@ -52,6 +52,7 @@ public class Comment extends BaseTimeEntity {
                 .build();
 
         this.childComments.add(childComment);
+        writer.getComments().add(childComment);
 
         return  childComment;
     }

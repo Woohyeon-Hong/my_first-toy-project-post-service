@@ -36,7 +36,7 @@ class PostTest {
 
     //연관관계 편의 메소드가 정상 작동했는지에 대해서는 테스트하지 않는다.
     @Test
-    void writerCommentWithoutJPA() {
+    void writeCommentWithoutJPA() {
         //given
         Member member = Member.createNewMember("username", "password", null, "nickname");
 
@@ -70,14 +70,6 @@ class PostTest {
                 .post(post)
                 .build();
 
-        Comment commentWithoutPost = Comment.builder()
-                .content("content")
-                .isRemoved(false)
-                .parentComment(null)
-                .writer(member)
-                .post(null)
-                .build();
-
         //when
         Comment createdComment = post.writeComment(comment.getContent(), comment.getWriter());
 
@@ -87,8 +79,9 @@ class PostTest {
         assertThat(createdComment.getWriter()).isEqualTo(comment.getWriter());
         assertThat(createdComment.getPost()).isEqualTo(comment.getPost());
 
-        assertThatThrownBy(() -> post.writeComment(commentWithoutWriter.getContent(), commentWithoutWriter.getWriter()))
+        assertThatThrownBy(() -> post.writeComment(commentWithoutContent.getContent(), commentWithoutContent.getWriter()))
                 .isInstanceOf(NullPointerException.class);
+
         assertThatThrownBy(() -> post.writeComment(commentWithoutWriter.getContent(), commentWithoutWriter.getWriter()))
                 .isInstanceOf(NullPointerException.class);
     }
