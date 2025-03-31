@@ -134,7 +134,7 @@ class CommentRepositoryTest {
     }
 
     @Test
-    void ffindAllByParentCommentAndIsRemovedFalseWithoutPaging() {
+    void findAllByParentCommentAndIsRemovedFalseWithoutPaging() {
         //given
         Member member = Member.createNewMember("user", "p", "e@naver.com", "nickname");
         memberRepository.save(member);

@@ -155,6 +155,53 @@ class PostRepositoryTest {
     }
 
     @Test
+    void searchPostsWithoutPaging() {
+        //given
+        Member member = Member.createNewMember("userA", "pA", "userA@naver.com", "nicknameA");
+        memberRepository.save(member);
+
+        Member member2 = Member.createNewMember("userB", "pB", "userB@naver.com", "nicknameB");
+        memberRepository.save(member2);
+
+        for (int i = 1; i <= 100; i++) {
+            Post post;
+            if (i % 2 != 0) post = member.writeNewPost("title" + i, "content" + i);
+            else post = member2.writeNewPost("title" + i, "content" + i);
+            postRepository.save(post);
+        }
+
+        SearchCond usernameCond = SearchCond.builder()
+                .writer("user")
+                .build();
+
+        SearchCond usernameCond2 = SearchCond.builder()
+                .writer("userA")
+                .build();
+
+        SearchCond titleCond = SearchCond.builder()
+                .title("title")
+                .build();
+
+        SearchCond titleCond2 = SearchCond.builder()
+                .title("title99")
+                .build();
+
+        //when
+        List<Post> postsWithUsernameCond = postRepository.searchPosts(usernameCond);
+        List<Post> postsWithUsernameCond2 = postRepository.searchPosts(usernameCond2);
+
+        List<Post> postsWithTitleCond = postRepository.searchPosts(titleCond);
+        List<Post> postsWithTitleCond2 = postRepository.searchPosts(titleCond2);
+
+        //then
+        assertThat(postsWithUsernameCond.size()).isEqualTo(100);
+        assertThat(postsWithUsernameCond2.size()).isEqualTo(50);
+        assertThat(postsWithTitleCond.size()).isEqualTo(100);
+        assertThat(postsWithTitleCond2.size()).isEqualTo(1);
+        System.out.println(postsWithTitleCond.get(0).getWriter().getUsername());
+    }
+
+    @Test
     void searchPostsWithPaging() {
         //given
         Member member = Member.createNewMember("userA", "pA", "userA@naver.com", "nicknameA");
@@ -220,52 +267,5 @@ class PostRepositoryTest {
         assertThat(posts4.getContent().get(0).getTitle()).isEqualTo("title22");
         assertThat(posts5.getContent().get(0).getTitle()).isEqualTo("title1");
         assertThat(posts6.getContent().get(0).getTitle()).isEqualTo("title11");
-    }
-
-    @Test
-    void searchPostsWithoutPaging() {
-        //given
-        Member member = Member.createNewMember("userA", "pA", "userA@naver.com", "nicknameA");
-        memberRepository.save(member);
-
-        Member member2 = Member.createNewMember("userB", "pB", "userB@naver.com", "nicknameB");
-        memberRepository.save(member2);
-
-        for (int i = 1; i <= 100; i++) {
-            Post post;
-            if (i % 2 != 0) post = member.writeNewPost("title" + i, "content" + i);
-            else post = member2.writeNewPost("title" + i, "content" + i);
-            postRepository.save(post);
-        }
-
-        SearchCond usernameCond = SearchCond.builder()
-                .writer("user")
-                .build();
-
-        SearchCond usernameCond2 = SearchCond.builder()
-                .writer("userA")
-                .build();
-
-        SearchCond titleCond = SearchCond.builder()
-                .title("title")
-                .build();
-
-        SearchCond titleCond2 = SearchCond.builder()
-                .title("title99")
-                .build();
-
-        //when
-        List<Post> postsWithUsernameCond = postRepository.searchPosts(usernameCond);
-        List<Post> postsWithUsernameCond2 = postRepository.searchPosts(usernameCond2);
-
-        List<Post> postsWithTitleCond = postRepository.searchPosts(titleCond);
-        List<Post> postsWithTitleCond2 = postRepository.searchPosts(titleCond2);
-
-        //then
-        assertThat(postsWithUsernameCond.size()).isEqualTo(100);
-        assertThat(postsWithUsernameCond2.size()).isEqualTo(50);
-        assertThat(postsWithTitleCond.size()).isEqualTo(100);
-        assertThat(postsWithTitleCond2.size()).isEqualTo(1);
-        System.out.println(postsWithTitleCond.get(0).getWriter().getUsername());
     }
 }

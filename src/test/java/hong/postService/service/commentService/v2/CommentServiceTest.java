@@ -41,10 +41,7 @@ class CommentServiceTest {
     void write() {
         //given
         Long id = memberService.signUp("user", "p", "e@naver.com", "nickname");
-        Member member = memberRepository.findById(id).orElseThrow();
-
         Long postId = postService.write(id, "title1", "content1");
-        Post post1 = postRepository.findById(postId).orElseThrow();
 
         //when
         Long commentId = commentService.write(postId, id, "content");
@@ -59,11 +56,7 @@ class CommentServiceTest {
     void writeReply() {
         //given
         Long id = memberService.signUp("user", "p", "e@naver.com", "nickname");
-        Member member = memberRepository.findById(id).orElseThrow();
-
         Long postId = postService.write(id, "title1", "content1");
-        Post post1 = postRepository.findById(postId).orElseThrow();
-
         Long commentId = commentService.write(postId, id, "content");
 
         //when
