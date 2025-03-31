@@ -40,7 +40,7 @@ class CommentServiceTest {
         Post post1 = member.writeNewPost("title1", "content1");
         postService.write(post1);
 
-        Comment comment = Comment.writeComment("content", member, post1);
+        Comment comment = post1.writeComment("content", member);
         Comment reply = comment.writeReply("content2");
 
         //when
@@ -70,7 +70,7 @@ class CommentServiceTest {
             Post post = post1;
             if (i % 2 == 0) post = post2;
 
-            Comment comment = Comment.writeComment("title" + i, member, post);
+            Comment comment = post.writeComment("title" + i, member);
             commentService.write(comment);
         }
 
@@ -101,7 +101,7 @@ class CommentServiceTest {
             Post post = post1;
             if (i % 2 == 0) post = post2;
 
-            Comment comment = Comment.writeComment("content" + i, member, post);
+            Comment comment = post.writeComment("content" + i, member);
             commentRepository.save(comment);
         }
 
@@ -138,10 +138,10 @@ class CommentServiceTest {
         Post post = member.writeNewPost("title", "content");
         postService.write(post);
 
-        Comment comment1 = Comment.writeComment("content", member, post);
+        Comment comment1 = post.writeComment("content", member);
         commentService.write(comment1);
 
-        Comment comment2 = Comment.writeComment("content2", member, post);
+        Comment comment2 = post.writeComment("content2", member);
         commentService.write(comment2);
 
         for (int i = 1; i <= 50; i++) {
@@ -177,10 +177,10 @@ class CommentServiceTest {
         Post post = member.writeNewPost("title", "content");
         postService.write(post);
 
-        Comment comment1 = Comment.writeComment("content", member, post);
+        Comment comment1 = post.writeComment("content", member);
         commentService.write(comment1);
 
-        Comment comment2 = Comment.writeComment("content2", member, post);
+        Comment comment2 = post.writeComment("content2", member);
         commentService.write(comment2);
 
         for (int i = 1; i <= 50; i++) {
@@ -228,7 +228,7 @@ class CommentServiceTest {
         Post post1 = member.writeNewPost("title1", "content1");
         postService.write(post1);
 
-        Comment comment = Comment.writeComment("content", member, post1);
+        Comment comment = post1.writeComment("content", member);
         Comment reply = comment.writeReply("content2");
 
         commentService.write(comment);

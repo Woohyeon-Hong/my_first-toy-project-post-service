@@ -38,27 +38,7 @@ public class Comment extends BaseTimeEntity {
     @OneToMany(mappedBy = "parentComment")
     private List<Comment> childComments = new ArrayList<>();
 
-    public static Comment writeComment(String content, Member writer, Post post) {
-
-        if (content == null) throw new NullPointerException("writeComment: content == null");
-        if (writer == null) throw new NullPointerException("writeComment: writer == null");
-        if (post == null) throw new NullPointerException("writeComment: post == null");
-
-
-        Comment comment = Comment.builder()
-                .content(content)
-                .isRemoved(false)
-                .writer(writer)
-                .post(post)
-                .parentComment(null)
-                .build();
-
-        writer.getComments().add(comment);
-        post.getComments().add(comment);
-
-        return comment;
-    }
-
+//생성---------------------------------------------------------------------------------------------------
     public Comment writeReply(String content) {
         if (content == null) throw new NullPointerException("writeReply: content == null");
 
@@ -74,6 +54,8 @@ public class Comment extends BaseTimeEntity {
 
         return  childComment;
     }
+
+//업데이트---------------------------------------------------------------------------------------------------
 
     public void updateContent(String newContent) {
         if (newContent == null) throw new NullPointerException("updateContent: newContent == null");

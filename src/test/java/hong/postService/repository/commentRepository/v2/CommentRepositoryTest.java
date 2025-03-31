@@ -37,7 +37,7 @@ class CommentRepositoryTest {
         Post post1 = member.writeNewPost("title1", "content1");
         postRepository.save(post1);
 
-        Comment comment = Comment.writeComment("content", member, post1);
+        Comment comment = post1.writeComment("content", member);
         Comment reply = comment.writeReply("content2");
 
         //when
@@ -72,7 +72,7 @@ class CommentRepositoryTest {
             Post post = post1;
             if (i % 2 == 0) post = post2;
 
-            Comment comment = Comment.writeComment("title" + i, member, post);
+            Comment comment = post.writeComment("title" + i, member);
             commentRepository.save(comment);
 
             if (i == 25 || i == 50) comment.remove();
@@ -105,7 +105,7 @@ class CommentRepositoryTest {
             Post post = post1;
             if (i % 2 == 0) post = post2;
 
-            Comment comment = Comment.writeComment("content" + i, member, post);
+            Comment comment = post.writeComment("content" + i, member);
             commentRepository.save(comment);
         }
 
@@ -142,10 +142,10 @@ class CommentRepositoryTest {
         Post post = member.writeNewPost("title", "content");
         postRepository.save(post);
 
-        Comment comment1 = Comment.writeComment("content", member, post);
+        Comment comment1 = post.writeComment("content", member);
         commentRepository.save(comment1);
 
-        Comment comment2 = Comment.writeComment("content2", member, post);
+        Comment comment2 = post.writeComment("content2", member);
         commentRepository.save(comment2);
 
         for (int i = 1; i <= 50; i++) {
@@ -183,10 +183,10 @@ class CommentRepositoryTest {
         Post post = member.writeNewPost("title", "content");
         postRepository.save(post);
 
-        Comment comment1 = Comment.writeComment("content", member, post);
+        Comment comment1 = post.writeComment("content", member);
         commentRepository.save(comment1);
 
-        Comment comment2 = Comment.writeComment("content2", member, post);
+        Comment comment2 = post.writeComment("content2", member);
         commentRepository.save(comment2);
 
         for (int i = 1; i <= 50; i++) {

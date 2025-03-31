@@ -62,6 +62,8 @@ public class Member extends BaseTimeEntity {
         }
     }
 
+//생성---------------------------------------------------------------------------------------------------
+
     public static Member createNewAdmin(String username, String password, String email, String nickname) {
 
         if (username == null) throw new NullPointerException("createNewAdmin: username == null");
@@ -81,21 +83,7 @@ public class Member extends BaseTimeEntity {
         }
     }
 
-    public Post writeNewPost(String title, String content) {
-        if (title == null) throw new NullPointerException("writeNewPost: title == null");
-        if (content == null) throw new NullPointerException("writeNewPost: content == null");
-
-        Post post = Post.builder()
-                .title(title)
-                .content(content)
-                .writer(this)
-                .build();
-
-        this.getPosts().add(post);
-
-        return post;
-    }
-
+//검증---------------------------------------------------------------------------------------------------
 
     public static boolean validateEmailFormat(String email) {
         if (email == null) {
@@ -105,6 +93,9 @@ public class Member extends BaseTimeEntity {
                .matcher(email)
                     .matches();
     }
+
+//업데이트---------------------------------------------------------------------------------------------------
+
 
     public void changeUsername(String username) {
         if (username == null) throw new NullPointerException("changeUsername: username == null");
@@ -124,5 +115,23 @@ public class Member extends BaseTimeEntity {
     public void changeNickname(String nickname) {
         if (nickname == null) throw new NullPointerException("changeNickname: nickname == null");
         this.nickname = nickname;
+    }
+
+//Post 작성---------------------------------------------------------------------------------------------------
+
+
+    public Post writeNewPost(String title, String content) {
+        if (title == null) throw new NullPointerException("writeNewPost: title == null");
+        if (content == null) throw new NullPointerException("writeNewPost: content == null");
+
+        Post post = Post.builder()
+                .title(title)
+                .content(content)
+                .writer(this)
+                .build();
+
+        this.getPosts().add(post);
+
+        return post;
     }
 }
