@@ -1,7 +1,7 @@
 package hong.postService.repository.postRepository.v1;
 
 import hong.postService.domain.Post;
-import hong.postService.service.postService.v2.PostUpdateDto;
+import hong.postService.service.postService.v2.PostUpdateRequest;
 
 import java.util.List;
 import java.util.Optional;
@@ -14,7 +14,7 @@ public interface BoardRepository {
     List<Post> findMemberPosts(Long memberId);
     List<Post> findAll();
 
-    void update(Long id, PostUpdateDto updateParam);
+    void update(Long id, PostUpdateRequest updateParam);
 
     void delete(Long id);
 

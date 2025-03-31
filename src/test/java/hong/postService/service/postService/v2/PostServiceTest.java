@@ -37,7 +37,7 @@ class PostServiceTest {
         Member writer = Member.createNewMember("user", "p", "e@naver.com", "nickname");
         memberRepository.save(writer);
 
-        Post post = Post.writeNewPost("title1", "content1", writer);
+        Post post = writer.writeNewPost("title1", "content1");
 
         //when
         Long savedId = postService.write(post);
@@ -53,7 +53,7 @@ class PostServiceTest {
         Member writer = Member.createNewMember("user", "p", "e@naver.com", "nickname");
         memberRepository.save(writer);
 
-        Post post = Post.writeNewPost("title1", "content1", writer);
+        Post post = writer.writeNewPost("title1", "content1");
         Long savedId = postService.write(post);
 
         //when
@@ -71,7 +71,7 @@ class PostServiceTest {
         memberRepository.save(writer);
 
         for (int i = 1; i <= 50; i++) {
-            Post post = Post.writeNewPost("title" + i, "content" + i, writer);
+            Post post = writer.writeNewPost("title" + i, "content" + i);
             postService.write(post);
         }
 
@@ -100,18 +100,18 @@ class PostServiceTest {
         memberRepository.save(member2);
 
         for (int i = 1; i <= 100; i++) {
-            Member writer = member;
-            if (i % 2 == 0) writer = member2;
-            Post post = Post.writeNewPost("title" + i, "content" + i, writer);
+            Post post;
+            if (i % 2 != 0) post = member.writeNewPost("title" + i, "content" + i);
+            else post = member2.writeNewPost("title" + i, "content" + i);
             postRepository.save(post);
         }
 
         SearchCond usernameCond = SearchCond.builder()
-                .username("user")
+                .writer("user")
                 .build();
 
         SearchCond usernameCond2 = SearchCond.builder()
-                .username("userB")
+                .writer("userB")
                 .build();
 
         SearchCond titleCond = SearchCond.builder()
@@ -164,13 +164,13 @@ class PostServiceTest {
         Member writer = Member.createNewMember("user", "p", "e@naver.com", "nickname");
         memberRepository.save(writer);
 
-        Post post = Post.writeNewPost("title1", "content1", writer);
+        Post post = writer.writeNewPost("title1", "content1");
         Long savedId = postService.write(post);
 
         String newTitle = "newTitle";
         String newContent = "newContent";
 
-        PostUpdateDto updateParam = PostUpdateDto.builder()
+        PostUpdateRequest updateParam = PostUpdateRequest.builder()
                 .title(newTitle)
                 .content(newContent)
                 .build();

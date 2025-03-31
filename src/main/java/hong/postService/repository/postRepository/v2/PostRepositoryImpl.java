@@ -4,7 +4,6 @@ import com.querydsl.core.BooleanBuilder;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import hong.postService.domain.Post;
-import hong.postService.domain.QMember;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -24,8 +23,8 @@ public class PostRepositoryImpl implements PostRepositoryCustom{
     public Page<Post> searchPosts(SearchCond cond, Pageable pageable) {
         BooleanBuilder builder = new BooleanBuilder();
 
-        if (cond.getUsername() != null) {
-            builder.and(post.writer.username.contains(cond.getUsername()));
+        if (cond.getWriter() != null) {
+            builder.and(post.writer.username.contains(cond.getWriter()));
         }
 
         if (cond.getTitle() != null) {
@@ -53,8 +52,8 @@ public class PostRepositoryImpl implements PostRepositoryCustom{
 
         BooleanBuilder builder = new BooleanBuilder();
 
-        if (cond.getUsername() != null) {
-            builder.and(post.writer.username.contains(cond.getUsername()));
+        if (cond.getWriter() != null) {
+            builder.and(post.writer.username.contains(cond.getWriter()));
         }
 
         if (cond.getTitle() != null) {

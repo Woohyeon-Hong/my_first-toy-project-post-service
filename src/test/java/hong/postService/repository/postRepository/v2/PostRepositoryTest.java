@@ -32,7 +32,7 @@ class PostRepositoryTest {
         Member member = Member.createNewMember("user", "p", "user@naver.com", "nickname");
         memberRepository.save(member);
 
-        Post post = Post.writeNewPost("title", "content", member);
+        Post post = member.writeNewPost("title", "content");
 
         //when
         postRepository.save(post);
@@ -42,8 +42,32 @@ class PostRepositoryTest {
         assertThat(findPost.getTitle()).isEqualTo(post.getTitle());
         assertThat(findPost.getContent()).isEqualTo(post.getContent());
         assertThat(member.getPosts()).contains(post);
+    }
 
-        assertThatThrownBy(() -> Post.writeNewPost("t", "c", null)).isInstanceOf(NullPointerException.class);
+    @Test
+    void findMemberPostWithoutPaging() {
+        //given
+        Member memberA = Member.createNewMember("userA", "pA", "userA@naver.com", "nicknameA");
+        memberRepository.save(memberA);
+        Member memberB = Member.createNewMember("userB", "pB", "userB@naver.com", "nicknameB");
+        memberRepository.save(memberB);
+
+        for (int i = 1; i <= 10; i++) {
+            Post post;
+            if (i % 2 != 0) post = memberA.writeNewPost("title" + i, "content" + i);
+            else post = memberB.writeNewPost("title" + i, "content" + i);
+            postRepository.save(post);
+        }
+
+        //when
+        List<Post> postsOfMemberA = postRepository.findAllByWriter(memberA);
+        List<Post> postsOfMemberB = postRepository.findAllByWriter(memberB);
+
+        //then
+        for (int i = 0; i < 5; i++) {
+            assertThat(postsOfMemberA.get(i).getTitle()).isEqualTo("title" + (2 * i + 1));
+            assertThat(postsOfMemberB.get(i).getTitle()).isEqualTo("title" + (2 * i + 2));
+        }
     }
 
     @Test
@@ -55,9 +79,9 @@ class PostRepositoryTest {
         memberRepository.save(memberB);
 
         for (int i = 1; i <= 100; i++) {
-            Member writer = memberA;
-            if (i % 2 == 0) writer = memberB;
-            Post post = Post.writeNewPost("title" + i, "content" + i, writer);
+            Post post;
+            if (i % 2 != 0) post = memberA.writeNewPost("title" + i, "content" + i);
+            else post = memberB.writeNewPost("title" + i, "content" + i);
             postRepository.save(post);
         }
 
@@ -92,7 +116,7 @@ class PostRepositoryTest {
         memberRepository.save(memberA);
 
         for (int i = 1; i <= 10; i++) {
-            Post post = Post.writeNewPost("title" + i, "content" + i, memberA);
+            Post post = memberA.writeNewPost("title" + i, "content" + i);
             postRepository.save(post);
         }
 
@@ -112,7 +136,7 @@ class PostRepositoryTest {
         memberRepository.save(memberA);
 
         for (int i = 1; i <= 10; i++) {
-            Post post = Post.writeNewPost("title" + i, "content" + i, memberA);
+            Post post = memberA.writeNewPost("title" + i, "content" + i);
             postRepository.save(post);
         }
 
@@ -131,32 +155,6 @@ class PostRepositoryTest {
     }
 
     @Test
-    void findMemberPostWithoutPaging() {
-        //given
-        Member memberA = Member.createNewMember("userA", "pA", "userA@naver.com", "nicknameA");
-        memberRepository.save(memberA);
-        Member memberB = Member.createNewMember("userB", "pB", "userB@naver.com", "nicknameB");
-        memberRepository.save(memberB);
-
-        for (int i = 1; i <= 10; i++) {
-            Member writer = memberA;
-            if (i % 2 == 0) writer = memberB;
-            Post post = Post.writeNewPost("title" + i, "content" + i, writer);
-            postRepository.save(post);
-        }
-
-        //when
-        List<Post> postsOfMemberA = postRepository.findAllByWriter(memberA);
-        List<Post> postsOfMemberB = postRepository.findAllByWriter(memberB);
-
-        //then
-        for (int i = 0; i < 5; i++) {
-            assertThat(postsOfMemberA.get(i).getTitle()).isEqualTo("title" + (2 * i + 1));
-            assertThat(postsOfMemberB.get(i).getTitle()).isEqualTo("title" + (2 * i + 2));
-        }
-    }
-
-    @Test
     void searchPostsWithPaging() {
         //given
         Member member = Member.createNewMember("userA", "pA", "userA@naver.com", "nicknameA");
@@ -166,18 +164,18 @@ class PostRepositoryTest {
         memberRepository.save(member2);
 
         for (int i = 1; i <= 100; i++) {
-            Member writer = member;
-            if (i % 2 == 0) writer = member2;
-            Post post = Post.writeNewPost("title" + i, "content" + i, writer);
+            Post post;
+            if (i % 2 != 0) post = member.writeNewPost("title" + i, "content" + i);
+            else post = member2.writeNewPost("title" + i, "content" + i);
             postRepository.save(post);
         }
 
         SearchCond usernameCond = SearchCond.builder()
-                .username("user")
+                .writer("user")
                 .build();
 
         SearchCond usernameCond2 = SearchCond.builder()
-                .username("userB")
+                .writer("userB")
                 .build();
 
         SearchCond titleCond = SearchCond.builder()
@@ -234,18 +232,18 @@ class PostRepositoryTest {
         memberRepository.save(member2);
 
         for (int i = 1; i <= 100; i++) {
-            Member writer = member;
-            if (i % 2 == 0) writer = member2;
-            Post post = Post.writeNewPost("title" + i, "content" + i, writer);
+            Post post;
+            if (i % 2 != 0) post = member.writeNewPost("title" + i, "content" + i);
+            else post = member2.writeNewPost("title" + i, "content" + i);
             postRepository.save(post);
         }
 
         SearchCond usernameCond = SearchCond.builder()
-                .username("user")
+                .writer("user")
                 .build();
 
         SearchCond usernameCond2 = SearchCond.builder()
-                .username("userA")
+                .writer("userA")
                 .build();
 
         SearchCond titleCond = SearchCond.builder()

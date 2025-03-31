@@ -30,22 +30,6 @@ public class Post extends BaseTimeEntity {
     @OneToMany(mappedBy = "post")
     private List<Comment> comments = new ArrayList<>();
 
-    public static Post writeNewPost(String title, String content, Member writer) {
-        if (title == null) throw new NullPointerException("writeNewPost: title == null");
-        if (content == null) throw new NullPointerException("writeNewPost: content == null");
-        if (writer == null) throw new NullPointerException("writeNewPost: writer == null");
-
-        Post post = Post.builder()
-                .title(title)
-                .content(content)
-                .writer(writer)
-                .build();
-
-        writer.getPosts().add(post);
-
-        return post;
-    }
-
     public void updateTitle(String newTitle) {
         if (newTitle == null) throw new NullPointerException("updateTitle: newTitle == null");
         this.title = newTitle;

@@ -81,6 +81,22 @@ public class Member extends BaseTimeEntity {
         }
     }
 
+    public Post writeNewPost(String title, String content) {
+        if (title == null) throw new NullPointerException("writeNewPost: title == null");
+        if (content == null) throw new NullPointerException("writeNewPost: content == null");
+
+        Post post = Post.builder()
+                .title(title)
+                .content(content)
+                .writer(this)
+                .build();
+
+        this.getPosts().add(post);
+
+        return post;
+    }
+
+
     public static boolean validateEmailFormat(String email) {
         if (email == null) {
             return true;

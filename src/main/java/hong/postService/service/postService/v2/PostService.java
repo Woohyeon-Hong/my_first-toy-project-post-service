@@ -39,7 +39,7 @@ public class PostService {
     }
 
     @Transactional
-    public void update(Long id, PostUpdateDto updateParam) {
+    public void update(Long id, PostUpdateRequest updateParam) {
         Post post = postRepository.findById(id).orElseThrow(()
                 -> new IllegalArgumentException("update: 해당하는 id가 없음."));
 

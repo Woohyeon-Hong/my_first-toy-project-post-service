@@ -1,7 +1,7 @@
 package hong.postService.service.postService.v1;
 
 import hong.postService.domain.Post;
-import hong.postService.service.postService.v2.PostUpdateDto;
+import hong.postService.service.postService.v2.PostUpdateRequest;
 
 import java.util.List;
 
@@ -17,7 +17,7 @@ public interface PostService {
 
     List<Post> searchTitle(String title);
 
-    Post updatePost(Long id, PostUpdateDto updateParam);
+    Post updatePost(Long id, PostUpdateRequest updateParam);
 
     List<Post> showMemberPostsWithPaging (Long memberId, int page, int size);
 

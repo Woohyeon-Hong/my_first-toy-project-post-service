@@ -175,4 +175,28 @@ class MemberTest {
         assertThat(member.getPassword()).isEqualTo("new");
         assertThatThrownBy(() -> member.changePassword(nullPassword));
     }
+
+    //연관관계 편의 메소드가 정상 작동했는지에 대해서는 테스트하지 않는다.
+    @Test
+    void writeNewPostWithoutJPA() {
+        //given
+        Member member = Member.createNewMember("username", "password", null, "nickname");
+        Post post = Post.builder()
+                .title("title")
+                .content("content")
+                .writer(member)
+                .build();
+
+        //when
+        Post createdPost = member.writeNewPost(post.getTitle(), post.getContent());
+
+        //then
+        assertThat(createdPost.getTitle()).isEqualTo(post.getTitle());
+        assertThat(createdPost.getContent()).isEqualTo(post.getContent());
+        assertThat(createdPost.getWriter()).isEqualTo(post.getWriter());
+        assertThat(createdPost.getId()).isNull();
+
+        assertThatThrownBy(() -> member.writeNewPost(null, "content")).isInstanceOf(NullPointerException.class);
+        assertThatThrownBy(() -> member.writeNewPost("title", null)).isInstanceOf(NullPointerException.class);
+    }
 }

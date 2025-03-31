@@ -34,7 +34,7 @@ class CommentRepositoryTest {
         Member member = Member.createNewMember("user", "p", "e@naver.com", "nickname");
         memberRepository.save(member);
 
-        Post post1 = Post.writeNewPost("title1", "content1", member);
+        Post post1 = member.writeNewPost("title1", "content1");
         postRepository.save(post1);
 
         Comment comment = Comment.writeComment("content", member, post1);
@@ -63,8 +63,8 @@ class CommentRepositoryTest {
         Member member = Member.createNewMember("user", "p", "e@naver.com", "nickname");
         memberRepository.save(member);
 
-        Post post1 = Post.writeNewPost("title1", "content1", member);
-        Post post2 = Post.writeNewPost("title2", "content2", member);
+        Post post1 = member.writeNewPost("title1", "content1");
+        Post post2 = member.writeNewPost("title2", "content2");
         postRepository.save(post1);
         postRepository.save(post2);
 
@@ -96,8 +96,8 @@ class CommentRepositoryTest {
         Member member = Member.createNewMember("user", "p", "e@naver.com", "nickname");
         memberRepository.save(member);
 
-        Post post1 = Post.writeNewPost("title1", "content1", member);
-        Post post2 = Post.writeNewPost("title2", "content2", member);
+        Post post1 = member.writeNewPost("title1", "content1");
+        Post post2 = member.writeNewPost("title2", "content2");
         postRepository.save(post1);
         postRepository.save(post2);
 
@@ -139,7 +139,7 @@ class CommentRepositoryTest {
         Member member = Member.createNewMember("user", "p", "e@naver.com", "nickname");
         memberRepository.save(member);
 
-        Post post = Post.writeNewPost("title", "content", member);
+        Post post = member.writeNewPost("title", "content");
         postRepository.save(post);
 
         Comment comment1 = Comment.writeComment("content", member, post);
@@ -180,7 +180,7 @@ class CommentRepositoryTest {
         Member member = Member.createNewMember("user", "p", "e@naver.com", "nickname");
         memberRepository.save(member);
 
-        Post post = Post.writeNewPost("title", "content", member);
+        Post post = member.writeNewPost("title", "content");
         postRepository.save(post);
 
         Comment comment1 = Comment.writeComment("content", member, post);

@@ -7,36 +7,11 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class PostTest {
 
-    //연관관계 편의 메소드가 정상 작동했는지에 대해서는 테스트하지 않는다.
-    @Test
-    void writeNewPostWithoutJPA() {
-        //given
-        Member member = Member.createNewMember("username", "password", null, "nickname");
-        Post post = Post.builder()
-                .title("title")
-                .content("content")
-                .writer(member)
-                .build();
-
-        //when
-        Post createdPost = Post.writeNewPost(post.getTitle(), post.getContent(), post.getWriter());
-
-        //then
-        assertThat(createdPost.getTitle()).isEqualTo(post.getTitle());
-        assertThat(createdPost.getContent()).isEqualTo(post.getContent());
-        assertThat(createdPost.getWriter()).isEqualTo(post.getWriter());
-        assertThat(createdPost.getId()).isNull();
-
-        assertThatThrownBy(() -> Post.writeNewPost(null, "content", member)).isInstanceOf(NullPointerException.class);
-        assertThatThrownBy(() -> Post.writeNewPost("title", null, member)).isInstanceOf(NullPointerException.class);
-        assertThatThrownBy(() -> Post.writeNewPost("title", "content", null)).isInstanceOf(NullPointerException.class);
-    }
-
     @Test
     void updateTitle() {
         //given
         Member member = Member.createNewMember("username", "password", null, "nickname");
-        Post post = Post.writeNewPost("old", "content", member);
+        Post post = member.writeNewPost("old", "content");
 
         //when
         post.updateTitle("new");
@@ -50,7 +25,7 @@ class PostTest {
     void updateContent() {
         //given
         Member member = Member.createNewMember("username", "password", null, "nickname");
-        Post post = Post.writeNewPost("title", "old", member);
+        Post post = member.writeNewPost("title", "old");
 
         //when
         post.updateContent("new");

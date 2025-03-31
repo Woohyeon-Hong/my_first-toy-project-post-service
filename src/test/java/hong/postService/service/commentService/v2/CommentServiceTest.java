@@ -4,8 +4,6 @@ import hong.postService.domain.Comment;
 import hong.postService.domain.Member;
 import hong.postService.domain.Post;
 import hong.postService.repository.commentRepository.v2.CommentRepository;
-import hong.postService.repository.memberRepository.v2.MemberRepository;
-import hong.postService.repository.postRepository.v2.PostRepository;
 import hong.postService.service.memberService.v2.MemberService;
 import hong.postService.service.postService.v2.PostService;
 import org.assertj.core.api.Assertions;
@@ -20,7 +18,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
 @Transactional
@@ -40,7 +37,7 @@ class CommentServiceTest {
         Member member = Member.createNewMember("user", "p", "e@naver.com", "nickname");
         memberService.signUp(member);
 
-        Post post1 = Post.writeNewPost("title1", "content1", member);
+        Post post1 = member.writeNewPost("title1", "content1");
         postService.write(post1);
 
         Comment comment = Comment.writeComment("content", member, post1);
@@ -64,8 +61,8 @@ class CommentServiceTest {
         Member member = Member.createNewMember("user", "p", "e@naver.com", "nickname");
         memberService.signUp(member);
 
-        Post post1 = Post.writeNewPost("title1", "content1", member);
-        Post post2 = Post.writeNewPost("title2", "content2", member);
+        Post post1 = member.writeNewPost("title1", "content1");
+        Post post2 = member.writeNewPost("title2", "content2");
         postService.write(post1);
         postService.write(post2);
 
@@ -95,8 +92,8 @@ class CommentServiceTest {
         Member member = Member.createNewMember("user", "p", "e@naver.com", "nickname");
         memberService.signUp(member);
 
-        Post post1 = Post.writeNewPost("title1", "content1", member);
-        Post post2 = Post.writeNewPost("title2", "content2", member);
+        Post post1 = member.writeNewPost("title1", "content1");
+        Post post2 = member.writeNewPost("title2", "content2");
         postService.write(post1);
         postService.write(post2);
 
@@ -138,7 +135,7 @@ class CommentServiceTest {
         Member member = Member.createNewMember("user", "p", "e@naver.com", "nickname");
         memberService.signUp(member);
 
-        Post post = Post.writeNewPost("title", "content", member);
+        Post post = member.writeNewPost("title", "content");
         postService.write(post);
 
         Comment comment1 = Comment.writeComment("content", member, post);
@@ -177,7 +174,7 @@ class CommentServiceTest {
         Member member = Member.createNewMember("user", "p", "e@naver.com", "nickname");
         memberService.signUp(member);
 
-        Post post = Post.writeNewPost("title", "content", member);
+        Post post = member.writeNewPost("title", "content");
         postService.write(post);
 
         Comment comment1 = Comment.writeComment("content", member, post);
@@ -228,7 +225,7 @@ class CommentServiceTest {
         Member member = Member.createNewMember("user", "p", "e@naver.com", "nickname");
         memberService.signUp(member);
 
-        Post post1 = Post.writeNewPost("title1", "content1", member);
+        Post post1 = member.writeNewPost("title1", "content1");
         postService.write(post1);
 
         Comment comment = Comment.writeComment("content", member, post1);
