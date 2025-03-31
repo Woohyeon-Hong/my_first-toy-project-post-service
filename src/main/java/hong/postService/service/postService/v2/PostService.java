@@ -1,6 +1,8 @@
 package hong.postService.service.postService.v2;
 
+import hong.postService.domain.Member;
 import hong.postService.domain.Post;
+import hong.postService.repository.memberRepository.v2.MemberRepository;
 import hong.postService.repository.postRepository.v2.PostRepository;
 import hong.postService.repository.postRepository.v2.SearchCond;
 import lombok.RequiredArgsConstructor;
@@ -9,16 +11,24 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class PostService {
 
+    private final MemberRepository memberRepository;
     private final PostRepository postRepository;
 
     @Transactional
-    public Long write(Post post) {
+    public Long write(Long memberId, String title, String content) {
+
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new IllegalArgumentException("write: 해당 id가 없음."));
+
+        Post post = member.writeNewPost(title, content);
         Post saved = postRepository.save(post);
+
         return saved.getId();
     }
 

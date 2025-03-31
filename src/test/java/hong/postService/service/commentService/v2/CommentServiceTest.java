@@ -4,6 +4,8 @@ import hong.postService.domain.Comment;
 import hong.postService.domain.Member;
 import hong.postService.domain.Post;
 import hong.postService.repository.commentRepository.v2.CommentRepository;
+import hong.postService.repository.memberRepository.v2.MemberRepository;
+import hong.postService.repository.postRepository.v2.PostRepository;
 import hong.postService.service.memberService.v2.MemberService;
 import hong.postService.service.postService.v2.PostService;
 import org.assertj.core.api.Assertions;
@@ -29,49 +31,64 @@ class CommentServiceTest {
     @Autowired
     MemberService memberService;
     @Autowired
+    MemberRepository memberRepository;
+    @Autowired
     PostService postService;
+    @Autowired
+    PostRepository postRepository;
 
     @Test
     void write() {
         //given
-        Member member = Member.createNewMember("user", "p", "e@naver.com", "nickname");
-        memberService.signUp(member);
+        Long id = memberService.signUp("user", "p", "e@naver.com", "nickname");
+        Member member = memberRepository.findById(id).orElseThrow();
 
-        Post post1 = member.writeNewPost("title1", "content1");
-        postService.write(post1);
-
-        Comment comment = post1.writeComment("content", member);
-        Comment reply = comment.writeReply("content2");
+        Long postId = postService.write(id, "title1", "content1");
+        Post post1 = postRepository.findById(postId).orElseThrow();
 
         //when
-        Long commentId = commentService.write(comment);
-        Long replyId = commentService.write(reply);
+        Long commentId = commentService.write(postId, id, "content");
 
         //then
-        Comment findComment = commentRepository.findById(commentId).orElseThrow();
-        Comment findReply = commentRepository.findById(replyId).orElseThrow();
+        Comment comment = commentRepository.findById(commentId).orElseThrow();
 
-        Assertions.assertThat(findComment).isEqualTo(comment);
-        Assertions.assertThat(findReply).isEqualTo(reply);
+        Assertions.assertThat(comment.getContent()).isEqualTo("content");
+    }
+
+    @Test
+    void writeReply() {
+        //given
+        Long id = memberService.signUp("user", "p", "e@naver.com", "nickname");
+        Member member = memberRepository.findById(id).orElseThrow();
+
+        Long postId = postService.write(id, "title1", "content1");
+        Post post1 = postRepository.findById(postId).orElseThrow();
+
+        Long commentId = commentService.write(postId, id, "content");
+
+        //when
+        Long replyId = commentService.writeReply(commentId, id, "content");
+
+        //then
+        Comment reply = commentRepository.findById(replyId).orElseThrow();
+
+        Assertions.assertThat(reply.getContent()).isEqualTo("content");
     }
 
     @Test
     void getCommentsByPostWithoutPaging() {
         //given
-        Member member = Member.createNewMember("user", "p", "e@naver.com", "nickname");
-        memberService.signUp(member);
+        Long id = memberService.signUp("user", "p", "e@naver.com", "nickname");
+        Member member = memberRepository.findById(id).orElseThrow();
 
-        Post post1 = member.writeNewPost("title1", "content1");
-        Post post2 = member.writeNewPost("title2", "content2");
-        postService.write(post1);
-        postService.write(post2);
+        Long postId = postService.write(id, "title1", "content1");
+        Post post1 = postRepository.findById(postId).orElseThrow();
+        Long postId2 = postService.write(id, "title2", "content2");
+        Post post2 = postRepository.findById(postId2).orElseThrow();
 
         for (int i = 1; i <= 50; i++) {
-            Post post = post1;
-            if (i % 2 == 0) post = post2;
-
-            Comment comment = post.writeComment("title" + i, member);
-            commentService.write(comment);
+            if (i % 2 != 0)  commentService.write(post1.getId(), member.getId(), "title" + i);
+            else  commentService.write(post2.getId(), member.getId(), "title" + i);
         }
 
         //when
@@ -89,20 +106,17 @@ class CommentServiceTest {
     @Test
     void getCommentsByPostWithPaging() {
         //given
-        Member member = Member.createNewMember("user", "p", "e@naver.com", "nickname");
-        memberService.signUp(member);
+        Long id = memberService.signUp("user", "p", "e@naver.com", "nickname");
+        Member member = memberRepository.findById(id).orElseThrow();
 
-        Post post1 = member.writeNewPost("title1", "content1");
-        Post post2 = member.writeNewPost("title2", "content2");
-        postService.write(post1);
-        postService.write(post2);
+        Long postId = postService.write(id, "title1", "content1");
+        Post post1 = postRepository.findById(postId).orElseThrow();
+        Long postId2 = postService.write(id, "title2", "content2");
+        Post post2 = postRepository.findById(postId2).orElseThrow();
 
         for (int i = 1; i <= 50; i++) {
-            Post post = post1;
-            if (i % 2 == 0) post = post2;
-
-            Comment comment = post.writeComment("content" + i, member);
-            commentRepository.save(comment);
+            if (i % 2 != 0)  commentService.write(post1.getId(), member.getId(), "content" + i);
+            else  commentService.write(post2.getId(), member.getId(), "content" + i);
         }
 
         PageRequest pageable1 = PageRequest.of(0, 5, Sort.by(Sort.Direction.ASC, "createdDate"));
@@ -132,25 +146,21 @@ class CommentServiceTest {
     @Test
     void getCommentsByParentCommentWithoutPaging() {
         //given
-        Member member = Member.createNewMember("user", "p", "e@naver.com", "nickname");
-        memberService.signUp(member);
+        Long id = memberService.signUp("user", "p", "e@naver.com", "nickname");
+        Member member = memberRepository.findById(id).orElseThrow();
 
-        Post post = member.writeNewPost("title", "content");
-        postService.write(post);
+        Long postId = postService.write(id, "title1", "content1");
+        Post post = postRepository.findById(postId).orElseThrow();
 
-        Comment comment1 = post.writeComment("content", member);
-        commentService.write(comment1);
+        Long commentId = commentService.write(postId, id, "content");
+        Comment comment1 = commentRepository.findById(commentId).orElseThrow();
 
-        Comment comment2 = post.writeComment("content2", member);
-        commentService.write(comment2);
+        Long commentId2 = commentService.write(postId, id, "content2");
+        Comment comment2 = commentRepository.findById(commentId2).orElseThrow();
 
         for (int i = 1; i <= 50; i++) {
-
-            Comment comment = comment1;
-            if (i % 2 == 0) comment = comment2;
-
-            Comment reply = comment.writeReply("content" + i);
-            commentService.write(reply);
+            if (i % 2 != 0) commentService.writeReply(commentId, id, "content" + i);
+            else commentService.writeReply(commentId2, id, "content" + i);
         }
 
         //when
@@ -171,25 +181,20 @@ class CommentServiceTest {
     @Test
     void getCommentsByParentCommentWithPaging() {
         //given
-        Member member = Member.createNewMember("user", "p", "e@naver.com", "nickname");
-        memberService.signUp(member);
+        Long id = memberService.signUp("user", "p", "e@naver.com", "nickname");
+        Member member = memberRepository.findById(id).orElseThrow();
 
-        Post post = member.writeNewPost("title", "content");
-        postService.write(post);
+        Long postId = postService.write(id, "title1", "content1");
 
-        Comment comment1 = post.writeComment("content", member);
-        commentService.write(comment1);
+        Long commentId1 = commentService.write(postId, id, "content");
+        Comment comment1 = commentRepository.findById(commentId1).orElseThrow();
 
-        Comment comment2 = post.writeComment("content2", member);
-        commentService.write(comment2);
+        Long commentId2 = commentService.write(postId, id, "content2");
+        Comment comment2 = commentRepository.findById(commentId2).orElseThrow();
 
         for (int i = 1; i <= 50; i++) {
-
-            Comment comment = comment1;
-            if (i % 2 == 0) comment = comment2;
-
-            Comment reply = comment.writeReply("content" + i);
-            commentService.write(reply);
+            if (i % 2 != 0) commentService.writeReply(commentId1, id, "content" + i);
+            else commentService.writeReply(commentId2, id, "content" + i);
         }
 
         PageRequest pageable1 = PageRequest.of(0, 5, Sort.by(Sort.Direction.ASC, "createdDate"));
@@ -222,17 +227,18 @@ class CommentServiceTest {
     @Test
     void delete() {
         //given
-        Member member = Member.createNewMember("user", "p", "e@naver.com", "nickname");
-        memberService.signUp(member);
+        Long id = memberService.signUp("user", "p", "e@naver.com", "nickname");
+        Member member = memberRepository.findById(id).orElseThrow();
 
-        Post post1 = member.writeNewPost("title1", "content1");
-        postService.write(post1);
+        Long postId = postService.write(id, "title1", "content1");
+        Post post1 = postRepository.findById(postId).orElseThrow();
 
-        Comment comment = post1.writeComment("content", member);
-        Comment reply = comment.writeReply("content2");
 
-        commentService.write(comment);
-        commentService.write(reply);
+        Long commentId = commentService.write(postId, id, "content");
+        Long replyId = commentService.writeReply(commentId, id, "content2");
+
+        Comment comment = commentRepository.findById(commentId).orElseThrow();
+        Comment reply = commentRepository.findById(replyId).orElseThrow();
 
         //when
         comment.remove();

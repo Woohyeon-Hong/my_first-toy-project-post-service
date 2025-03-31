@@ -37,14 +37,15 @@ class PostServiceTest {
         Member writer = Member.createNewMember("user", "p", "e@naver.com", "nickname");
         memberRepository.save(writer);
 
-        Post post = writer.writeNewPost("title1", "content1");
-
         //when
-        Long savedId = postService.write(post);
+        Long savedId = postService.write(writer.getId(), "title1", "content1");
 
         //then
-        Post findPost = postRepository.findById(savedId).orElseThrow();
-        assertThat(findPost).isEqualTo(post);
+        Post post = postRepository.findById(savedId).orElseThrow();
+
+        assertThat(post.getTitle()).isEqualTo("title1");
+        assertThat(post.getContent()).isEqualTo("content1");
+        assertThat(post.getWriter()).isEqualTo(writer);
     }
 
     @Test
@@ -53,8 +54,8 @@ class PostServiceTest {
         Member writer = Member.createNewMember("user", "p", "e@naver.com", "nickname");
         memberRepository.save(writer);
 
-        Post post = writer.writeNewPost("title1", "content1");
-        Long savedId = postService.write(post);
+        Long savedId = postService.write(writer.getId(), "title1", "content1");
+        Post post = postRepository.findById(savedId).orElseThrow();
 
         //when
         postService.delete(savedId);
@@ -71,8 +72,7 @@ class PostServiceTest {
         memberRepository.save(writer);
 
         for (int i = 1; i <= 50; i++) {
-            Post post = writer.writeNewPost("title" + i, "content" + i);
-            postService.write(post);
+            postService.write(writer.getId(), "title" + i, "content" + i);
         }
 
         PageRequest pageRequest1 = PageRequest.of(0, 25, Sort.by(Sort.Direction.ASC, "createdDate"));
@@ -100,10 +100,8 @@ class PostServiceTest {
         memberRepository.save(member2);
 
         for (int i = 1; i <= 100; i++) {
-            Post post;
-            if (i % 2 != 0) post = member.writeNewPost("title" + i, "content" + i);
-            else post = member2.writeNewPost("title" + i, "content" + i);
-            postRepository.save(post);
+            if (i % 2 != 0) postService.write(member.getId(), "title" + i, "content" + i);
+            else postService.write(member2.getId(), "title" + i, "content" + i);
         }
 
         SearchCond usernameCond = SearchCond.builder()
@@ -164,8 +162,7 @@ class PostServiceTest {
         Member writer = Member.createNewMember("user", "p", "e@naver.com", "nickname");
         memberRepository.save(writer);
 
-        Post post = writer.writeNewPost("title1", "content1");
-        Long savedId = postService.write(post);
+        Long savedId = postService.write(writer.getId(), "title1", "content1");
 
         String newTitle = "newTitle";
         String newContent = "newContent";

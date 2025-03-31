@@ -86,30 +86,32 @@ class MemberServiceTest {
 
     @Test
     void signUpMember() {
-        //given
-        Member member1 = Member.createNewMember("user1", "p1", "u1@naver.com", "n1");
-        Member member2 = Member.createNewMember("user2", "p2", "u2@naver.com", "n2");
-        Member member3 = Member.createNewMember("user2", "p3", "u3@naver.com", "n3");
-
         //when
-        memberService.signUp(member1);
-        memberService.signUp(member2);
+        Long id1 = memberService.signUp("user1", "p1", "u1@naver.com", "n1");
+        Long id2 = memberService.signUp("user2", "p2", "u2@naver.com", "n2");
 
         //then
+        Member member1 = memberRepository.findById(id1).orElseThrow();
+        Member member2 = memberRepository.findById(id2).orElseThrow();
+
         List<Member> members = memberRepository.findAll();
+
         assertThat(members).containsExactly(member1, member2);
-        assertThatThrownBy(() -> memberService.signUp(member3)).isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> memberService.signUp("user2", "p3", "u3@naver.com", "n3"))
+                .isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
     void unregister() {
         //given
-        Member member1 = Member.createNewMember("user1", "p1", "u1@naver.com", "n1");
-        Member member2 = Member.createNewMember("user2", "p2", "u2@naver.com", "n2");
-        Member member3 = Member.createNewMember("user3", "p3", "u3@naver.com", "n3");
-        memberService.signUp(member1);
-        memberService.signUp(member2);
-        memberService.signUp(member3);
+        Long id1 = memberService.signUp("user1", "p1", "u1@naver.com", "n1");
+        Long id2 = memberService.signUp("user2", "p2", "u2@naver.com", "n2");
+        Long id3 = memberService.signUp("user3", "p3", "u3@naver.com", "n3");
+
+        Member member1 = memberRepository.findById(id1).orElseThrow();
+        Member member2 = memberRepository.findById(id2).orElseThrow();
+        Member member3 = memberRepository.findById(id3).orElseThrow();
+
 
         //when
         memberService.unregister(member1.getId());
@@ -126,10 +128,11 @@ class MemberServiceTest {
     @Test
     void updateInfo() {
         //given
-        Member member1 = Member.createNewMember("user1", "p1", "u1@naver.com", "n1");
-        Member member2 = Member.createNewMember("user2", "p2", "u2@naver.com", "n2");
-        memberService.signUp(member1);
-        memberService.signUp(member2);
+        Long id1 = memberService.signUp("user1", "p1", "u1@naver.com", "n1");
+        Long id2 = memberService.signUp("user2", "p2", "u2@naver.com", "n2");
+
+        Member member1 = memberRepository.findById(id1).orElseThrow();
+        Member member2 = memberRepository.findById(id2).orElseThrow();
 
         MemberUpdateDto updateParam = MemberUpdateDto.builder()
                 .username("newUsername")
@@ -169,10 +172,11 @@ class MemberServiceTest {
     @Test
     void updatePassword() {
         //given
-        Member member1 = Member.createNewMember("user1", "p1", "u1@naver.com", "n1");
-        Member member2 = Member.createNewMember("user2", "p2", "u2@naver.com", "n2");
-        memberService.signUp(member1);
-        memberService.signUp(member2);
+        Long id1 = memberService.signUp("user1", "p1", "u1@naver.com", "n1");
+        Long id2 = memberService.signUp("user2", "p2", "u2@naver.com", "n2");
+
+        Member member1 = memberRepository.findById(id1).orElseThrow();
+        Member member2 = memberRepository.findById(id2).orElseThrow();
 
         String p1 = "newPassword";
         String p2 = null;
@@ -199,8 +203,9 @@ class MemberServiceTest {
     @Test
     void baseEntity() {
         //given
-        Member member = Member.createNewMember("username", "password", null, "nickname");
-        memberRepository.save(member);
+        Long id = memberService.signUp("user1", "p1", "u1@naver.com", "n1");
+
+        Member member = memberRepository.findById(id).orElseThrow();
 
         LocalDateTime oldCreatedDate = member.getCreatedDate();
         LocalDateTime oldLastModifiedDate = member.getLastModifiedDate();

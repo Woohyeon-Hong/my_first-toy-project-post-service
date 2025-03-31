@@ -38,7 +38,7 @@ class CommentRepositoryTest {
         postRepository.save(post1);
 
         Comment comment = post1.writeComment("content", member);
-        Comment reply = comment.writeReply("content2");
+        Comment reply = comment.writeReply("content", member);
 
         //when
         commentRepository.save(comment);
@@ -153,7 +153,7 @@ class CommentRepositoryTest {
             Comment comment = comment1;
             if (i % 2 == 0) comment = comment2;
 
-            Comment reply = comment.writeReply("content" + i);
+            Comment reply = comment.writeReply("content" + i, member);
             commentRepository.save(reply);
 
             if (i == 25 || i == 50) reply.remove();
@@ -194,7 +194,7 @@ class CommentRepositoryTest {
             Comment comment = comment1;
             if (i % 2 == 0) comment = comment2;
 
-            Comment reply = comment.writeReply("content" + i);
+            Comment reply = comment.writeReply("content" + i, member);
             commentRepository.save(reply);
         }
 

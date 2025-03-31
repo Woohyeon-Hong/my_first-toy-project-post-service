@@ -39,13 +39,14 @@ public class Comment extends BaseTimeEntity {
     private List<Comment> childComments = new ArrayList<>();
 
 //생성---------------------------------------------------------------------------------------------------
-    public Comment writeReply(String content) {
+    public Comment writeReply(String content, Member writer) {
         if (content == null) throw new NullPointerException("writeReply: content == null");
+        if (writer == null) throw new NullPointerException("writeComment: writer == null");
 
         Comment childComment = Comment.builder()
                 .content(content)
                 .isRemoved(false)
-                .writer(this.writer)
+                .writer(writer)
                 .post(this.post)
                 .parentComment(this)
                 .build();
@@ -63,7 +64,7 @@ public class Comment extends BaseTimeEntity {
     }
 
     public void remove() {
-        if (isRemoved == true) throw new IllegalStateException("remove: 이미 삭제되어 있음.");
+        if (isRemoved) throw new IllegalStateException("remove: 이미 삭제되어 있음.");
         this.isRemoved = true;
     }
 }

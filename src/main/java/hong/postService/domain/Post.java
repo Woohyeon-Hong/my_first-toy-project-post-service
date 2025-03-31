@@ -44,7 +44,6 @@ public class Post extends BaseTimeEntity {
 
 //Comment 작성---------------------------------------------------------------------------------------------------
 
-
     public  Comment writeComment(String content, Member writer) {
 
         if (content == null) throw new NullPointerException("writeComment: content == null");
