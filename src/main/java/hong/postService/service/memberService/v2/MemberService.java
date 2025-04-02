@@ -47,6 +47,11 @@ public class MemberService {
         return saved.getId();
     }
 
+    public Member findMember(Long id) {
+        return memberRepository.findById(id)
+                .orElseThrow(() -> new NoSuchElementException("unregister: 해당 id가 없습니다."));
+    }
+
     @Transactional
     public void unregister(Long id) {
         Member findMember = findMember(id);
@@ -104,10 +109,6 @@ public class MemberService {
     }
 
 //내부 로직-------------------------------------------------------------------------
-    private Member findMember(Long id) {
-        return memberRepository.findById(id)
-                .orElseThrow(() -> new NoSuchElementException("unregister: 해당 id가 없습니다."));
-    }
 
     private void changeUsername(Member member, String username) {
         if (username != null && !username.equals(member.getUsername())) {
