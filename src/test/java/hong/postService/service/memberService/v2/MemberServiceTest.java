@@ -1,6 +1,7 @@
 package hong.postService.service.memberService.v2;
 
 import hong.postService.domain.Member;
+import hong.postService.domain.UserRole;
 import hong.postService.repository.memberRepository.v2.MemberRepository;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.Test;
@@ -94,6 +95,29 @@ class MemberServiceTest {
         Member member2 = memberRepository.findById(id2).orElseThrow();
 
         List<Member> members = memberRepository.findAll();
+
+        assertThat(member1.getRole()).isEqualTo(UserRole.USER);
+        assertThat(member2.getRole()).isEqualTo(UserRole.USER);
+
+        assertThat(members).containsExactly(member1, member2);
+        assertThatThrownBy(() -> memberService.signUp("user2", "p3", "u3@naver.com", "n3"))
+                .isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
+    void signUpAdmin() {
+        //when
+        Long id1 = memberService.signUpAdmin("user1", "p1", "u1@naver.com", "n1");
+        Long id2 = memberService.signUpAdmin("user2", "p2", "u2@naver.com", "n2");
+
+        //then
+        Member member1 = memberRepository.findById(id1).orElseThrow();
+        Member member2 = memberRepository.findById(id2).orElseThrow();
+
+        List<Member> members = memberRepository.findAll();
+
+        assertThat(member1.getRole()).isEqualTo(UserRole.ADMIN);
+        assertThat(member2.getRole()).isEqualTo(UserRole.ADMIN);
 
         assertThat(members).containsExactly(member1, member2);
         assertThatThrownBy(() -> memberService.signUp("user2", "p3", "u3@naver.com", "n3"))

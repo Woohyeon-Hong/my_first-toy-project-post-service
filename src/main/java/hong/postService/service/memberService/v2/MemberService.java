@@ -33,6 +33,21 @@ public class MemberService {
     }
 
     @Transactional
+    public Long signUpAdmin(String username, String password, String email, String nickname) {
+
+        usernameValidate(username);
+        passwordValidate(password);
+        emailValidate(email);
+        nicknameValidate(nickname);
+
+        Member member = Member.createNewAdmin(username, password, email, nickname);
+
+        Member saved = memberRepository.save(member);
+
+        return saved.getId();
+    }
+
+    @Transactional
     public void unregister(Long id) {
         Member findMember = findMember(id);
         memberRepository.delete(findMember);
