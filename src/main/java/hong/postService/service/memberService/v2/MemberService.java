@@ -2,6 +2,7 @@ package hong.postService.service.memberService.v2;
 
 import hong.postService.domain.Member;
 import hong.postService.repository.memberRepository.v2.MemberRepository;
+import hong.postService.web.members.dto.MemberResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -50,6 +51,11 @@ public class MemberService {
     public Member findMember(Long id) {
         return memberRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("unregister: 해당 id가 없습니다."));
+    }
+
+    public MemberResponse getMemberResponse(Long memberId) {
+        Member member = findMember(memberId);
+        return MemberResponse.from(member);
     }
 
     @Transactional
