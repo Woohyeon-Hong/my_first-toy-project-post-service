@@ -91,6 +91,33 @@ class PostServiceTest {
     }
 
     @Test
+    void getMemberPosts() {
+        //given
+        Member member = Member.createNewMember("userA", "pA", "userA@naver.com", "nicknameA");
+        memberRepository.save(member);
+
+        Member member2 = Member.createNewMember("userB", "pB", "userB@naver.com", "nicknameB");
+        memberRepository.save(member2);
+
+        for (int i = 1; i <= 100; i++) {
+            if (i % 2 != 0) postService.write(member.getId(), "title" + i, "content" + i);
+            else postService.write(member2.getId(), "title" + i, "content" + i);
+        }
+
+        PageRequest pageRequest = PageRequest.of(0, 10, Sort.by(Sort.Direction.ASC, "createdDate"));
+
+        //when
+        Page<Post> posts = postService.getMemberPosts(member.getId(), pageRequest);
+        Page<Post> posts2 = postService.getMemberPosts(member2.getId(), pageRequest);
+
+        //then
+        assertThat(posts.getSize()).isEqualTo(10);
+        assertThat(posts2.getSize()).isEqualTo(10);
+        assertThat(posts.getTotalPages()).isEqualTo(5);
+        assertThat(posts2.getTotalPages()).isEqualTo(5);
+    }
+
+    @Test
     void search() {
         //given
         Member member = Member.createNewMember("userA", "pA", "userA@naver.com", "nicknameA");

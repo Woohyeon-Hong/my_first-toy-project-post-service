@@ -48,6 +48,11 @@ public class PostService {
         return postRepository.searchPosts(cond, pageable);
     }
 
+    public Page<Post> getMemberPosts(Long memberId, Pageable pageable) {
+        Member member = memberRepository.findById(memberId).orElseThrow(() -> new IllegalArgumentException("getMemberPosts: 해당 memberId가 없음."));
+        return postRepository.findAllByWriter(member, pageable);
+    }
+
     @Transactional
     public void update(Long id, PostUpdateRequest updateParam) {
         Post post = postRepository.findById(id).orElseThrow(()
