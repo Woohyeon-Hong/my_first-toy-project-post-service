@@ -5,6 +5,7 @@ import hong.postService.domain.Post;
 import hong.postService.repository.memberRepository.v2.MemberRepository;
 import hong.postService.repository.postRepository.v2.PostRepository;
 import hong.postService.repository.postRepository.v2.SearchCond;
+import hong.postService.service.postService.dto.PostSummaryResponse;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -79,8 +80,8 @@ class PostServiceTest {
         PageRequest pageRequest2 = PageRequest.of(1, 25, Sort.by(Sort.Direction.ASC, "createdDate"));
 
         //when
-        Page<Post> posts1 = postService.getPosts(pageRequest1);
-        Page<Post> posts2 = postService.getPosts(pageRequest2);
+        Page<PostSummaryResponse> posts1 = postService.getPosts(pageRequest1);
+        Page<PostSummaryResponse> posts2 = postService.getPosts(pageRequest2);
 
         //then
         assertThat(posts1.getTotalPages()).isEqualTo(2);
@@ -107,8 +108,8 @@ class PostServiceTest {
         PageRequest pageRequest = PageRequest.of(0, 10, Sort.by(Sort.Direction.ASC, "createdDate"));
 
         //when
-        Page<Post> posts = postService.getMemberPosts(member.getId(), pageRequest);
-        Page<Post> posts2 = postService.getMemberPosts(member2.getId(), pageRequest);
+        Page<PostSummaryResponse> posts = postService.getMemberPosts(member.getId(), pageRequest);
+        Page<PostSummaryResponse> posts2 = postService.getMemberPosts(member2.getId(), pageRequest);
 
         //then
         assertThat(posts.getSize()).isEqualTo(10);
@@ -151,16 +152,16 @@ class PostServiceTest {
         PageRequest pageable2 = PageRequest.of(1, 10, Sort.by(Sort.Direction.ASC, "createdDate"));
 
         //when
-        Page<Post> posts1 = postService.search(usernameCond, pageable);
-        Page<Post> posts2 = postService.search(usernameCond, pageable2);
+        Page<PostSummaryResponse> posts1 = postService.search(usernameCond, pageable);
+        Page<PostSummaryResponse> posts2 = postService.search(usernameCond, pageable2);
 
-        Page<Post> posts3 = postService.search(usernameCond2, pageable);
-        Page<Post> posts4 = postService.search(usernameCond2, pageable2);
+        Page<PostSummaryResponse> posts3 = postService.search(usernameCond2, pageable);
+        Page<PostSummaryResponse> posts4 = postService.search(usernameCond2, pageable2);
 
-        Page<Post> posts5 = postService.search(titleCond, pageable);
-        Page<Post> posts6 = postService.search(titleCond, pageable2);
+        Page<PostSummaryResponse> posts5 = postService.search(titleCond, pageable);
+        Page<PostSummaryResponse> posts6 = postService.search(titleCond, pageable2);
 
-        Page<Post> posts7 = postService.search(titleCond2, pageable);
+        Page<PostSummaryResponse> posts7 = postService.search(titleCond2, pageable);
 
         //then
         assertThat(posts1.getTotalPages()).isEqualTo(10);

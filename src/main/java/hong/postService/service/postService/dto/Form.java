@@ -1,4 +1,4 @@
-package hong.postService.web.posts.dto;
+package hong.postService.service.postService.dto;
 
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;

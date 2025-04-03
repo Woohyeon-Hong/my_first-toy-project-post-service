@@ -5,6 +5,7 @@ import hong.postService.domain.Post;
 import hong.postService.repository.memberRepository.v2.MemberRepository;
 import hong.postService.repository.postRepository.v2.PostRepository;
 import hong.postService.repository.postRepository.v2.SearchCond;
+import hong.postService.service.postService.dto.PostSummaryResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -40,17 +41,17 @@ public class PostService {
         postRepository.delete(post);
     }
 
-    public Page<Post> getPosts(Pageable pageable) {
-        return postRepository.findAll(pageable);
+    public Page<PostSummaryResponse> getPosts(Pageable pageable) {
+        return postRepository.findAll(pageable).map(PostSummaryResponse::from);
     }
 
-    public Page<Post> search(SearchCond cond, Pageable pageable) {
-        return postRepository.searchPosts(cond, pageable);
+    public Page<PostSummaryResponse> search(SearchCond cond, Pageable pageable) {
+        return postRepository.searchPosts(cond, pageable).map(PostSummaryResponse::from);
     }
 
-    public Page<Post> getMemberPosts(Long memberId, Pageable pageable) {
+    public Page<PostSummaryResponse> getMemberPosts(Long memberId, Pageable pageable) {
         Member member = memberRepository.findById(memberId).orElseThrow(() -> new IllegalArgumentException("getMemberPosts: 해당 memberId가 없음."));
-        return postRepository.findAllByWriter(member, pageable);
+        return postRepository.findAllByWriter(member, pageable).map(PostSummaryResponse::from);
     }
 
     @Transactional
