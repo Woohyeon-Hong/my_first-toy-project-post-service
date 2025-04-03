@@ -1,4 +1,4 @@
-package hong.postService.web.members.dto;
+package hong.postService.service.memberService.dto;
 
 import hong.postService.domain.UserRole;
 import jakarta.validation.constraints.Email;

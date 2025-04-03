@@ -3,8 +3,9 @@ package hong.postService.service.memberService.v2;
 import hong.postService.domain.Member;
 import hong.postService.repository.memberRepository.v2.MemberRepository;
 import hong.postService.service.memberService.dto.MemberUpdateInfoRequest;
+import hong.postService.service.memberService.dto.PasswordUpdateRequest;
 import hong.postService.web.members.dto.MemberResponse;
-import hong.postService.web.members.dto.UserCreateRequest;
+import hong.postService.service.memberService.dto.UserCreateRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -86,10 +87,19 @@ public class MemberService {
     }
 
     @Transactional
-    public void updatePassword(Long id, String newPassword) {
+    public void updatePassword(Long id, PasswordUpdateRequest updateParam) {
         Member findMember = findMember(id);
 
-        changePassword(findMember, newPassword);
+        String current = updateParam.getCurrentPassword();
+        String next = updateParam.getNewPassword();
+
+        if (!findMember.getPassword().equals(current)) {
+            throw new IllegalArgumentException("updatePassword: 현재 비밀번호가 일치하지 않습니다.");
+        }
+
+        passwordValidate(next);
+
+        changePassword(findMember, next);
     }
 
 //검증 로직-------------------------------------------------------------------------

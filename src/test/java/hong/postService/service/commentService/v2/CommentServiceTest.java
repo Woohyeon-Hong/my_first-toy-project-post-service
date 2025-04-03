@@ -9,7 +9,7 @@ import hong.postService.repository.memberRepository.v2.MemberRepository;
 import hong.postService.repository.postRepository.v2.PostRepository;
 import hong.postService.service.memberService.v2.MemberService;
 import hong.postService.service.postService.v2.PostService;
-import hong.postService.web.members.dto.UserCreateRequest;
+import hong.postService.service.memberService.dto.UserCreateRequest;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

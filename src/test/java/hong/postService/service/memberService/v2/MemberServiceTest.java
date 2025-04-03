@@ -4,7 +4,8 @@ import hong.postService.domain.Member;
 import hong.postService.domain.UserRole;
 import hong.postService.repository.memberRepository.v2.MemberRepository;
 import hong.postService.service.memberService.dto.MemberUpdateInfoRequest;
-import hong.postService.web.members.dto.UserCreateRequest;
+import hong.postService.service.memberService.dto.PasswordUpdateRequest;
+import hong.postService.service.memberService.dto.UserCreateRequest;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -216,34 +217,36 @@ class MemberServiceTest {
     void updatePassword() {
         //given
         UserCreateRequest request = new UserCreateRequest("user1", "p1", "u1@naver.com", "n1", UserRole.USER);
-        UserCreateRequest request2 = new UserCreateRequest("user2", "p2", "u2@naver.com", "n2", UserRole.USER);
 
-        Long id1 = memberService.signUp(request);
-        Long id2 = memberService.signUp(request2);
+        Long id = memberService.signUp(request);
 
-        Member member1 = memberRepository.findById(id1).orElseThrow();
-        Member member2 = memberRepository.findById(id2).orElseThrow();
+        Member member = memberRepository.findById(id).orElseThrow();
 
         String p1 = "newPassword";
         String p2 = null;
 
+        PasswordUpdateRequest pRequest1 = new PasswordUpdateRequest(member.getPassword(), p1);
+        PasswordUpdateRequest pRequest2 = new PasswordUpdateRequest(member.getPassword() + "!", p1);
+        PasswordUpdateRequest pRequest3 = new PasswordUpdateRequest(member.getPassword() , p2);
+
         //when
-        memberService.updatePassword(member1.getId(), p1);
-        memberService.updatePassword(member2.getId(), p2);
+        memberService.updatePassword(member.getId(), pRequest1);
 
         em.flush();
         em.clear();
 
-
         //then
-        Member changedMember = memberRepository.findById(member1.getId()).orElseThrow();
-        assertThat(changedMember.getPassword()).isEqualTo(p1);
+        Member changedMember = memberRepository.findById(member.getId()).orElseThrow();
+        assertThat(changedMember.getPassword()).isEqualTo(pRequest1.getNewPassword());
 
-        Member changedMember2 = memberRepository.findById(member2.getId()).orElseThrow();
-        assertThat(changedMember2.getPassword()).isNotEqualTo(p2);
-
-        assertThatThrownBy(() -> memberService.updatePassword(member1.getId() + 1000, p1))
+        assertThatThrownBy(() -> memberService.updatePassword(id + 1000, pRequest1))
                 .isInstanceOf(NoSuchElementException.class);
+
+        assertThatThrownBy(() -> memberService.updatePassword(id, pRequest2))
+                .isInstanceOf(IllegalArgumentException.class);
+
+        assertThatThrownBy(() -> memberService.updatePassword(id, pRequest3))
+                .isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
@@ -259,7 +262,7 @@ class MemberServiceTest {
         LocalDateTime oldLastModifiedDate = member.getLastModifiedDate();
 
         //when
-        memberService.updatePassword(member.getId(), "newPassword");
+        memberService.updatePassword(member.getId(), new PasswordUpdateRequest(member.getPassword(), "newPassword"));
         em.flush();
         em.clear();
 
