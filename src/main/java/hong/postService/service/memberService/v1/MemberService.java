@@ -1,7 +1,7 @@
 package hong.postService.service.memberService.v1;
 
 import hong.postService.domain.Member;
-import hong.postService.service.memberService.v2.MemberUpdateDto;
+import hong.postService.service.memberService.dto.MemberUpdateInfoRequest;
 
 public interface MemberService {
 
@@ -11,7 +11,7 @@ public interface MemberService {
 
     Member logIn(String loginId, String password);
 
-    Member updateInfo(Long id, MemberUpdateDto updateParam);
+    Member updateInfo(Long id, MemberUpdateInfoRequest updateParam);
 
     Member updatePassword(Long id, String newPassword);
 }

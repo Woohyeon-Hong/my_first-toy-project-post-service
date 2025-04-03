@@ -2,7 +2,9 @@ package hong.postService.service.memberService.v2;
 
 import hong.postService.domain.Member;
 import hong.postService.repository.memberRepository.v2.MemberRepository;
+import hong.postService.service.memberService.dto.MemberUpdateInfoRequest;
 import hong.postService.web.members.dto.MemberResponse;
+import hong.postService.web.members.dto.UserCreateRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,7 +21,12 @@ public class MemberService {
 
 //business 로직-------------------------------------------------------------
     @Transactional
-    public Long signUp(String username, String password, String email, String nickname) {
+    public Long signUp(UserCreateRequest request) {
+
+        String username = request.getUsername();
+        String password = request.getPassword();
+        String email = request.getEmail();
+        String nickname = request.getNickname();
 
         usernameValidate(username);
         passwordValidate(password);
@@ -34,7 +41,12 @@ public class MemberService {
     }
 
     @Transactional
-    public Long signUpAdmin(String username, String password, String email, String nickname) {
+    public Long signUpAdmin(UserCreateRequest request) {
+
+        String username = request.getUsername();
+        String password = request.getPassword();
+        String email = request.getEmail();
+        String nickname = request.getNickname();
 
         usernameValidate(username);
         passwordValidate(password);
@@ -65,7 +77,7 @@ public class MemberService {
     }
 
     @Transactional
-    public void updateInfo(Long id, MemberUpdateDto updateParam) {
+    public void updateInfo(Long id, MemberUpdateInfoRequest updateParam) {
         Member findMember = findMember(id);
 
         changeUsername(findMember, updateParam.getUsername());

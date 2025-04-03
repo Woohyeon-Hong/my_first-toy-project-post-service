@@ -1,12 +1,11 @@
-package hong.postService.service.memberService.v2;
+package hong.postService.service.memberService.dto;
 
-import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 
 @Getter
 @Builder
 @AllArgsConstructor
-public class MemberUpdateDto {
+public class MemberUpdateInfoRequest {
 
     private String username;
     private String email;

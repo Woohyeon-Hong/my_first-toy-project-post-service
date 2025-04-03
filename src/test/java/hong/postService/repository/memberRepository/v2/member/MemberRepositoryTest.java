@@ -2,7 +2,7 @@ package hong.postService.repository.memberRepository.v2.member;
 
 import hong.postService.domain.Member;
 import hong.postService.repository.memberRepository.v2.MemberRepository;
-import hong.postService.service.memberService.v2.MemberUpdateDto;
+import hong.postService.service.memberService.dto.MemberUpdateInfoRequest;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -117,7 +117,7 @@ class MemberRepositoryTest {
         Member member = Member.createNewMember("oldUsername", "oldPassword", "old@naver.com", "oldNickname");
         memberRepository.save(member);
 
-        MemberUpdateDto updateParam = MemberUpdateDto.builder()
+        MemberUpdateInfoRequest updateParam = MemberUpdateInfoRequest.builder()
                 .username("newUsername")
                 .email("new@naver.com")
                 .nickname("newNickname")

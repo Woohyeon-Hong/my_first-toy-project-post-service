@@ -3,11 +3,13 @@ package hong.postService.service.commentService.v2;
 import hong.postService.domain.Comment;
 import hong.postService.domain.Member;
 import hong.postService.domain.Post;
+import hong.postService.domain.UserRole;
 import hong.postService.repository.commentRepository.v2.CommentRepository;
 import hong.postService.repository.memberRepository.v2.MemberRepository;
 import hong.postService.repository.postRepository.v2.PostRepository;
 import hong.postService.service.memberService.v2.MemberService;
 import hong.postService.service.postService.v2.PostService;
+import hong.postService.web.members.dto.UserCreateRequest;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,7 +42,9 @@ class CommentServiceTest {
     @Test
     void write() {
         //given
-        Long id = memberService.signUp("user", "p", "e@naver.com", "nickname");
+        UserCreateRequest request = new UserCreateRequest("user", "p", "e@naver.com", "nickname", UserRole.USER);
+        Long id = memberService.signUp(request);
+
         Long postId = postService.write(id, "title1", "content1");
 
         //when
@@ -55,7 +59,9 @@ class CommentServiceTest {
     @Test
     void writeReply() {
         //given
-        Long id = memberService.signUp("user", "p", "e@naver.com", "nickname");
+        UserCreateRequest request = new UserCreateRequest("user", "p", "e@naver.com", "nickname", UserRole.USER);
+        Long id = memberService.signUp(request);
+
         Long postId = postService.write(id, "title1", "content1");
         Long commentId = commentService.write(postId, id, "content");
 
@@ -71,7 +77,9 @@ class CommentServiceTest {
     @Test
     void getCommentsByPostWithoutPaging() {
         //given
-        Long id = memberService.signUp("user", "p", "e@naver.com", "nickname");
+        UserCreateRequest request = new UserCreateRequest("user", "p", "e@naver.com", "nickname", UserRole.USER);
+        Long id = memberService.signUp(request);
+
         Member member = memberRepository.findById(id).orElseThrow();
 
         Long postId = postService.write(id, "title1", "content1");
@@ -99,7 +107,9 @@ class CommentServiceTest {
     @Test
     void getCommentsByPostWithPaging() {
         //given
-        Long id = memberService.signUp("user", "p", "e@naver.com", "nickname");
+        UserCreateRequest request = new UserCreateRequest("user", "p", "e@naver.com", "nickname", UserRole.USER);
+        Long id = memberService.signUp(request);
+
         Member member = memberRepository.findById(id).orElseThrow();
 
         Long postId = postService.write(id, "title1", "content1");
@@ -139,7 +149,9 @@ class CommentServiceTest {
     @Test
     void getCommentsByParentCommentWithoutPaging() {
         //given
-        Long id = memberService.signUp("user", "p", "e@naver.com", "nickname");
+        UserCreateRequest request = new UserCreateRequest("user", "p", "e@naver.com", "nickname", UserRole.USER);
+        Long id = memberService.signUp(request);
+
         Member member = memberRepository.findById(id).orElseThrow();
 
         Long postId = postService.write(id, "title1", "content1");
@@ -174,7 +186,9 @@ class CommentServiceTest {
     @Test
     void getCommentsByParentCommentWithPaging() {
         //given
-        Long id = memberService.signUp("user", "p", "e@naver.com", "nickname");
+        UserCreateRequest request = new UserCreateRequest("user", "p", "e@naver.com", "nickname", UserRole.USER);
+        Long id = memberService.signUp(request);
+
         Member member = memberRepository.findById(id).orElseThrow();
 
         Long postId = postService.write(id, "title1", "content1");
@@ -220,7 +234,9 @@ class CommentServiceTest {
     @Test
     void delete() {
         //given
-        Long id = memberService.signUp("user", "p", "e@naver.com", "nickname");
+        UserCreateRequest request = new UserCreateRequest("user", "p", "e@naver.com", "nickname", UserRole.USER);
+        Long id = memberService.signUp(request);
+
         Member member = memberRepository.findById(id).orElseThrow();
 
         Long postId = postService.write(id, "title1", "content1");

@@ -1,4 +1,4 @@
-package hong.postService.service.postService.v2;
+package hong.postService.service.postService.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

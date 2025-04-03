@@ -6,6 +6,7 @@ import hong.postService.repository.memberRepository.v2.MemberRepository;
 import hong.postService.repository.postRepository.v2.PostRepository;
 import hong.postService.repository.postRepository.v2.SearchCond;
 import hong.postService.service.postService.dto.PostSummaryResponse;
+import hong.postService.service.postService.dto.PostUpdateRequest;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

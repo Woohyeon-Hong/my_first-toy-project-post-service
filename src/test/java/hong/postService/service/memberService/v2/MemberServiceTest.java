@@ -3,6 +3,8 @@ package hong.postService.service.memberService.v2;
 import hong.postService.domain.Member;
 import hong.postService.domain.UserRole;
 import hong.postService.repository.memberRepository.v2.MemberRepository;
+import hong.postService.service.memberService.dto.MemberUpdateInfoRequest;
+import hong.postService.web.members.dto.UserCreateRequest;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -86,9 +88,14 @@ class MemberServiceTest {
 
     @Test
     void signUpMember() {
+        //given
+        UserCreateRequest request = new UserCreateRequest("user1", "p1", "u1@naver.com", "n1", UserRole.USER);
+        UserCreateRequest request2 = new UserCreateRequest("user2", "p2", "u2@naver.com", "n2", UserRole.USER);
+        UserCreateRequest request3 = new UserCreateRequest("user2", "p3", "u3@naver.com", "n3", UserRole.USER);
+
         //when
-        Long id1 = memberService.signUp("user1", "p1", "u1@naver.com", "n1");
-        Long id2 = memberService.signUp("user2", "p2", "u2@naver.com", "n2");
+        Long id1 = memberService.signUp(request);
+        Long id2 = memberService.signUp(request2);
 
         //then
         Member member1 = memberRepository.findById(id1).orElseThrow();
@@ -100,15 +107,21 @@ class MemberServiceTest {
         assertThat(member2.getRole()).isEqualTo(UserRole.USER);
 
         assertThat(members).containsExactly(member1, member2);
-        assertThatThrownBy(() -> memberService.signUp("user2", "p3", "u3@naver.com", "n3"))
+        assertThatThrownBy(() -> memberService.signUp(request3))
                 .isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
     void signUpAdmin() {
+        //given
+        UserCreateRequest request = new UserCreateRequest("user1", "p1", "u1@naver.com", "n1", UserRole.USER);
+        UserCreateRequest request2 = new UserCreateRequest("user2", "p2", "u2@naver.com", "n2", UserRole.USER);
+        UserCreateRequest request3 = new UserCreateRequest("user2", "p3", "u3@naver.com", "n3", UserRole.USER);
+
+
         //when
-        Long id1 = memberService.signUpAdmin("user1", "p1", "u1@naver.com", "n1");
-        Long id2 = memberService.signUpAdmin("user2", "p2", "u2@naver.com", "n2");
+        Long id1 = memberService.signUpAdmin(request);
+        Long id2 = memberService.signUpAdmin(request2);
 
         //then
         Member member1 = memberRepository.findById(id1).orElseThrow();
@@ -120,16 +133,20 @@ class MemberServiceTest {
         assertThat(member2.getRole()).isEqualTo(UserRole.ADMIN);
 
         assertThat(members).containsExactly(member1, member2);
-        assertThatThrownBy(() -> memberService.signUp("user2", "p3", "u3@naver.com", "n3"))
+        assertThatThrownBy(() -> memberService.signUpAdmin(request3))
                 .isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
     void unregister() {
         //given
-        Long id1 = memberService.signUp("user1", "p1", "u1@naver.com", "n1");
-        Long id2 = memberService.signUp("user2", "p2", "u2@naver.com", "n2");
-        Long id3 = memberService.signUp("user3", "p3", "u3@naver.com", "n3");
+        UserCreateRequest request1 = new UserCreateRequest("user1", "p1", "u1@naver.com", "n1", UserRole.USER);
+        UserCreateRequest request2 = new UserCreateRequest("user2", "p2", "u2@naver.com", "n2", UserRole.USER);
+        UserCreateRequest request3 = new UserCreateRequest("user3", "p3", "u3@naver.com", "n3", UserRole.USER);
+
+        Long id1 = memberService.signUp(request1);
+        Long id2 = memberService.signUp(request2);
+        Long id3 = memberService.signUp(request3);
 
         Member member1 = memberRepository.findById(id1).orElseThrow();
         Member member2 = memberRepository.findById(id2).orElseThrow();
@@ -151,19 +168,22 @@ class MemberServiceTest {
     @Test
     void updateInfo() {
         //given
-        Long id1 = memberService.signUp("user1", "p1", "u1@naver.com", "n1");
-        Long id2 = memberService.signUp("user2", "p2", "u2@naver.com", "n2");
+        UserCreateRequest request = new UserCreateRequest("user1", "p1", "u1@naver.com", "n1", UserRole.USER);
+        UserCreateRequest request2 = new UserCreateRequest("user2", "p2", "u2@naver.com", "n2", UserRole.USER);
+
+        Long id1 = memberService.signUp(request);
+        Long id2 = memberService.signUp(request2);
 
         Member member1 = memberRepository.findById(id1).orElseThrow();
         Member member2 = memberRepository.findById(id2).orElseThrow();
 
-        MemberUpdateDto updateParam = MemberUpdateDto.builder()
+        MemberUpdateInfoRequest updateParam = MemberUpdateInfoRequest.builder()
                 .username("newUsername")
                 .email("newEmail")
                 .nickname("newNickname")
                 .build();
 
-        MemberUpdateDto nullParam = MemberUpdateDto.builder()
+        MemberUpdateInfoRequest nullParam = MemberUpdateInfoRequest.builder()
                 .username(null)
                 .email(null)
                 .nickname(null)
@@ -195,8 +215,11 @@ class MemberServiceTest {
     @Test
     void updatePassword() {
         //given
-        Long id1 = memberService.signUp("user1", "p1", "u1@naver.com", "n1");
-        Long id2 = memberService.signUp("user2", "p2", "u2@naver.com", "n2");
+        UserCreateRequest request = new UserCreateRequest("user1", "p1", "u1@naver.com", "n1", UserRole.USER);
+        UserCreateRequest request2 = new UserCreateRequest("user2", "p2", "u2@naver.com", "n2", UserRole.USER);
+
+        Long id1 = memberService.signUp(request);
+        Long id2 = memberService.signUp(request2);
 
         Member member1 = memberRepository.findById(id1).orElseThrow();
         Member member2 = memberRepository.findById(id2).orElseThrow();
@@ -226,7 +249,9 @@ class MemberServiceTest {
     @Test
     void baseEntity() {
         //given
-        Long id = memberService.signUp("user1", "p1", "u1@naver.com", "n1");
+        UserCreateRequest request = new UserCreateRequest("user1", "p1", "u1@naver.com", "n1", UserRole.USER);
+
+        Long id = memberService.signUp(request);
 
         Member member = memberRepository.findById(id).orElseThrow();
 
