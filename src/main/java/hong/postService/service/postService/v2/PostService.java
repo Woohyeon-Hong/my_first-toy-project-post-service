@@ -5,6 +5,7 @@ import hong.postService.domain.Post;
 import hong.postService.repository.memberRepository.v2.MemberRepository;
 import hong.postService.repository.postRepository.v2.PostRepository;
 import hong.postService.repository.postRepository.v2.SearchCond;
+import hong.postService.service.postService.dto.PostDetailResponse;
 import hong.postService.service.postService.dto.PostSummaryResponse;
 import hong.postService.service.postService.dto.PostUpdateRequest;
 import lombok.RequiredArgsConstructor;
@@ -40,6 +41,11 @@ public class PostService {
                 new IllegalArgumentException("deletePost: 해당하는 id 없음."));
 
         postRepository.delete(post);
+    }
+
+    public PostDetailResponse getPost(Long postId) {
+        Post post = postRepository.findById(postId).orElseThrow(() -> new IllegalArgumentException("getPost: 해당 postId가 없음."));
+        return PostDetailResponse.from(post);
     }
 
     public Page<PostSummaryResponse> getPosts(Pageable pageable) {

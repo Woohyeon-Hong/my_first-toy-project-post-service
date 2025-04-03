@@ -4,6 +4,7 @@ import hong.postService.domain.Member;
 import hong.postService.repository.memberRepository.v2.MemberRepository;
 import hong.postService.service.memberService.dto.MemberUpdateInfoRequest;
 import hong.postService.service.memberService.dto.PasswordUpdateRequest;
+import hong.postService.service.postService.v2.PostService;
 import hong.postService.web.members.dto.MemberResponse;
 import hong.postService.service.memberService.dto.UserCreateRequest;
 import lombok.RequiredArgsConstructor;
@@ -66,10 +67,6 @@ public class MemberService {
                 .orElseThrow(() -> new NoSuchElementException("unregister: 해당 id가 없습니다."));
     }
 
-    public MemberResponse getMemberResponse(Long memberId) {
-        Member member = findMember(memberId);
-        return MemberResponse.from(member);
-    }
 
     @Transactional
     public void unregister(Long id) {
