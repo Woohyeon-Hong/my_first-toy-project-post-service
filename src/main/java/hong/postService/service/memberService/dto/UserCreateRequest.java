@@ -13,14 +13,9 @@ import lombok.Getter;
 @AllArgsConstructor
 public class UserCreateRequest {
 
-    @NotBlank
     private String username;
-    @NotBlank
     private String password;
-    @Email
     private String email;
-    @NotBlank
     private  String nickname;
-    @NotNull
     private UserRole role;
 }
