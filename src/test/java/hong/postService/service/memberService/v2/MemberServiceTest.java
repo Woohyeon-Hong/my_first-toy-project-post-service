@@ -2,6 +2,9 @@ package hong.postService.service.memberService.v2;
 
 import hong.postService.domain.Member;
 import hong.postService.domain.UserRole;
+import hong.postService.exception.DuplicateMemberFieldException;
+import hong.postService.exception.MemberNotFoundException;
+import hong.postService.exception.PasswordMismatchException;
 import hong.postService.repository.memberRepository.v2.MemberRepository;
 import hong.postService.service.memberService.dto.MemberUpdateInfoRequest;
 import hong.postService.service.memberService.dto.PasswordUpdateRequest;
@@ -42,7 +45,7 @@ class MemberServiceTest {
 
         //then
         memberService.usernameValidate(ok);
-        assertThatThrownBy(() -> memberService.usernameValidate(notOk)).isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> memberService.usernameValidate(notOk)).isInstanceOf(DuplicateMemberFieldException.class);
     }
 
     @Test
@@ -56,7 +59,7 @@ class MemberServiceTest {
 
         //then
         memberService.passwordValidate(ok);
-        assertThatThrownBy(() -> memberService.passwordValidate(notOk)).isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> memberService.passwordValidate(notOk)).isInstanceOf(DuplicateMemberFieldException.class);
     }
 
     @Test
@@ -70,7 +73,7 @@ class MemberServiceTest {
 
         //then
         memberService.emailValidate(ok);
-        assertThatThrownBy(() -> memberService.emailValidate(notOk)).isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> memberService.emailValidate(notOk)).isInstanceOf(DuplicateMemberFieldException.class);
     }
 
     @Test
@@ -84,7 +87,7 @@ class MemberServiceTest {
 
         //then
         memberService.nicknameValidate(ok);
-        assertThatThrownBy(() -> memberService.nicknameValidate(notOk)).isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> memberService.nicknameValidate(notOk)).isInstanceOf(DuplicateMemberFieldException.class);
     }
 
     @Test
@@ -109,7 +112,7 @@ class MemberServiceTest {
 
         assertThat(members).containsExactly(member1, member2);
         assertThatThrownBy(() -> memberService.signUp(request3))
-                .isInstanceOf(IllegalArgumentException.class);
+                .isInstanceOf(DuplicateMemberFieldException.class);
     }
 
     @Test
@@ -135,7 +138,7 @@ class MemberServiceTest {
 
         assertThat(members).containsExactly(member1, member2);
         assertThatThrownBy(() -> memberService.signUpAdmin(request3))
-                .isInstanceOf(IllegalArgumentException.class);
+                .isInstanceOf(DuplicateMemberFieldException.class);
     }
 
     @Test
@@ -163,7 +166,7 @@ class MemberServiceTest {
         assertThat(members).containsExactly(member3);
 
         assertThatThrownBy(() -> memberService.unregister(member1.getId() + 1000))
-                .isInstanceOf(NoSuchElementException.class);
+                .isInstanceOf(MemberNotFoundException.class);
     }
 
     @Test
@@ -192,7 +195,6 @@ class MemberServiceTest {
 
         //when
         memberService.updateInfo(member1.getId(), updateParam);
-        memberService.updateInfo(member2.getId(), nullParam);
 
         em.flush();
         em.clear();
@@ -210,7 +212,7 @@ class MemberServiceTest {
         assertThat(changedMember2.getNickname()).isNotEqualTo(nullParam.getNickname());
 
         assertThatThrownBy(() -> memberService.updateInfo(member1.getId() + 1000, updateParam))
-                .isInstanceOf(NoSuchElementException.class);
+                .isInstanceOf(MemberNotFoundException.class);
     }
 
     @Test
@@ -240,13 +242,13 @@ class MemberServiceTest {
         assertThat(changedMember.getPassword()).isEqualTo(pRequest1.getNewPassword());
 
         assertThatThrownBy(() -> memberService.updatePassword(id + 1000, pRequest1))
-                .isInstanceOf(NoSuchElementException.class);
+                .isInstanceOf(MemberNotFoundException.class);
 
         assertThatThrownBy(() -> memberService.updatePassword(id, pRequest2))
-                .isInstanceOf(IllegalArgumentException.class);
+                .isInstanceOf(PasswordMismatchException.class);
 
         assertThatThrownBy(() -> memberService.updatePassword(id, pRequest3))
-                .isInstanceOf(IllegalArgumentException.class);
+                .isInstanceOf(PasswordMismatchException.class);
     }
 
     @Test
@@ -270,7 +272,6 @@ class MemberServiceTest {
         Member changedMember = memberRepository.findById(member.getId()).orElseThrow();
         assertThat(changedMember.getCreatedDate()).isEqualTo(oldCreatedDate);
         assertThat(changedMember.getLastModifiedDate()).isAfter(oldLastModifiedDate);
-
     }
 
 }

@@ -2,6 +2,7 @@ package hong.postService.domain;
 
 import hong.postService.domain.baseEntity.BaseTimeEntity;
 import hong.postService.exception.IllegalEmailFormatException;
+import hong.postService.exception.InvalidMemberFieldException;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -45,9 +46,9 @@ public class Member extends BaseTimeEntity {
 
     public static Member createNewMember(String username, String password, String email, String nickname) {
 
-        if (username == null) throw new NullPointerException("createNewMember: username == null");
-        if (password == null) throw new NullPointerException("createNewMember: password == null");
-        if (nickname == null) throw new NullPointerException("createNewMember: nickname == null");
+        if (username == null) throw new InvalidMemberFieldException("createNewMember: username == null");
+        if (password == null) throw new InvalidMemberFieldException("createNewMember: password == null");
+        if (nickname == null) throw new InvalidMemberFieldException("createNewMember: nickname == null");
         if (!validateEmailFormat(email)) throw new IllegalEmailFormatException("createNewMember: email 형식이 잘못됨");
 
         return Member.builder()
@@ -63,9 +64,9 @@ public class Member extends BaseTimeEntity {
 
     public static Member createNewAdmin(String username, String password, String email, String nickname) {
 
-        if (username == null) throw new NullPointerException("createNewAdmin: username == null");
-        if (password == null) throw new NullPointerException("createNewAdmin: password == null");
-        if (nickname == null) throw new NullPointerException("createNewAdmin: nickname == null");
+        if (username == null) throw new InvalidMemberFieldException("createNewAdmin: username == null");
+        if (password == null) throw new InvalidMemberFieldException("createNewAdmin: password == null");
+        if (nickname == null) throw new InvalidMemberFieldException("createNewAdmin: nickname == null");
         if (!validateEmailFormat(email)) throw new IllegalEmailFormatException("createNewAdmin: email 형식이 잘못됨");
 
         return Member.builder()
@@ -92,22 +93,22 @@ public class Member extends BaseTimeEntity {
 
 
     public void changeUsername(String username) {
-        if (username == null) throw new NullPointerException("changeUsername: username == null");
+        if (username == null) throw new InvalidMemberFieldException("changeUsername: username == null");
         this.username = username;
     }
 
     public void changePassword(String password) {
-        if (password == null) throw new NullPointerException("changePassword: password == null");
+        if (password == null) throw new InvalidMemberFieldException("changePassword: password == null");
         this.password = password;
     }
 
     public void changeEmail(String email) {
-        if (email == null) throw new NullPointerException("changeEmail: email == null");
+        if (email == null) throw new InvalidMemberFieldException("changeEmail: email == null");
         this.email = email;
     }
 
     public void changeNickname(String nickname) {
-        if (nickname == null) throw new NullPointerException("changeNickname: nickname == null");
+        if (nickname == null) throw new InvalidMemberFieldException("changeNickname: nickname == null");
         this.nickname = nickname;
     }
 
@@ -115,8 +116,8 @@ public class Member extends BaseTimeEntity {
 
 
     public Post writeNewPost(String title, String content) {
-        if (title == null) throw new NullPointerException("writeNewPost: title == null");
-        if (content == null) throw new NullPointerException("writeNewPost: content == null");
+        if (title == null) throw new InvalidMemberFieldException("writeNewPost: title == null");
+        if (content == null) throw new InvalidMemberFieldException("writeNewPost: content == null");
 
         Post post = Post.builder()
                 .title(title)

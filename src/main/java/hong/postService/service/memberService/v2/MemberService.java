@@ -1,6 +1,9 @@
 package hong.postService.service.memberService.v2;
 
 import hong.postService.domain.Member;
+import hong.postService.exception.DuplicateMemberFieldException;
+import hong.postService.exception.MemberNotFoundException;
+import hong.postService.exception.PasswordMismatchException;
 import hong.postService.repository.memberRepository.v2.MemberRepository;
 import hong.postService.service.memberService.dto.MemberUpdateInfoRequest;
 import hong.postService.service.memberService.dto.PasswordUpdateRequest;
@@ -12,7 +15,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.NoSuchElementException;
 
 @Service
 @RequiredArgsConstructor
@@ -64,7 +66,7 @@ public class MemberService {
 
     public Member findMember(Long id) {
         return memberRepository.findById(id)
-                .orElseThrow(() -> new NoSuchElementException("unregister: 해당 id가 없습니다."));
+                .orElseThrow(() -> new MemberNotFoundException(id));
     }
 
 
@@ -91,7 +93,7 @@ public class MemberService {
         String next = updateParam.getNewPassword();
 
         if (!findMember.getPassword().equals(current)) {
-            throw new IllegalArgumentException("updatePassword: 현재 비밀번호가 일치하지 않습니다.");
+            throw new PasswordMismatchException();
         }
 
         passwordValidate(next);
@@ -104,7 +106,7 @@ public class MemberService {
         List<Member> members = memberRepository.findAllByUsername(username);
 
         if (!members.isEmpty()) {
-            throw new IllegalArgumentException("해당 username이 이미 존재함.");
+            throw new DuplicateMemberFieldException("해당 username이 이미 존재함.");
         }
     }
 
@@ -112,7 +114,7 @@ public class MemberService {
         List<Member> members = memberRepository.findAllByPassword(password);
 
         if (!members.isEmpty()) {
-            throw new IllegalArgumentException("해당 password가 이미 존재함.");
+            throw new DuplicateMemberFieldException("해당 password가 이미 존재함.");
         }
     }
 
@@ -120,7 +122,7 @@ public class MemberService {
         List<Member> members = memberRepository.findAllByEmail(email);
 
         if (!members.isEmpty()) {
-            throw new IllegalArgumentException("해당 email이 이미 존재함.");
+            throw new DuplicateMemberFieldException("해당 email이 이미 존재함.");
 
         }
     }
@@ -129,7 +131,7 @@ public class MemberService {
         List<Member> members = memberRepository.findAllByNickname(nickname);
 
         if (!members.isEmpty()) {
-            throw new IllegalArgumentException("해당 nickname이 이미 존재함.");
+            throw new DuplicateMemberFieldException("해당 nickname이 이미 존재함.");
         }
     }
 

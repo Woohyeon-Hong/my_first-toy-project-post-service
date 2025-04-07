@@ -1,5 +1,6 @@
 package hong.postService.domain;
 
+import hong.postService.exception.InvalidMemberFieldException;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.*;
@@ -85,11 +86,11 @@ class MemberTest {
         assertThat(createdMember.getId()).isNull();
 
         assertThatThrownBy(() -> Member.createNewMember(memberWithoutUsername.getUsername(), memberWithoutUsername.getPassword(),
-                memberWithoutUsername.getEmail(), memberWithoutUsername.getNickname())).isInstanceOf(NullPointerException.class);
+                memberWithoutUsername.getEmail(), memberWithoutUsername.getNickname())).isInstanceOf(InvalidMemberFieldException.class);
         assertThatThrownBy(() -> Member.createNewMember(memberWithoutPassword.getUsername(), memberWithoutPassword.getPassword(),
-                memberWithoutPassword.getEmail(), memberWithoutPassword.getNickname())).isInstanceOf(NullPointerException.class);
+                memberWithoutPassword.getEmail(), memberWithoutPassword.getNickname())).isInstanceOf(InvalidMemberFieldException.class);
         assertThatThrownBy(() -> Member.createNewMember(memberWithoutNickname.getUsername(), memberWithoutNickname.getPassword(),
-                memberWithoutNickname.getEmail(), memberWithoutNickname.getNickname())).isInstanceOf(NullPointerException.class);
+                memberWithoutNickname.getEmail(), memberWithoutNickname.getNickname())).isInstanceOf(InvalidMemberFieldException.class);
     }
 
     @Test
@@ -140,11 +141,11 @@ class MemberTest {
         assertThat(createdMember.getId()).isNull();
 
         assertThatThrownBy(() -> Member.createNewAdmin(memberWithoutUsername.getUsername(), memberWithoutUsername.getPassword(),
-                memberWithoutUsername.getEmail(), memberWithoutUsername.getNickname())).isInstanceOf(NullPointerException.class);
+                memberWithoutUsername.getEmail(), memberWithoutUsername.getNickname())).isInstanceOf(InvalidMemberFieldException.class);
         assertThatThrownBy(() -> Member.createNewAdmin(memberWithoutPassword.getUsername(), memberWithoutPassword.getPassword(),
-                memberWithoutPassword.getEmail(), memberWithoutPassword.getNickname())).isInstanceOf(NullPointerException.class);
+                memberWithoutPassword.getEmail(), memberWithoutPassword.getNickname())).isInstanceOf(InvalidMemberFieldException.class);
         assertThatThrownBy(() -> Member.createNewAdmin(memberWithoutNickname.getUsername(), memberWithoutNickname.getPassword(),
-                memberWithoutNickname.getEmail(), memberWithoutNickname.getNickname())).isInstanceOf(NullPointerException.class);
+                memberWithoutNickname.getEmail(), memberWithoutNickname.getNickname())).isInstanceOf(InvalidMemberFieldException.class);
     }
     @Test
     void changeUsername() {
@@ -158,7 +159,7 @@ class MemberTest {
 
         //then
         assertThat(member.getUsername()).isEqualTo("new");
-        assertThatThrownBy(() -> member.changeUsername(nullUsername)).isInstanceOf(NullPointerException.class);
+        assertThatThrownBy(() -> member.changeUsername(nullUsername)).isInstanceOf(InvalidMemberFieldException.class);
     }
 
     @Test
@@ -196,7 +197,7 @@ class MemberTest {
         assertThat(createdPost.getWriter()).isEqualTo(post.getWriter());
         assertThat(createdPost.getId()).isNull();
 
-        assertThatThrownBy(() -> member.writeNewPost(null, "content")).isInstanceOf(NullPointerException.class);
-        assertThatThrownBy(() -> member.writeNewPost("title", null)).isInstanceOf(NullPointerException.class);
+        assertThatThrownBy(() -> member.writeNewPost(null, "content")).isInstanceOf(InvalidMemberFieldException.class);
+        assertThatThrownBy(() -> member.writeNewPost("title", null)).isInstanceOf(InvalidMemberFieldException.class);
     }
 }
