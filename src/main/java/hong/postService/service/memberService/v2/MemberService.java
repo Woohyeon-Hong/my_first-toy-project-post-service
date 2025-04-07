@@ -1,14 +1,12 @@
 package hong.postService.service.memberService.v2;
 
 import hong.postService.domain.Member;
-import hong.postService.exception.DuplicateMemberFieldException;
-import hong.postService.exception.MemberNotFoundException;
-import hong.postService.exception.PasswordMismatchException;
+import hong.postService.exception.member.DuplicateMemberFieldException;
+import hong.postService.exception.member.MemberNotFoundException;
+import hong.postService.exception.member.PasswordMismatchException;
 import hong.postService.repository.memberRepository.v2.MemberRepository;
 import hong.postService.service.memberService.dto.MemberUpdateInfoRequest;
 import hong.postService.service.memberService.dto.PasswordUpdateRequest;
-import hong.postService.service.postService.v2.PostService;
-import hong.postService.web.members.dto.MemberResponse;
 import hong.postService.service.memberService.dto.UserCreateRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

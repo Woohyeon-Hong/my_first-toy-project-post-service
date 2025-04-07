@@ -1,8 +1,8 @@
 package hong.postService.domain;
 
 import hong.postService.domain.baseEntity.BaseTimeEntity;
-import hong.postService.exception.IllegalEmailFormatException;
-import hong.postService.exception.InvalidMemberFieldException;
+import hong.postService.exception.member.IllegalEmailFormatException;
+import hong.postService.exception.member.InvalidMemberFieldException;
 import jakarta.persistence.*;
 import lombok.*;
 

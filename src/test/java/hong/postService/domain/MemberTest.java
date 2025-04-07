@@ -1,6 +1,6 @@
 package hong.postService.domain;
 
-import hong.postService.exception.InvalidMemberFieldException;
+import hong.postService.exception.member.InvalidMemberFieldException;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.*;

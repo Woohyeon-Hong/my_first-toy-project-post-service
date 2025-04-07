@@ -1,8 +1,8 @@
 package hong.postService.domain;
 
 import hong.postService.domain.baseEntity.BaseTimeEntity;
-import hong.postService.exception.CommentNotFoundException;
-import hong.postService.exception.InvalidCommentFieldException;
+import hong.postService.exception.comment.CommentNotFoundException;
+import hong.postService.exception.comment.InvalidCommentFieldException;
 import jakarta.persistence.*;
 import lombok.*;
 

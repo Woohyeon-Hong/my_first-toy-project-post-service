@@ -2,8 +2,7 @@ package hong.postService.service.postService.v2;
 
 import hong.postService.domain.Member;
 import hong.postService.domain.Post;
-import hong.postService.exception.PostNotFoundException;
-import hong.postService.repository.memberRepository.v2.MemberRepository;
+import hong.postService.exception.post.PostNotFoundException;
 import hong.postService.repository.postRepository.v2.PostRepository;
 import hong.postService.repository.postRepository.v2.SearchCond;
 import hong.postService.service.memberService.v2.MemberService;

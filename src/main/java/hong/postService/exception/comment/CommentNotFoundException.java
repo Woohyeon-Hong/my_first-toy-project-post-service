@@ -1,4 +1,4 @@
-package hong.postService.exception;
+package hong.postService.exception.comment;
 
 public class CommentNotFoundException extends RuntimeException {
 

@@ -1,4 +1,4 @@
-package hong.postService.exception;
+package hong.postService.exception.post;
 
 public class PostNotFoundException extends RuntimeException {
 

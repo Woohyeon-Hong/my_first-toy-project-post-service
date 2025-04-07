@@ -1,7 +1,7 @@
 package hong.postService.domain;
 
-import hong.postService.exception.InvalidCommentFieldException;
-import hong.postService.exception.InvalidPostFieldException;
+import hong.postService.exception.comment.InvalidCommentFieldException;
+import hong.postService.exception.post.InvalidPostFieldException;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;

@@ -1,4 +1,4 @@
-package hong.postService.exception;
+package hong.postService.exception.member;
 
 public class InvalidMemberFieldException extends RuntimeException{
 

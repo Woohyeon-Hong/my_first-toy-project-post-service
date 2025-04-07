@@ -2,9 +2,9 @@ package hong.postService.service.memberService.v2;
 
 import hong.postService.domain.Member;
 import hong.postService.domain.UserRole;
-import hong.postService.exception.DuplicateMemberFieldException;
-import hong.postService.exception.MemberNotFoundException;
-import hong.postService.exception.PasswordMismatchException;
+import hong.postService.exception.member.DuplicateMemberFieldException;
+import hong.postService.exception.member.MemberNotFoundException;
+import hong.postService.exception.member.PasswordMismatchException;
 import hong.postService.repository.memberRepository.v2.MemberRepository;
 import hong.postService.service.memberService.dto.MemberUpdateInfoRequest;
 import hong.postService.service.memberService.dto.PasswordUpdateRequest;
@@ -17,7 +17,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.NoSuchElementException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;

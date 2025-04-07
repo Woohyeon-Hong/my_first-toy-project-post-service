@@ -1,12 +1,10 @@
 package hong.postService.domain;
 
-import hong.postService.exception.CommentNotFoundException;
-import hong.postService.exception.InvalidCommentFieldException;
-import org.assertj.core.api.Assertions;
+import hong.postService.exception.comment.CommentNotFoundException;
+import hong.postService.exception.comment.InvalidCommentFieldException;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.junit.jupiter.api.Assertions.*;
 
 class CommentTest {
 
