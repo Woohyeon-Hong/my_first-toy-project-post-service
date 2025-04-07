@@ -1,5 +1,7 @@
 package hong.postService.domain;
 
+import hong.postService.exception.CommentNotFoundException;
+import hong.postService.exception.InvalidCommentFieldException;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -21,8 +23,8 @@ class CommentTest {
 
         //then
         assertThat(reply.getContent()).isEqualTo("content3");
-        assertThatThrownBy(() -> comment.writeReply(null, member)).isInstanceOf(NullPointerException.class);
-        assertThatThrownBy(() -> comment.writeReply("content4", null)).isInstanceOf(NullPointerException.class);
+        assertThatThrownBy(() -> comment.writeReply(null, member)).isInstanceOf(InvalidCommentFieldException.class);
+        assertThatThrownBy(() -> comment.writeReply("content4", null)).isInstanceOf(InvalidCommentFieldException.class);
 
     }
 
@@ -69,6 +71,6 @@ class CommentTest {
 
         //then
         assertThat(comment.isRemoved()).isTrue();
-        assertThatThrownBy(() -> deletedComment.remove()).isInstanceOf(IllegalStateException.class);
+        assertThatThrownBy(() -> deletedComment.remove()).isInstanceOf(CommentNotFoundException.class);
     }
 }

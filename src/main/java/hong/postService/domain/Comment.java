@@ -1,6 +1,8 @@
 package hong.postService.domain;
 
 import hong.postService.domain.baseEntity.BaseTimeEntity;
+import hong.postService.exception.CommentNotFoundException;
+import hong.postService.exception.InvalidCommentFieldException;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -40,8 +42,8 @@ public class Comment extends BaseTimeEntity {
 
 //생성---------------------------------------------------------------------------------------------------
     public Comment writeReply(String content, Member writer) {
-        if (content == null) throw new NullPointerException("writeReply: content == null");
-        if (writer == null) throw new NullPointerException("writeComment: writer == null");
+        if (content == null) throw new InvalidCommentFieldException("writeReply: content == null");
+        if (writer == null) throw new InvalidCommentFieldException("writeComment: writer == null");
 
         Comment childComment = Comment.builder()
                 .content(content)
@@ -60,12 +62,12 @@ public class Comment extends BaseTimeEntity {
 //업데이트---------------------------------------------------------------------------------------------------
 
     public void updateContent(String newContent) {
-        if (newContent == null) throw new NullPointerException("updateContent: newContent == null");
+        if (newContent == null) throw new InvalidCommentFieldException("updateContent: newContent == null");
         this.content = newContent;
     }
 
     public void remove() {
-        if (isRemoved) throw new IllegalStateException("remove: 이미 삭제되어 있음.");
+        if (isRemoved) throw new CommentNotFoundException(this.id);
         this.isRemoved = true;
     }
 }
