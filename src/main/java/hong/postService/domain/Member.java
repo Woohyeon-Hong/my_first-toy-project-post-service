@@ -3,6 +3,7 @@ package hong.postService.domain;
 import hong.postService.domain.baseEntity.BaseTimeEntity;
 import hong.postService.exception.member.IllegalEmailFormatException;
 import hong.postService.exception.member.InvalidMemberFieldException;
+import hong.postService.exception.post.InvalidPostFieldException;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -116,8 +117,8 @@ public class Member extends BaseTimeEntity {
 
 
     public Post writeNewPost(String title, String content) {
-        if (title == null) throw new InvalidMemberFieldException("writeNewPost: title == null");
-        if (content == null) throw new InvalidMemberFieldException("writeNewPost: content == null");
+        if (title == null) throw new InvalidPostFieldException("writeNewPost: title == null");
+        if (content == null) throw new InvalidPostFieldException("writeNewPost: content == null");
 
         Post post = Post.builder()
                 .title(title)
