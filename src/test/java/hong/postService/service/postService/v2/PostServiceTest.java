@@ -5,6 +5,7 @@ import hong.postService.domain.Post;
 import hong.postService.repository.memberRepository.v2.MemberRepository;
 import hong.postService.repository.postRepository.v2.PostRepository;
 import hong.postService.repository.postRepository.v2.SearchCond;
+import hong.postService.service.postService.dto.PostCreateRequest;
 import hong.postService.service.postService.dto.PostSummaryResponse;
 import hong.postService.service.postService.dto.PostUpdateRequest;
 import jakarta.persistence.EntityManager;
@@ -40,7 +41,7 @@ class PostServiceTest {
         memberRepository.save(writer);
 
         //when
-        Long savedId = postService.write(writer.getId(), "title1", "content1");
+        Long savedId = postService.write(writer.getId(), new PostCreateRequest("title1", "content1"));
 
         //then
         Post post = postRepository.findById(savedId).orElseThrow();
@@ -56,7 +57,7 @@ class PostServiceTest {
         Member writer = Member.createNewMember("user", "p", "e@naver.com", "nickname");
         memberRepository.save(writer);
 
-        Long savedId = postService.write(writer.getId(), "title1", "content1");
+        Long savedId = postService.write(writer.getId(), new PostCreateRequest("title1", "content1"));
         Post post = postRepository.findById(savedId).orElseThrow();
 
         //when
@@ -74,7 +75,7 @@ class PostServiceTest {
         memberRepository.save(writer);
 
         for (int i = 1; i <= 50; i++) {
-            postService.write(writer.getId(), "title" + i, "content" + i);
+            postService.write(writer.getId(), new PostCreateRequest("title" + i, "content" + i));
         }
 
         PageRequest pageRequest1 = PageRequest.of(0, 25, Sort.by(Sort.Direction.ASC, "createdDate"));
@@ -102,8 +103,8 @@ class PostServiceTest {
         memberRepository.save(member2);
 
         for (int i = 1; i <= 100; i++) {
-            if (i % 2 != 0) postService.write(member.getId(), "title" + i, "content" + i);
-            else postService.write(member2.getId(), "title" + i, "content" + i);
+            if (i % 2 != 0) postService.write(member.getId(), new PostCreateRequest("title" + i, "content" + i));
+            else postService.write(member2.getId(), new PostCreateRequest("title" + i, "content" + i));
         }
 
         PageRequest pageRequest = PageRequest.of(0, 10, Sort.by(Sort.Direction.ASC, "createdDate"));
@@ -129,8 +130,8 @@ class PostServiceTest {
         memberRepository.save(member2);
 
         for (int i = 1; i <= 100; i++) {
-            if (i % 2 != 0) postService.write(member.getId(), "title" + i, "content" + i);
-            else postService.write(member2.getId(), "title" + i, "content" + i);
+            if (i % 2 != 0) postService.write(member.getId(), new PostCreateRequest("title" + i, "content" + i));
+            else postService.write(member2.getId(), new PostCreateRequest("title" + i, "content" + i));
         }
 
         SearchCond usernameCond = SearchCond.builder()
@@ -191,7 +192,7 @@ class PostServiceTest {
         Member writer = Member.createNewMember("user", "p", "e@naver.com", "nickname");
         memberRepository.save(writer);
 
-        Long savedId = postService.write(writer.getId(), "title1", "content1");
+        Long savedId = postService.write(writer.getId(), new PostCreateRequest("title1", "content1"));
 
         String newTitle = "newTitle";
         String newContent = "newContent";

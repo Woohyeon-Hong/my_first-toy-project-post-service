@@ -6,6 +6,7 @@ import hong.postService.exception.post.PostNotFoundException;
 import hong.postService.repository.postRepository.v2.PostRepository;
 import hong.postService.repository.postRepository.v2.SearchCond;
 import hong.postService.service.memberService.v2.MemberService;
+import hong.postService.service.postService.dto.PostCreateRequest;
 import hong.postService.service.postService.dto.PostDetailResponse;
 import hong.postService.service.postService.dto.PostSummaryResponse;
 import hong.postService.service.postService.dto.PostUpdateRequest;
@@ -25,11 +26,11 @@ public class PostService {
     private final PostRepository postRepository;
 
     @Transactional
-    public Long write(Long memberId, String title, String content) {
+    public Long write(Long memberId, PostCreateRequest request) {
 
         Member member = memberService.findMember(memberId);
 
-        Post post = member.writeNewPost(title, content);
+        Post post = member.writeNewPost(request.getTitle(), request.getContent());
         Post saved = postRepository.save(post);
 
         return saved.getId();

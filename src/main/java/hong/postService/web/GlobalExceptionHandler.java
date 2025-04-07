@@ -6,7 +6,6 @@ import hong.postService.exception.comment.InvalidCommentFieldException;
 import hong.postService.exception.member.*;
 import hong.postService.exception.post.InvalidPostFieldException;
 import hong.postService.exception.post.PostNotFoundException;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
