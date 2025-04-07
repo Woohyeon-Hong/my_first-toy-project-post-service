@@ -2,9 +2,11 @@ package hong.postService.service.postService.v2;
 
 import hong.postService.domain.Member;
 import hong.postService.domain.Post;
+import hong.postService.exception.PostNotFoundException;
 import hong.postService.repository.memberRepository.v2.MemberRepository;
 import hong.postService.repository.postRepository.v2.PostRepository;
 import hong.postService.repository.postRepository.v2.SearchCond;
+import hong.postService.service.memberService.v2.MemberService;
 import hong.postService.service.postService.dto.PostDetailResponse;
 import hong.postService.service.postService.dto.PostSummaryResponse;
 import hong.postService.service.postService.dto.PostUpdateRequest;
@@ -20,14 +22,13 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional(readOnly = true)
 public class PostService {
 
-    private final MemberRepository memberRepository;
+    private final MemberService memberService;
     private final PostRepository postRepository;
 
     @Transactional
     public Long write(Long memberId, String title, String content) {
 
-        Member member = memberRepository.findById(memberId)
-                .orElseThrow(() -> new IllegalArgumentException("write: 해당 id가 없음."));
+        Member member = memberService.findMember(memberId);
 
         Post post = member.writeNewPost(title, content);
         Post saved = postRepository.save(post);
@@ -38,13 +39,13 @@ public class PostService {
     @Transactional
     public void delete(Long id) {
         Post post = postRepository.findById(id).orElseThrow(() ->
-                new IllegalArgumentException("deletePost: 해당하는 id 없음."));
+                new PostNotFoundException(id));
 
         postRepository.delete(post);
     }
 
     public PostDetailResponse getPost(Long postId) {
-        Post post = postRepository.findById(postId).orElseThrow(() -> new IllegalArgumentException("getPost: 해당 postId가 없음."));
+        Post post = postRepository.findById(postId).orElseThrow(() -> new PostNotFoundException(postId));
         return PostDetailResponse.from(post);
     }
 
@@ -57,14 +58,14 @@ public class PostService {
     }
 
     public Page<PostSummaryResponse> getMemberPosts(Long memberId, Pageable pageable) {
-        Member member = memberRepository.findById(memberId).orElseThrow(() -> new IllegalArgumentException("getMemberPosts: 해당 memberId가 없음."));
+        Member member = memberService.findMember(memberId);
         return postRepository.findAllByWriter(member, pageable).map(PostSummaryResponse::from);
     }
 
     @Transactional
     public void update(Long id, PostUpdateRequest updateParam) {
         Post post = postRepository.findById(id).orElseThrow(()
-                -> new IllegalArgumentException("update: 해당하는 id가 없음."));
+                -> new PostNotFoundException(id));
 
         post.updateTitle(updateParam.getTitle());
         post.updateContent(updateParam.getContent());

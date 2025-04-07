@@ -95,7 +95,7 @@ public class MemberController {
     @PatchMapping("/{userId}")
     public ResponseEntity<MemberResponse> updateInfo(
             @PathVariable("userId") Long userId,
-            MemberUpdateInfoRequest updateParam) {
+            @RequestBody MemberUpdateInfoRequest updateParam) {
         memberService.updateInfo(userId, updateParam);
 
         return ResponseEntity.noContent().build();
@@ -112,7 +112,7 @@ public class MemberController {
     @PatchMapping("/{userId}/password")
     public ResponseEntity<MemberResponse> updatePaassword(
             @PathVariable("userId") Long userId,
-            PasswordUpdateRequest request
+            @RequestBody PasswordUpdateRequest request
     ) {
         memberService.updatePassword(userId, request);
 

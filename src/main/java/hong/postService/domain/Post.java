@@ -1,6 +1,8 @@
 package hong.postService.domain;
 
 import hong.postService.domain.baseEntity.BaseTimeEntity;
+import hong.postService.exception.InvalidCommentFieldException;
+import hong.postService.exception.InvalidPostFieldException;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -33,12 +35,12 @@ public class Post extends BaseTimeEntity {
 //업데이트---------------------------------------------------------------------------------------------------
 
     public void updateTitle(String newTitle) {
-        if (newTitle == null) throw new NullPointerException("updateTitle: newTitle == null");
+        if (newTitle == null) throw new InvalidPostFieldException("updateTitle: newTitle == null");
         this.title = newTitle;
     }
 
     public void updateContent(String newContent) {
-        if (newContent == null) throw new NullPointerException("updateContent: newContent == null");
+        if (newContent == null) throw new InvalidPostFieldException("updateContent: newContent == null");
         this.content = newContent;
     }
 
@@ -46,8 +48,8 @@ public class Post extends BaseTimeEntity {
 
     public  Comment writeComment(String content, Member writer) {
 
-        if (content == null) throw new NullPointerException("writeComment: content == null");
-        if (writer == null) throw new NullPointerException("writeComment: writer == null");
+        if (content == null) throw new InvalidCommentFieldException("writeComment: content == null");
+        if (writer == null) throw new InvalidCommentFieldException("writeComment: writer == null");
 
         Comment comment = Comment.builder()
                 .content(content)

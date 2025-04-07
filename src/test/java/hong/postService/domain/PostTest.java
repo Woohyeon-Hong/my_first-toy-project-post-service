@@ -1,5 +1,7 @@
 package hong.postService.domain;
 
+import hong.postService.exception.InvalidCommentFieldException;
+import hong.postService.exception.InvalidPostFieldException;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -17,7 +19,7 @@ class PostTest {
 
         //then
         assertThat(post.getTitle()).isEqualTo("new");
-        assertThatThrownBy(() -> post.updateTitle(null)).isInstanceOf(NullPointerException.class);
+        assertThatThrownBy(() -> post.updateTitle(null)).isInstanceOf(InvalidPostFieldException.class);
     }
 
     @Test
@@ -31,7 +33,7 @@ class PostTest {
 
         //then
         assertThat(post.getContent()).isEqualTo("new");
-        assertThatThrownBy(() -> post.updateContent(null)).isInstanceOf(NullPointerException.class);
+        assertThatThrownBy(() -> post.updateContent(null)).isInstanceOf(InvalidPostFieldException.class);
     }
 
     //연관관계 편의 메소드가 정상 작동했는지에 대해서는 테스트하지 않는다.
@@ -80,9 +82,9 @@ class PostTest {
         assertThat(createdComment.getPost()).isEqualTo(comment.getPost());
 
         assertThatThrownBy(() -> post.writeComment(commentWithoutContent.getContent(), commentWithoutContent.getWriter()))
-                .isInstanceOf(NullPointerException.class);
+                .isInstanceOf(InvalidCommentFieldException.class);
 
         assertThatThrownBy(() -> post.writeComment(commentWithoutWriter.getContent(), commentWithoutWriter.getWriter()))
-                .isInstanceOf(NullPointerException.class);
+                .isInstanceOf(InvalidCommentFieldException.class);
     }
 }
