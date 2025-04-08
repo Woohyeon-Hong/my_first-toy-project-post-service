@@ -30,6 +30,8 @@ public class PostService {
 
         Member member = memberService.findMember(memberId);
 
+        System.out.println("request.getTitle() = " + request.getTitle());
+        System.out.println("request.getContent() = " + request.getContent());
         Post post = member.writeNewPost(request.getTitle(), request.getContent());
         Post saved = postRepository.save(post);
 

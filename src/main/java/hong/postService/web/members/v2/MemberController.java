@@ -6,6 +6,8 @@ import hong.postService.service.memberService.dto.PasswordUpdateRequest;
 import hong.postService.service.memberService.v2.MemberService;
 import hong.postService.service.memberService.dto.MemberUpdateInfoRequest;
 import hong.postService.service.memberService.dto.UserCreateRequest;
+import hong.postService.service.postService.dto.PostCreateRequest;
+import hong.postService.service.postService.dto.PostDetailResponse;
 import hong.postService.service.postService.dto.PostSummaryResponse;
 import hong.postService.service.postService.v2.PostService;
 import hong.postService.web.members.dto.MemberResponse;
@@ -95,7 +97,7 @@ public class MemberController {
     @PatchMapping("/{userId}")
     public ResponseEntity<MemberResponse> updateInfo(
             @PathVariable("userId") Long userId,
-            @RequestBody MemberUpdateInfoRequest updateParam) {
+            @Valid @RequestBody MemberUpdateInfoRequest updateParam) {
         memberService.updateInfo(userId, updateParam);
 
         return ResponseEntity.noContent().build();
@@ -112,7 +114,7 @@ public class MemberController {
     @PatchMapping("/{userId}/password")
     public ResponseEntity<MemberResponse> updatePaassword(
             @PathVariable("userId") Long userId,
-            @RequestBody PasswordUpdateRequest request
+            @Valid @RequestBody PasswordUpdateRequest request
     ) {
         memberService.updatePassword(userId, request);
 
@@ -129,4 +131,11 @@ public class MemberController {
         return ResponseEntity.noContent().build();
     }
 
+    @PostMapping("/{userId}/posts")
+    public ResponseEntity<PostDetailResponse> writePost(
+            @PathVariable("userId") Long userId,
+            @Valid @RequestBody PostCreateRequest request) {
+        postService.write(userId, request);
+        return ResponseEntity.noContent().build();
+    }
 }

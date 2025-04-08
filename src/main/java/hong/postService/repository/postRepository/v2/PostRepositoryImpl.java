@@ -24,7 +24,7 @@ public class PostRepositoryImpl implements PostRepositoryCustom{
         BooleanBuilder builder = new BooleanBuilder();
 
         if (cond.getWriter() != null) {
-            builder.and(post.writer.username.contains(cond.getWriter()));
+            builder.and(post.writer.nickname.contains(cond.getWriter()));
         }
 
         if (cond.getTitle() != null) {
@@ -53,7 +53,7 @@ public class PostRepositoryImpl implements PostRepositoryCustom{
         BooleanBuilder builder = new BooleanBuilder();
 
         if (cond.getWriter() != null) {
-            builder.and(post.writer.username.contains(cond.getWriter()));
+            builder.and(post.writer.nickname.contains(cond.getWriter()));
         }
 
         if (cond.getTitle() != null) {

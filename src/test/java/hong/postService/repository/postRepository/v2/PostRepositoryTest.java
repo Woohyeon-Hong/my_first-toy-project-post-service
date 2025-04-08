@@ -170,12 +170,12 @@ class PostRepositoryTest {
             postRepository.save(post);
         }
 
-        SearchCond usernameCond = SearchCond.builder()
-                .writer("user")
+        SearchCond nicknameCond = SearchCond.builder()
+                .writer("nickname")
                 .build();
 
-        SearchCond usernameCond2 = SearchCond.builder()
-                .writer("userA")
+        SearchCond nicknameCond2 = SearchCond.builder()
+                .writer("nicknameA")
                 .build();
 
         SearchCond titleCond = SearchCond.builder()
@@ -187,8 +187,8 @@ class PostRepositoryTest {
                 .build();
 
         //when
-        List<Post> postsWithUsernameCond = postRepository.searchPosts(usernameCond);
-        List<Post> postsWithUsernameCond2 = postRepository.searchPosts(usernameCond2);
+        List<Post> postsWithUsernameCond = postRepository.searchPosts(nicknameCond);
+        List<Post> postsWithUsernameCond2 = postRepository.searchPosts(nicknameCond2);
 
         List<Post> postsWithTitleCond = postRepository.searchPosts(titleCond);
         List<Post> postsWithTitleCond2 = postRepository.searchPosts(titleCond2);
@@ -217,12 +217,12 @@ class PostRepositoryTest {
             postRepository.save(post);
         }
 
-        SearchCond usernameCond = SearchCond.builder()
-                .writer("user")
+        SearchCond nicknameCond1 = SearchCond.builder()
+                .writer("nickname")
                 .build();
 
-        SearchCond usernameCond2 = SearchCond.builder()
-                .writer("userB")
+        SearchCond nicknameCond2 = SearchCond.builder()
+                .writer("nicknameB")
                 .build();
 
         SearchCond titleCond = SearchCond.builder()
@@ -237,11 +237,11 @@ class PostRepositoryTest {
         PageRequest pageable2 = PageRequest.of(1, 10, Sort.by(Sort.Direction.ASC, "createdDate"));
 
         //when
-        Page<Post> posts1 = postRepository.searchPosts(usernameCond, pageable);
-        Page<Post> posts2 = postRepository.searchPosts(usernameCond, pageable2);
+        Page<Post> posts1 = postRepository.searchPosts(nicknameCond1, pageable);
+        Page<Post> posts2 = postRepository.searchPosts(nicknameCond1, pageable2);
 
-        Page<Post> posts3 = postRepository.searchPosts(usernameCond2, pageable);
-        Page<Post> posts4 = postRepository.searchPosts(usernameCond2, pageable2);
+        Page<Post> posts3 = postRepository.searchPosts(nicknameCond2, pageable);
+        Page<Post> posts4 = postRepository.searchPosts(nicknameCond2, pageable2);
 
         Page<Post> posts5 = postRepository.searchPosts(titleCond, pageable);
         Page<Post> posts6 = postRepository.searchPosts(titleCond, pageable2);

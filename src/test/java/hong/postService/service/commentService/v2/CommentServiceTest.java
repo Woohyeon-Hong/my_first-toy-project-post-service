@@ -8,6 +8,7 @@ import hong.postService.repository.commentRepository.v2.CommentRepository;
 import hong.postService.repository.memberRepository.v2.MemberRepository;
 import hong.postService.repository.postRepository.v2.PostRepository;
 import hong.postService.service.memberService.v2.MemberService;
+import hong.postService.service.postService.dto.PostCreateRequest;
 import hong.postService.service.postService.v2.PostService;
 import hong.postService.service.memberService.dto.UserCreateRequest;
 import org.assertj.core.api.Assertions;
@@ -45,7 +46,7 @@ class CommentServiceTest {
         UserCreateRequest request = new UserCreateRequest("user", "p", "e@naver.com", "nickname", UserRole.USER);
         Long id = memberService.signUp(request);
 
-        Long postId = postService.write(id, "title1", "content1");
+        Long postId = postService.write(id, new PostCreateRequest("title1", "content1"));
 
         //when
         Long commentId = commentService.write(postId, id, "content");
@@ -62,7 +63,7 @@ class CommentServiceTest {
         UserCreateRequest request = new UserCreateRequest("user", "p", "e@naver.com", "nickname", UserRole.USER);
         Long id = memberService.signUp(request);
 
-        Long postId = postService.write(id, "title1", "content1");
+        Long postId = postService.write(id, new PostCreateRequest("title1", "content1"));
         Long commentId = commentService.write(postId, id, "content");
 
         //when
@@ -82,9 +83,9 @@ class CommentServiceTest {
 
         Member member = memberRepository.findById(id).orElseThrow();
 
-        Long postId = postService.write(id, "title1", "content1");
+        Long postId = postService.write(id, new PostCreateRequest("title1", "content1"));
         Post post1 = postRepository.findById(postId).orElseThrow();
-        Long postId2 = postService.write(id, "title2", "content2");
+        Long postId2 = postService.write(id, new PostCreateRequest("title2", "content2"));
         Post post2 = postRepository.findById(postId2).orElseThrow();
 
         for (int i = 1; i <= 50; i++) {
@@ -112,9 +113,9 @@ class CommentServiceTest {
 
         Member member = memberRepository.findById(id).orElseThrow();
 
-        Long postId = postService.write(id, "title1", "content1");
+        Long postId = postService.write(id, new PostCreateRequest("title1", "content1"));
         Post post1 = postRepository.findById(postId).orElseThrow();
-        Long postId2 = postService.write(id, "title2", "content2");
+        Long postId2 = postService.write(id, new PostCreateRequest("title2", "content2"));
         Post post2 = postRepository.findById(postId2).orElseThrow();
 
         for (int i = 1; i <= 50; i++) {
@@ -154,7 +155,7 @@ class CommentServiceTest {
 
         Member member = memberRepository.findById(id).orElseThrow();
 
-        Long postId = postService.write(id, "title1", "content1");
+        Long postId = postService.write(id, new PostCreateRequest("title1", "content1"));
         Post post = postRepository.findById(postId).orElseThrow();
 
         Long commentId = commentService.write(postId, id, "content");
@@ -191,7 +192,7 @@ class CommentServiceTest {
 
         Member member = memberRepository.findById(id).orElseThrow();
 
-        Long postId = postService.write(id, "title1", "content1");
+        Long postId = postService.write(id, new PostCreateRequest("title1", "content1"));
 
         Long commentId1 = commentService.write(postId, id, "content");
         Comment comment1 = commentRepository.findById(commentId1).orElseThrow();
@@ -239,7 +240,7 @@ class CommentServiceTest {
 
         Member member = memberRepository.findById(id).orElseThrow();
 
-        Long postId = postService.write(id, "title1", "content1");
+        Long postId = postService.write(id, new PostCreateRequest("title1", "content1"));
         Post post1 = postRepository.findById(postId).orElseThrow();
 
 

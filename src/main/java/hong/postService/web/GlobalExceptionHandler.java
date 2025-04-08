@@ -6,7 +6,14 @@ import hong.postService.exception.comment.InvalidCommentFieldException;
 import hong.postService.exception.member.*;
 import hong.postService.exception.post.InvalidPostFieldException;
 import hong.postService.exception.post.PostNotFoundException;
+import hong.postService.service.memberService.dto.MemberUpdateInfoRequest;
+import hong.postService.service.memberService.dto.PasswordUpdateRequest;
+import hong.postService.service.memberService.dto.UserCreateRequest;
+import hong.postService.service.postService.dto.PostCreateRequest;
+import hong.postService.service.postService.dto.PostUpdateRequest;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -22,7 +29,34 @@ public class GlobalExceptionHandler {
                 .body(new ErrorResponse(500, "INTERNAL_SERVER_ERROR", e.getMessage()));
     }
 
-//Member-----------------------------------------------------------------------------
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ErrorResponse> handleMethodArgumentNotValid(MethodArgumentNotValidException e) {
+        FieldError fieldError = e.getBindingResult().getFieldError();
+        String message = fieldError.getField() + ": " + fieldError.getDefaultMessage();
+
+        String errorCode = resolveErrorCode(e.getBindingResult().getTarget());
+
+        return ResponseEntity.status(BAD_REQUEST)
+                .body(new ErrorResponse(400, errorCode, message));
+    }
+
+    private String resolveErrorCode(Object target) {
+
+        if (target instanceof UserCreateRequest
+        || target instanceof MemberUpdateInfoRequest
+        || target instanceof PasswordUpdateRequest) {
+            return "INVALID_MEMBER_FIELD";
+        }
+
+        if (target instanceof PostCreateRequest
+        || target instanceof PostUpdateRequest) {
+            return "INVALID_POST_FIELD";
+        }
+
+        return "INVALID_COMMENT_FIELD";
+    }
+
+    //Member-----------------------------------------------------------------------------
     @ExceptionHandler(DuplicateMemberFieldException.class)
     public ResponseEntity<ErrorResponse> handleDuplicateMember(DuplicateMemberFieldException e) {
         return ResponseEntity
