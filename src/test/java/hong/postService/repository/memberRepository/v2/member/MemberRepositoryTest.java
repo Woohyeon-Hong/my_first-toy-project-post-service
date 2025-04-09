@@ -60,9 +60,12 @@ class MemberRepositoryTest {
 
         // when
         Optional<Member> result = memberRepository.findByUsernameAndIsRemovedFalse("user");
+        Optional<Member> result2 = memberRepository.findByUsernameAndIsRemovedFalse("없는 사용자");
 
         // then
         assertThat(result).isPresent();
+        assertThat(result2).isEmpty();
+
         assertThat(result.get().getId()).isEqualTo(m1.getId());
     }
 
@@ -82,6 +85,22 @@ class MemberRepositoryTest {
 
         // then
         assertThat(members).containsExactly(m1);
+    }
+
+    @Test
+    void findAllByUsernameAndIsRemovedFalse_빈문자열_반환() {
+        // given
+        Member m = Member.createNewMember("same", "pw", "a@a.com", "n1");
+
+        memberRepository.save(m);
+
+        m.remove();
+
+        // when
+        List<Member> members = memberRepository.findAllByUsernameAndIsRemovedFalse("same");
+
+        // then
+        assertThat(members).isEmpty();
     }
 
     @Test
@@ -105,6 +124,22 @@ class MemberRepositoryTest {
     }
 
     @Test
+    void findAllByPasswordndIsRemovedFalse_빈문자열_반환() {
+        // given
+        Member m = Member.createNewMember("same", "pw", "a@a.com", "n1");
+
+        memberRepository.save(m);
+
+        m.remove();
+
+        // when
+        List<Member> members = memberRepository.findAllByPasswordAndIsRemovedFalse("pw");
+
+        // then
+        assertThat(members).isEmpty();
+    }
+
+    @Test
     void findAllByEmailAndIsRemovedFalse() {
         // given
         Member m1 = Member.createNewMember("u1", "pw", "same@naver.com", "n1");
@@ -123,6 +158,22 @@ class MemberRepositoryTest {
     }
 
     @Test
+    void findAllByEmailAndIsRemovedFalse_빈문자열_반환() {
+        // given
+        Member m = Member.createNewMember("same", "pw", "a@a.com", "n1");
+
+        memberRepository.save(m);
+
+        m.remove();
+
+        // when
+        List<Member> members = memberRepository.findAllByEmailAndIsRemovedFalse("a@a.com");
+
+        // then
+        assertThat(members).isEmpty();
+    }
+
+    @Test
     void findAllByNicknameAndIsRemovedFalse() {
         // given
         Member m1 = Member.createNewMember("u1", "pw", "a@a.com", "동일닉");
@@ -138,6 +189,22 @@ class MemberRepositoryTest {
 
         // then
         assertThat(members).containsExactly(m1);
+    }
+
+    @Test
+    void findAllByNicknameAndIsRemovedFalse_빈문자열_반환() {
+        // given
+        Member m = Member.createNewMember("same", "pw", "a@a.com", "n1");
+
+        memberRepository.save(m);
+
+        m.remove();
+
+        // when
+        List<Member> members = memberRepository.findAllByNicknameAndIsRemovedFalse("n1");
+
+        // then
+        assertThat(members).isEmpty();
     }
 
     private void em() {

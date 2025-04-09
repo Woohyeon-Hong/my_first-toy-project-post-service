@@ -53,8 +53,8 @@ class PostRepositoryTest {
         Optional<Post> result2 = postRepository.findByIdAndIsRemovedFalse(p2.getId());
 
         //then
-        assertThat(result1.isPresent()).isTrue();
-        assertThat(result2.isEmpty()).isTrue();
+        assertThat(result1).isPresent();
+        assertThat(result2).isEmpty();
     }
 
     @Test
@@ -65,6 +65,7 @@ class PostRepositoryTest {
 
         memberRepository.save(m1);
         memberRepository.save(m2);
+
 
         for (int i = 1; i <= 10; i++) {
             Post post = (i % 2 != 0)
@@ -83,6 +84,26 @@ class PostRepositoryTest {
         // then
         assertThat(postsOfM1.size()).isEqualTo(5);
         assertThat(postsOfM2.size()).isEqualTo(4);
+    }
+
+    @Test
+    void findAllByWriterAndIsRemovedFalseWithoutPaging_빈문자열_반환() {
+        //given
+        Member m = Member.createNewMember("user", "pw", "e@e.com", "nick");
+        memberRepository.save(m);
+
+        Post post = m.writeNewPost("title", "content");
+        postRepository.save(post);
+        post.remove();
+
+
+        flushAndClear();
+
+        // when
+        List<Post> posts = postRepository.findAllByWriterAndIsRemovedFalse(m);
+
+        // then
+        assertThat(posts).isEmpty();
     }
 
 
@@ -132,6 +153,30 @@ class PostRepositoryTest {
     }
 
     @Test
+    void findAllByWriterAndIsRemovedFalseWithPaging_빈문자열_반환() {
+        //given
+        Member m1 = memberRepository.save(Member.createNewMember("userA", "pw", "a@a.com", "nickA"));
+
+        Post post1 = m1.writeNewPost("title1", "content1");
+
+        postRepository.save(post1);
+
+        post1.remove();
+
+        flushAndClear();
+
+        PageRequest pageable = PageRequest.of(0, 5, Sort.by("createdDate"));
+
+        // when
+        Page<Post> result = postRepository.findAllByWriterAndIsRemovedFalse(m1, pageable);
+
+        // then
+        assertThat(result).isEmpty();
+
+    }
+
+
+    @Test
     void findAllByIsRemovedFalseWithoutPaging() {
         // given
         Member member = memberRepository.save(Member.createNewMember("user", "pw", "e@e.com", "nick"));
@@ -150,6 +195,26 @@ class PostRepositoryTest {
         // then
         assertThat(posts.size()).isEqualTo(9);
     }
+
+    @Test
+    void findAllByIsRemovedFalseWithoutPaging_빈문자열_반환() {
+        // given
+        Member member = memberRepository.save(Member.createNewMember("user", "pw", "e@e.com", "nick"));
+
+        Post post = member.writeNewPost("ttile", "content");
+        postRepository.save(post);
+
+        post.remove();
+
+        flushAndClear();
+
+        // when
+        List<Post> posts = postRepository.findAllByIsRemovedFalse();
+
+        // then
+        assertThat(posts).isEmpty();
+    }
+
 
     @Test
     void findAllByIsRemovedFalseWithPaging() {
@@ -179,6 +244,28 @@ class PostRepositoryTest {
         assertThat(result1.getContent().size()).isEqualTo(5);
         assertThat(result2.getContent().size()).isEqualTo(4);
     }
+
+    @Test
+    void findAllByIsRemovedFalseWithPaging_빈문자열_반환() {
+        //given
+        Member member = memberRepository.save(Member.createNewMember("user", "pw", "e@e.com", "nick"));
+
+        Post post = member.writeNewPost("title", "content");
+        postRepository.save(post);
+
+        post.remove();
+
+        flushAndClear();
+
+        PageRequest pageable = PageRequest.of(0, 5, Sort.by("createdDate"));
+
+        // when
+        Page<Post> result = postRepository.findAllByIsRemovedFalse(pageable);
+
+        // then
+        assertThat(result).isEmpty();
+    }
+
 
     @Test
     void searchPosts_닉네임만() {

@@ -15,8 +15,10 @@ import org.springframework.data.domain.Sort;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @SpringBootTest
 @Transactional
@@ -30,6 +32,28 @@ class CommentRepositoryTest {
     PostRepository postRepository;
     @Autowired
     EntityManager em;
+
+    @Test
+    void findByIdAndIsRemovedFalse() {
+        //given
+        Member member = Member.createNewMember("user", "p", "e@naver.com", "nickname");
+        memberRepository.save(member);
+
+        Post post = member.writeNewPost("title1", "content1");
+        postRepository.save(post);
+
+        Comment comment = post.writeComment("comment", member);
+        commentRepository.save(comment);
+
+        Comment reply = comment.writeReply("reply", member);
+        commentRepository.save(reply);
+
+        //when
+        Optional<Comment> result = commentRepository.findByIdAndIsRemovedFalse(reply.getId());
+
+        //then
+        assertThat(result.isPresent()).isTrue();
+    }
 
     @Test
     void findByPostAndIsRemovedFalseWithoutPaging() {
