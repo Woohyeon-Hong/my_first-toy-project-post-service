@@ -21,6 +21,7 @@ public class Comment extends BaseTimeEntity {
     private Long id;
 
     private String content;
+
     @Column(name = "is_removed")
     private boolean isRemoved;
 
@@ -68,6 +69,13 @@ public class Comment extends BaseTimeEntity {
 
     public void remove() {
         if (isRemoved) throw new CommentNotFoundException(this.id);
+
+        for (Comment child : childComments) {
+            if (!child.isRemoved()) {
+                child.remove();
+            }
+        }
+
         this.isRemoved = true;
     }
 }

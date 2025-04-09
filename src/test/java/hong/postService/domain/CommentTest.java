@@ -8,67 +8,63 @@ import static org.assertj.core.api.Assertions.*;
 
 class CommentTest {
 
-    //연관관계 편의 메소드가 정상 작동했는지에 대해서는 테스트하지 않는다.
     @Test
-    void writeReplyWithoutJPA() {
-        //given
+    void writeReply_정상적으로_대댓글을_생성하고_유효하지_않으면_예외가_발생한다() {
         Member member = Member.createNewMember("username", "password", null, "nickname");
         Post post = member.writeNewPost("title", "content");
-        Comment comment = post.writeComment("content2", member);
+        Comment comment = post.writeComment("댓글", member);
 
-        //when
-        Comment reply = comment.writeReply("content3", member);
+        Comment reply = comment.writeReply("대댓글", member);
 
-        //then
-        assertThat(reply.getContent()).isEqualTo("content3");
-        assertThatThrownBy(() -> comment.writeReply(null, member)).isInstanceOf(InvalidCommentFieldException.class);
-        assertThatThrownBy(() -> comment.writeReply("content4", null)).isInstanceOf(InvalidCommentFieldException.class);
+        assertThat(reply.getContent()).isEqualTo("대댓글");
+        assertThat(reply.getParentComment()).isEqualTo(comment);
 
+        assertThatThrownBy(() -> comment.writeReply(null, member))
+                .isInstanceOf(InvalidCommentFieldException.class);
+
+        assertThatThrownBy(() -> comment.writeReply("대댓글", null))
+                .isInstanceOf(InvalidCommentFieldException.class);
     }
 
     @Test
-    void updateContent() {
-        //given
+    void updateContent_댓글_내용을_수정하고_null이면_예외가_발생한다() {
         Member member = Member.createNewMember("username", "password", null, "nickname");
-
-        Post post = Post.builder()
-                .title("title")
-                .content("content")
-                .writer(member)
-                .build();
-
+        Post post = member.writeNewPost("title", "content");
         Comment comment = post.writeComment("old", member);
-        String newContent = "new";
 
-        //when
-        comment.updateContent(newContent);
+        comment.updateContent("new");
 
-        //then
         assertThat(comment.getContent()).isEqualTo("new");
-        assertThatThrownBy(() -> comment.updateContent(null));
 
+        assertThatThrownBy(() -> comment.updateContent(null))
+                .isInstanceOf(InvalidCommentFieldException.class);
     }
 
     @Test
-    void remove() {
-        //given
-        Member member = Member.createNewMember("username", "password", null, "nickname");
+    void remove_대댓글이_여러단계일때_모두_함께_삭제된다() {
+        Member member = Member.createNewMember("user", "pass", null, "nick");
+        Post post = member.writeNewPost("title", "content");
 
-        Post post = Post.builder()
-                .title("title")
-                .content("content")
-                .writer(member)
-                .build();
+        Comment parent = post.writeComment("댓글", member);
+        Comment child = parent.writeReply("대댓글", member);
+        Comment grandChild = child.writeReply("대대댓글", member);
 
-        Comment comment = post.writeComment("content", member);
-        Comment deletedComment = post.writeComment("content", member);
-        deletedComment.remove();
+        parent.remove();
 
-        //when
+        assertThat(parent.isRemoved()).isTrue();
+        assertThat(child.isRemoved()).isTrue();
+        assertThat(grandChild.isRemoved()).isTrue();
+    }
+
+    @Test
+    void remove_이미_삭제된_댓글이라면_예외가_발생한다() {
+        Member member = Member.createNewMember("user", "pass", null, "nick");
+        Post post = member.writeNewPost("title", "content");
+        Comment comment = post.writeComment("댓글", member);
+
         comment.remove();
 
-        //then
-        assertThat(comment.isRemoved()).isTrue();
-        assertThatThrownBy(() -> deletedComment.remove()).isInstanceOf(CommentNotFoundException.class);
+        assertThatThrownBy(comment::remove)
+                .isInstanceOf(CommentNotFoundException.class);
     }
 }
