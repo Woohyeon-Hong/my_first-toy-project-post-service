@@ -7,6 +7,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  *
@@ -21,16 +22,19 @@ import java.util.List;
  *      Comment save (comment) - 댓글/대댓글 작성 시
  *
  * Read
- *      findById(id)
+ *      findByIdAndIsRemovedFalse(id)
  *
- *      Page<Comment> findAllByPost(post, pageable) - 게시글 댓글 목록 페이징 조회
- *      List<Comment> findAllByPost(post) - 게시글 댓글 목록 단순 조회
+ *      Page<Comment> findByPostAndIsRemovedFalse(post, pageable) - 게시글 댓글 목록 페이징 조회
+ *      List<Comment> findByPostAndIsRemovedFalse(post) - 게시글 댓글 목록 단순 조회
  *
- *      Page<Comment> findAllByParentComment(parentComment, pageable) - 대댓글 목록 페이징 조회
- *      List<Comment> findAllByParentComment(parentComment) - 대댓글 목록 단순 조회
+ *      Page<Comment> findAllByParentCommentAndIsRemovedFalse(parentComment, pageable) - 대댓글 목록 페이징 조회
+ *      List<Comment> findAllByParentCommentAndIsRemovedFalse(parentComment) - 대댓글 목록 단순 조회
  *
  */
 public interface CommentRepository extends JpaRepository<Comment, Long> {
+
+    Optional<Comment> findByIdAndIsRemovedFalse(Long id);
+
     Page<Comment> findByPostAndIsRemovedFalse(Post post, Pageable pageable);
     List<Comment> findByPostAndIsRemovedFalse(Post post);
 

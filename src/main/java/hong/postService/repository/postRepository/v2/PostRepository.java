@@ -7,6 +7,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * 게시물 Repository API
@@ -15,13 +16,13 @@ import java.util.List;
  *     Post save(post) - 글 작성 시
  *
  * Read
- *     Post findById(id)
+ *     Post findByIdAndIsRemovedFalse(id)
  *
- *     Page<Post> findPostsByWriter(member, pageable) - 회원이 작성한 글 페이징 조회 시
- *     List<Post>findPostsByWriter(member) - 회원이 작성한 글 단순 조회
+ *     Page<Post> findAllByWriterAndIsRemovedFalse(writer, pageable) - 회원이 작성한 글 페이징 조회 시
+ *     List<Post>findAllByWriterAndIsRemovedFalse(writer) - 회원이 작성한 글 단순 조회
  *
- *     Page<Post> findAll(pageable) - 전체 게시글 목록 페이징 조회 시
- *     List<Post> findAll() - 모든 게시글 단순 조회 시
+ *     Page<Post> findAllByIsRemovedFalse(pageable) - 전체 게시글 목록 페이징 조회 시
+ *     List<Post> findAllByIsRemovedFalse() - 모든 게시글 단순 조회 시
  *
  *     Page<Post> searchPosts(searchCond, pageable) - 게시물 검색 시 (with paging)
  *     List<Post> searchPosts(searchCond) - 게시물 단순 검색 시
@@ -32,6 +33,12 @@ import java.util.List;
 
 public interface PostRepository extends JpaRepository<Post, Long>, PostRepositoryCustom {
 
-    Page<Post> findAllByWriter(Member member, Pageable pageable);
-    List<Post> findAllByWriter(Member member);
+    Optional<Post> findByIdAndIsRemovedFalse(Long id);
+
+    Page<Post> findAllByWriterAndIsRemovedFalse(Member writer, Pageable pageable);
+    List<Post> findAllByWriterAndIsRemovedFalse(Member writer);
+
+    Page<Post> findAllByIsRemovedFalse(Pageable pageable);
+    List<Post> findAllByIsRemovedFalse();
+
 }

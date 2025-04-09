@@ -3,6 +3,7 @@ package hong.postService.domain;
 import hong.postService.domain.baseEntity.BaseTimeEntity;
 import hong.postService.exception.member.IllegalEmailFormatException;
 import hong.postService.exception.member.InvalidMemberFieldException;
+import hong.postService.exception.member.MemberNotFoundException;
 import hong.postService.exception.post.InvalidPostFieldException;
 import jakarta.persistence.*;
 import lombok.*;
@@ -36,6 +37,9 @@ public class Member extends BaseTimeEntity {
 
     @Enumerated(EnumType.STRING)
     private UserRole role;
+
+    @Column(name = "is_removed")
+    private boolean isRemoved;
 
     @OneToMany(mappedBy = "writer")
     @Builder.Default
@@ -111,6 +115,11 @@ public class Member extends BaseTimeEntity {
     public void changeNickname(String nickname) {
         if (nickname == null) throw new InvalidMemberFieldException("changeNickname: nickname == null");
         this.nickname = nickname;
+    }
+
+    public void remove() {
+        if (isRemoved) throw new MemberNotFoundException(this.id);
+        this.isRemoved = true;
     }
 
 //Post 작성---------------------------------------------------------------------------------------------------

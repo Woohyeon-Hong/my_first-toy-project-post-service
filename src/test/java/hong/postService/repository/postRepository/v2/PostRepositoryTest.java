@@ -3,15 +3,18 @@ package hong.postService.repository.postRepository.v2;
 import hong.postService.domain.Member;
 import hong.postService.domain.Post;
 import hong.postService.repository.memberRepository.v2.MemberRepository;
+import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -26,246 +29,315 @@ class PostRepositoryTest {
     @Autowired
     PostRepository postRepository;
 
-    @Test
-    void save() {
-        //given
-        Member member = Member.createNewMember("user", "p", "user@naver.com", "nickname");
-        memberRepository.save(member);
+    @Autowired
+    EntityManager em;
 
-        Post post = member.writeNewPost("title", "content");
+    @Test
+    void findByIdAndIsRemovedFalse() {
+        //given
+        Member m = Member.createNewMember("user", "pw", "e@e.com", "nick");
+        memberRepository.save(m);
+
+        Post p1 = m.writeNewPost("title1", "content1");
+        Post p2 = m.writeNewPost("title2", "content2");
+
+        postRepository.save(p1);
+        postRepository.save(p2);
+
+        p2.remove();
+
+        flushAndClear();
 
         //when
-        postRepository.save(post);
+        Optional<Post> result1 = postRepository.findByIdAndIsRemovedFalse(p1.getId());
+        Optional<Post> result2 = postRepository.findByIdAndIsRemovedFalse(p2.getId());
 
         //then
-        Post findPost = postRepository.findById(post.getId()).orElseThrow();
-        assertThat(findPost.getTitle()).isEqualTo(post.getTitle());
-        assertThat(findPost.getContent()).isEqualTo(post.getContent());
-        assertThat(member.getPosts()).contains(post);
+        assertThat(result1.isPresent()).isTrue();
+        assertThat(result2.isEmpty()).isTrue();
     }
 
     @Test
-    void findMemberPostWithoutPaging() {
+    void findAllByWriterAndIsRemovedFalseWithoutPaging() {
         //given
-        Member memberA = Member.createNewMember("userA", "pA", "userA@naver.com", "nicknameA");
-        memberRepository.save(memberA);
-        Member memberB = Member.createNewMember("userB", "pB", "userB@naver.com", "nicknameB");
-        memberRepository.save(memberB);
+        Member m1 = Member.createNewMember("user", "pw", "e@e.com", "nick");
+        Member m2 = Member.createNewMember("user2", "pw", "e2@e.com", "nick2");
+
+        memberRepository.save(m1);
+        memberRepository.save(m2);
 
         for (int i = 1; i <= 10; i++) {
-            Post post;
-            if (i % 2 != 0) post = memberA.writeNewPost("title" + i, "content" + i);
-            else post = memberB.writeNewPost("title" + i, "content" + i);
+            Post post = (i % 2 != 0)
+                    ? m1.writeNewPost("title" + i, "content" + i)
+                    : m2.writeNewPost("title" + i, "content" + i);
+            if (i == 10) post.remove();
             postRepository.save(post);
         }
 
-        //when
-        List<Post> postsOfMemberA = postRepository.findAllByWriter(memberA);
-        List<Post> postsOfMemberB = postRepository.findAllByWriter(memberB);
+        flushAndClear();
 
-        //then
-        for (int i = 0; i < 5; i++) {
-            assertThat(postsOfMemberA.get(i).getTitle()).isEqualTo("title" + (2 * i + 1));
-            assertThat(postsOfMemberB.get(i).getTitle()).isEqualTo("title" + (2 * i + 2));
-        }
+        // when
+        List<Post> postsOfM1 = postRepository.findAllByWriterAndIsRemovedFalse(m1);
+        List<Post> postsOfM2 = postRepository.findAllByWriterAndIsRemovedFalse(m2);
+
+        // then
+        assertThat(postsOfM1.size()).isEqualTo(5);
+        assertThat(postsOfM2.size()).isEqualTo(4);
     }
 
+
+    /**
+     * getSize():	        요청한 페이지의 page size(요청 크기)	PageRequest.of(0, 5) → getSize()는 항상 5
+     * getContent().size():	현재 페이지에 실제로 반환된 요소 개수	예: 마지막 페이지라면 4일 수도 있음
+     */
     @Test
-    void findMemberPostWithPaging() {
+    void findAllByWriterAndIsRemovedFalseWithPaging() {
         //given
-        Member memberA = Member.createNewMember("userA", "pA", "userA@naver.com", "nicknameA");
-        memberRepository.save(memberA);
-        Member memberB = Member.createNewMember("userB", "pB", "userB@naver.com", "nicknameB");
-        memberRepository.save(memberB);
+        Member m1 = memberRepository.save(Member.createNewMember("userA", "pw", "a@a.com", "nickA"));
+        Member m2 = memberRepository.save(Member.createNewMember("userB", "pw", "b@b.com", "nickB"));
 
         for (int i = 1; i <= 100; i++) {
-            Post post;
-            if (i % 2 != 0) post = memberA.writeNewPost("title" + i, "content" + i);
-            else post = memberB.writeNewPost("title" + i, "content" + i);
+            Post post = (i % 2 != 0)
+                    ? m1.writeNewPost("title" + i, "content" + i)
+                    : m2.writeNewPost("title" + i, "content" + i);
             postRepository.save(post);
+
+            if (i == 99) post.remove();
         }
 
-        PageRequest pageable = PageRequest.of(0, 5, Sort.by(Sort.Direction.ASC, "createdDate"));
-        PageRequest pageable2 = PageRequest.of(1, 5, Sort.by(Sort.Direction.ASC, "createdDate"));
+        flushAndClear();
 
-        //when
-        Page<Post> posts1 = postRepository.findAllByWriter(memberA, pageable);
-        Page<Post> posts2 = postRepository.findAllByWriter(memberA, pageable2);
-        Page<Post> posts3 = postRepository.findAllByWriter(memberB, pageable);
-        Page<Post> posts4 = postRepository.findAllByWriter(memberB, pageable2);
+        PageRequest pageable1 = PageRequest.of(0, 5, Sort.by("createdDate"));
+        PageRequest pageable2 = PageRequest.of(1, 5, Sort.by("createdDate"));
 
-        //then
-        assertThat(posts1.getTotalPages()).isEqualTo(10);
-        assertThat(posts2.getTotalPages()).isEqualTo(10);
+        // when
+        Page<Post> result1 = postRepository.findAllByWriterAndIsRemovedFalse(m1, pageable1);
+        Page<Post> result2 = postRepository.findAllByWriterAndIsRemovedFalse(m1, pageable2);
+        Page<Post> result3 = postRepository.findAllByWriterAndIsRemovedFalse(m2, pageable1);
+        Page<Post> result4 = postRepository.findAllByWriterAndIsRemovedFalse(m2, pageable2);
 
-        assertThat(posts1.getSize()).isEqualTo(5);
-        assertThat(posts2.getSize()).isEqualTo(5);
-        assertThat(posts3.getSize()).isEqualTo(5);
-        assertThat(posts4.getSize()).isEqualTo(5);
+        // then
+        assertThat(result1.getSize()).isEqualTo(5);
 
-        assertThat(posts1.getContent().get(0).getTitle()).isEqualTo("title1");
-        assertThat(posts2.getContent().get(0).getTitle()).isEqualTo("title11");
-        assertThat(posts3.getContent().get(0).getTitle()).isEqualTo("title2");
-        assertThat(posts4.getContent().get(0).getTitle()).isEqualTo("title12");
+        assertThat(result1.getTotalPages()).isEqualTo(10);
+        assertThat(result3.getTotalPages()).isEqualTo(10);
+
+        assertThat(result1.getTotalElements()).isEqualTo(49);
+        assertThat(result3.getTotalElements()).isEqualTo(50);
+
+        assertThat(result1.getContent().size()).isEqualTo(5);
+        assertThat(result2.getContent().size()).isEqualTo(5);
+        assertThat(result3.getContent().size()).isEqualTo(5);
+        assertThat(result4.getContent().size()).isEqualTo(5);
     }
 
     @Test
-    void findAllWithoutPaging() {
-        //given
-        Member memberA = Member.createNewMember("userA", "pA", "userA@naver.com", "nicknameA");
-        memberRepository.save(memberA);
+    void findAllByIsRemovedFalseWithoutPaging() {
+        // given
+        Member member = memberRepository.save(Member.createNewMember("user", "pw", "e@e.com", "nick"));
 
         for (int i = 1; i <= 10; i++) {
-            Post post = memberA.writeNewPost("title" + i, "content" + i);
+            Post post = member.writeNewPost("title" + i, "content" + i);
             postRepository.save(post);
+            if (i == 10) post.remove();
         }
 
-        //when
-        List<Post> posts = postRepository.findAll();
+        flushAndClear();
 
-        //then
+        // when
+        List<Post> posts = postRepository.findAllByIsRemovedFalse();
+
+        // then
+        assertThat(posts.size()).isEqualTo(9);
+    }
+
+    @Test
+    void findAllByIsRemovedFalseWithPaging() {
+        //given
+        Member member = memberRepository.save(Member.createNewMember("user", "pw", "e@e.com", "nick"));
+
         for (int i = 1; i <= 10; i++) {
-            assertThat(posts.get(i - 1).getTitle()).isEqualTo("title" + i);
+            Post post = member.writeNewPost("title" + i, "content" + i);
+            postRepository.save(post);
+            if (i == 10) post.remove();
         }
+
+        PageRequest pageable1 = PageRequest.of(0, 5, Sort.by("createdDate"));
+        PageRequest pageable2 = PageRequest.of(1, 5, Sort.by("createdDate"));
+
+        // when
+        Page<Post> result1 = postRepository.findAllByIsRemovedFalse(pageable1);
+        Page<Post> result2 = postRepository.findAllByIsRemovedFalse(pageable2);
+
+        // then
+        assertThat(result1.getSize()).isEqualTo(5);
+
+        assertThat(result1.getTotalPages()).isEqualTo(2);
+
+        assertThat(result1.getTotalElements()).isEqualTo(9);
+
+        assertThat(result1.getContent().size()).isEqualTo(5);
+        assertThat(result2.getContent().size()).isEqualTo(4);
     }
 
     @Test
-    void findAllWithPaging() {
+    void searchPosts_닉네임만() {
         //given
-        Member memberA = Member.createNewMember("userA", "pA", "userA@naver.com", "nicknameA");
-        memberRepository.save(memberA);
+        Member m1 = memberRepository.save(Member.createNewMember("userA", "pw", "a@a.com", "nickA"));
+        Member m2 = memberRepository.save(Member.createNewMember("userB", "pw", "b@b.com", "nickB"));
 
-        for (int i = 1; i <= 10; i++) {
-            Post post = memberA.writeNewPost("title" + i, "content" + i);
-            postRepository.save(post);
+
+        for (int i = 1; i <= 50; i++) {
+            Post p1 = m1.writeNewPost("title" + i, "content" + i);
+            Post p2 = m2.writeNewPost("title" + i, "content" + i);
+            if (i == 50) p2.remove();
+            postRepository.saveAll(List.of(p1, p2));
         }
 
-        PageRequest pageable = PageRequest.of(0, 5, Sort.by(Sort.Direction.ASC, "createdDate"));
-        PageRequest pageable2 = PageRequest.of(1, 5, Sort.by(Sort.Direction.ASC, "createdDate"));
+        flushAndClear();
+
+        SearchCond cond = SearchCond.builder().writer("nickB").build();
+
+        Pageable pageable = PageRequest.of(0, 10, Sort.by("createdDate"));
 
         //when
-        List<Post> posts = postRepository.findAll(pageable).getContent();
-        List<Post> posts2= postRepository.findAll(pageable2).getContent();
+        Page<Post> result = postRepository.searchPosts(cond, pageable);
 
-        //then
-        for (int i = 1; i <= 5; i++) {
-            assertThat(posts.get(i - 1).getTitle()).isEqualTo("title" + i);
-            assertThat(posts2.get(i - 1).getTitle()).isEqualTo("title" + (i + 5));
-        }
+        // then
+        assertThat(result.getSize()).isEqualTo(10);
+
+        assertThat(result.getTotalPages()).isEqualTo(5);
+
+        assertThat(result.getTotalElements()).isEqualTo(49);
+
+        assertThat(result.getContent().size()).isEqualTo(10);
     }
 
     @Test
-    void searchPostsWithoutPaging() {
+    void searchPosts_제목만() {
         //given
-        Member member = Member.createNewMember("userA", "pA", "userA@naver.com", "nicknameA");
-        memberRepository.save(member);
+        Member m1 = memberRepository.save(Member.createNewMember("userA", "pw", "a@a.com", "nickA"));
+        Member m2 = memberRepository.save(Member.createNewMember("userB", "pw", "b@b.com", "nickB"));
 
-        Member member2 = Member.createNewMember("userB", "pB", "userB@naver.com", "nicknameB");
-        memberRepository.save(member2);
 
-        for (int i = 1; i <= 100; i++) {
-            Post post;
-            if (i % 2 != 0) post = member.writeNewPost("title" + i, "content" + i);
-            else post = member2.writeNewPost("title" + i, "content" + i);
-            postRepository.save(post);
+        for (int i = 1; i <= 50; i++) {
+            Post p1 = m1.writeNewPost("titleM1" + i, "content" + i);
+            Post p2 = m2.writeNewPost("titleM2" + i, "content" + i);
+            if (i == 50) p2.remove();
+            postRepository.saveAll(List.of(p1, p2));
         }
 
-        SearchCond nicknameCond = SearchCond.builder()
-                .writer("nickname")
-                .build();
+        flushAndClear();
 
-        SearchCond nicknameCond2 = SearchCond.builder()
-                .writer("nicknameA")
-                .build();
+        SearchCond cond = SearchCond.builder().title("titleM2").build();
 
-        SearchCond titleCond = SearchCond.builder()
-                .title("title")
-                .build();
-
-        SearchCond titleCond2 = SearchCond.builder()
-                .title("title99")
-                .build();
+        Pageable pageable = PageRequest.of(0, 10, Sort.by("createdDate"));
 
         //when
-        List<Post> postsWithUsernameCond = postRepository.searchPosts(nicknameCond);
-        List<Post> postsWithUsernameCond2 = postRepository.searchPosts(nicknameCond2);
+        Page<Post> result = postRepository.searchPosts(cond, pageable);
 
-        List<Post> postsWithTitleCond = postRepository.searchPosts(titleCond);
-        List<Post> postsWithTitleCond2 = postRepository.searchPosts(titleCond2);
+        // then
+        assertThat(result.getSize()).isEqualTo(10);
 
-        //then
-        assertThat(postsWithUsernameCond.size()).isEqualTo(100);
-        assertThat(postsWithUsernameCond2.size()).isEqualTo(50);
-        assertThat(postsWithTitleCond.size()).isEqualTo(100);
-        assertThat(postsWithTitleCond2.size()).isEqualTo(1);
-        System.out.println(postsWithTitleCond.get(0).getWriter().getUsername());
+        assertThat(result.getTotalPages()).isEqualTo(5);
+
+        assertThat(result.getTotalElements()).isEqualTo(49);
+
+        assertThat(result.getContent().size()).isEqualTo(10);
     }
 
     @Test
-    void searchPostsWithPaging() {
+    void searchPosts_닉네임_제목_둘다() {
         //given
-        Member member = Member.createNewMember("userA", "pA", "userA@naver.com", "nicknameA");
-        memberRepository.save(member);
+        Member m1 = memberRepository.save(Member.createNewMember("userA", "pw", "a@a.com", "nickA"));
+        Member m2 = memberRepository.save(Member.createNewMember("userB", "pw", "b@b.com", "nickB"));
 
-        Member member2 = Member.createNewMember("userB", "pB", "userB@naver.com", "nicknameB");
-        memberRepository.save(member2);
 
-        for (int i = 1; i <= 100; i++) {
-            Post post;
-            if (i % 2 != 0) post = member.writeNewPost("title" + i, "content" + i);
-            else post = member2.writeNewPost("title" + i, "content" + i);
-            postRepository.save(post);
+        for (int i = 1; i <= 50; i++) {
+            Post p1 = m1.writeNewPost("title" + i, "content" + i);
+            Post p2 = m2.writeNewPost("title" + i, "content" + i);
+            if (i == 50) p2.remove();
+            postRepository.saveAll(List.of(p1, p2));
         }
 
-        SearchCond nicknameCond1 = SearchCond.builder()
-                .writer("nickname")
+        flushAndClear();
+
+        SearchCond cond = SearchCond.builder()
+                .title("title25")
+                .writer("nickB")
                 .build();
 
-        SearchCond nicknameCond2 = SearchCond.builder()
-                .writer("nicknameB")
-                .build();
-
-        SearchCond titleCond = SearchCond.builder()
-                .title("title")
-                .build();
-
-        SearchCond titleCond2 = SearchCond.builder()
-                .title("title99")
-                .build();
-
-        PageRequest pageable = PageRequest.of(0, 10, Sort.by(Sort.Direction.ASC, "createdDate"));
-        PageRequest pageable2 = PageRequest.of(1, 10, Sort.by(Sort.Direction.ASC, "createdDate"));
+        Pageable pageable = PageRequest.of(0, 10, Sort.by("createdDate"));
 
         //when
-        Page<Post> posts1 = postRepository.searchPosts(nicknameCond1, pageable);
-        Page<Post> posts2 = postRepository.searchPosts(nicknameCond1, pageable2);
+        Page<Post> result = postRepository.searchPosts(cond, pageable);
 
-        Page<Post> posts3 = postRepository.searchPosts(nicknameCond2, pageable);
-        Page<Post> posts4 = postRepository.searchPosts(nicknameCond2, pageable2);
+        // then
+        assertThat(result.getContent().get(0).getTitle()).isEqualTo("title25");
+        assertThat(result.getContent().get(0).getWriter().getNickname()).isEqualTo("nickB");
+    }
 
-        Page<Post> posts5 = postRepository.searchPosts(titleCond, pageable);
-        Page<Post> posts6 = postRepository.searchPosts(titleCond, pageable2);
+    @Test
+    void searchPosts_결과x() {
+        //given
+        Member m1 = memberRepository.save(Member.createNewMember("userA", "pw", "a@a.com", "nickA"));
+        Member m2 = memberRepository.save(Member.createNewMember("userB", "pw", "b@b.com", "nickB"));
 
-        Page<Post> posts7 = postRepository.searchPosts(titleCond2, pageable);
 
-        //then
-        assertThat(posts1.getTotalPages()).isEqualTo(10);
-        assertThat(posts3.getTotalPages()).isEqualTo(5);
-        assertThat(posts5.getTotalPages()).isEqualTo(10);
-        assertThat(posts7.getTotalPages()).isEqualTo(1);
+        for (int i = 1; i <= 50; i++) {
+            Post p1 = m1.writeNewPost("titleM1" + i, "content" + i);
+            Post p2 = m2.writeNewPost("titleM2" + i, "content" + i);
+            postRepository.saveAll(List.of(p1, p2));
+        }
 
-        assertThat(posts1.getSize()).isEqualTo(10);
-        assertThat(posts2.getSize()).isEqualTo(10);
-        assertThat(posts3.getSize()).isEqualTo(10);
-        assertThat(posts4.getSize()).isEqualTo(10);
-        assertThat(posts5.getSize()).isEqualTo(10);
-        assertThat(posts6.getSize()).isEqualTo(10);
+        flushAndClear();
 
-        assertThat(posts1.getContent().get(0).getTitle()).isEqualTo("title1");
-        assertThat(posts2.getContent().get(0).getTitle()).isEqualTo("title11");
-        assertThat(posts3.getContent().get(0).getTitle()).isEqualTo("title2");
-        assertThat(posts4.getContent().get(0).getTitle()).isEqualTo("title22");
-        assertThat(posts5.getContent().get(0).getTitle()).isEqualTo("title1");
-        assertThat(posts6.getContent().get(0).getTitle()).isEqualTo("title11");
+        SearchCond cond = SearchCond.builder()
+                .title("존재하지않음")
+                .writer("없는닉네임")
+                .build();
+
+        Pageable pageable = PageRequest.of(0, 10, Sort.by("createdDate"));
+
+        //when
+        Page<Post> result = postRepository.searchPosts(cond, pageable);
+
+        // then
+        assertThat(result).isEmpty();
+    }
+
+    @Test
+    void searchPosts_삭제된_게시물_반환_제외() {
+        //given
+        Member m1 = memberRepository.save(Member.createNewMember("userA", "pw", "a@a.com", "nickA"));
+        Member m2 = memberRepository.save(Member.createNewMember("userB", "pw", "b@b.com", "nickB"));
+
+
+        for (int i = 1; i <= 50; i++) {
+            Post p1 = m1.writeNewPost("titleM1" + i, "content" + i);
+            Post p2 = m2.writeNewPost("titleM2" + i, "content" + i);
+            postRepository.saveAll(List.of(p1, p2));
+            if (i == 50) p2.remove();
+        }
+
+        flushAndClear();
+
+        SearchCond cond = SearchCond.builder()
+                .writer("nickB")
+                .title("title50")
+                .build();
+
+        Pageable pageable = PageRequest.of(0, 10, Sort.by("createdDate"));
+
+        //when
+        Page<Post> result = postRepository.searchPosts(cond, pageable);
+
+        // then
+        assertThat(result).isEmpty();
+    }
+
+    private void flushAndClear() {
+        em.flush();
+        em.clear();
     }
 }

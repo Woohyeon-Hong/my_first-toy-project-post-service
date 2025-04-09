@@ -23,6 +23,8 @@ public class PostRepositoryImpl implements PostRepositoryCustom{
     public Page<Post> searchPosts(SearchCond cond, Pageable pageable) {
         BooleanBuilder builder = new BooleanBuilder();
 
+        builder.and(post.isRemoved.isFalse());
+
         if (cond.getWriter() != null) {
             builder.and(post.writer.nickname.contains(cond.getWriter()));
         }
@@ -45,25 +47,5 @@ public class PostRepositoryImpl implements PostRepositoryCustom{
                 .where(builder);
 
         return PageableExecutionUtils.getPage(posts, pageable, countQuery::fetchOne);
-    }
-
-    @Override
-    public List<Post> searchPosts(SearchCond cond) {
-
-        BooleanBuilder builder = new BooleanBuilder();
-
-        if (cond.getWriter() != null) {
-            builder.and(post.writer.nickname.contains(cond.getWriter()));
-        }
-
-        if (cond.getTitle() != null) {
-            builder.and(post.title.contains(cond.getTitle()));
-        }
-
-        return queryFactory
-                .selectFrom(post)
-                .leftJoin(post.writer, member).fetchJoin()
-                .where(builder)
-                .fetch();
     }
 }

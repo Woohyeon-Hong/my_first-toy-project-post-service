@@ -43,12 +43,16 @@ public class PostService {
         Post post = postRepository.findById(id).orElseThrow(() ->
                 new PostNotFoundException(id));
 
-        postRepository.delete(post);
+        post.remove();
     }
 
-    public PostDetailResponse getPost(Long postId) {
+    public PostDetailResponse getPostDetailResponse(Long postId) {
         Post post = postRepository.findById(postId).orElseThrow(() -> new PostNotFoundException(postId));
         return PostDetailResponse.from(post);
+    }
+
+    public Post findPost(Long postId) {
+        return postRepository.findById(postId).orElseThrow(() -> new PostNotFoundException(postId));
     }
 
     public Page<PostSummaryResponse> getPosts(Pageable pageable) {
@@ -61,7 +65,7 @@ public class PostService {
 
     public Page<PostSummaryResponse> getMemberPosts(Long memberId, Pageable pageable) {
         Member member = memberService.findMember(memberId);
-        return postRepository.findAllByWriter(member, pageable).map(PostSummaryResponse::from);
+        return postRepository.findAllByWriterAndIsRemovedFalse(member, pageable).map(PostSummaryResponse::from);
     }
 
     @Transactional

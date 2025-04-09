@@ -7,6 +7,7 @@ import hong.postService.exception.comment.CommentNotFoundException;
 import hong.postService.exception.post.PostNotFoundException;
 import hong.postService.repository.commentRepository.v2.CommentRepository;
 import hong.postService.repository.postRepository.v2.PostRepository;
+import hong.postService.service.commentService.dto.CommentResponse;
 import hong.postService.service.memberService.v2.MemberService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -52,16 +53,20 @@ public class CommentService {
         return commentRepository.save(reply).getId();
     }
 
-    public Page<Comment> getCommentsByPost(Post post, Pageable pageable) {
-        return commentRepository.findByPostAndIsRemovedFalse(post, pageable);
+    public Page<CommentResponse> getCommentsByPost(Post post, Pageable pageable) {
+        return commentRepository
+                .findByPostAndIsRemovedFalse(post, pageable)
+                .map(CommentResponse::from);
     }
 
     public List<Comment> getCommentsByPost(Post post) {
         return commentRepository.findByPostAndIsRemovedFalse(post);
     }
 
-    public Page<Comment> getCommentsByParentComment(Comment parentComment, Pageable pageable) {
-        return commentRepository.findAllByParentCommentAndIsRemovedFalse(parentComment, pageable);
+    public Page<CommentResponse> getCommentsByParentComment(Comment parentComment, Pageable pageable) {
+        return commentRepository
+                .findAllByParentCommentAndIsRemovedFalse(parentComment, pageable)
+                .map(CommentResponse::from);
     }
 
     public List<Comment> getCommentsByParentComment(Comment parentComment) {

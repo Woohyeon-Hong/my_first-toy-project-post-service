@@ -1,6 +1,8 @@
 package hong.postService.domain;
 
 import hong.postService.exception.member.InvalidMemberFieldException;
+import hong.postService.exception.member.MemberNotFoundException;
+import hong.postService.exception.post.InvalidPostFieldException;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.*;
@@ -8,196 +10,155 @@ import static org.assertj.core.api.Assertions.*;
 class MemberTest {
 
     @Test
-    void validateEmailFormat() {
-        //given
-        String email = "true@naver.com";
+    void validateEmailFormat_이메일형식이_유효하면_true_그외_false() {
+        // given
+        String validEmail = "true@naver.com";
+        String[] invalidEmails = {
+                "fjdkfkfjkf", "@naver.com", "fjdkfkfjkf@", "@naver", "@.com"
+        };
 
-        String emailFailAtAll = "fjdkfkfjkf";
-        String emailFailAfterAt = "fjdkfkfjkf@";
-        String emailFailBeforeAt = "@naver.com";
-        String emailFailAfterDomain = "@naver";
-        String emailFailBeforeDotCom = "@.com";
-        String nullEmail = null;
+        // when & then
+        assertThat(Member.validateEmailFormat(validEmail)).isTrue();
 
-        //when
-        boolean resultOfEmail = Member.validateEmailFormat(email);
-        boolean resultOfEmailFailAfterAll = Member.validateEmailFormat(emailFailAtAll);
-        boolean resultOfEmailFailAfterAt = Member.validateEmailFormat(emailFailAfterAt);
-        boolean resultOfEmailFailBeforeAt = Member.validateEmailFormat(emailFailBeforeAt);
-        boolean resultOfEmailFailAfterDomain = Member.validateEmailFormat(emailFailAfterDomain);
-        boolean resultOfEmailFailBeforeDotCom = Member.validateEmailFormat(emailFailBeforeDotCom);
-        boolean resultOfNull = Member.validateEmailFormat(nullEmail);
+        for (String email : invalidEmails) {
+            assertThat(Member.validateEmailFormat(email)).isFalse();
+        }
 
-        //then
-        assertThat(resultOfEmail).isTrue();
-        assertThat(resultOfEmailFailAfterAll).isFalse();
-        assertThat(resultOfEmailFailAfterAt).isFalse();
-        assertThat(resultOfEmailFailBeforeAt).isFalse();
-        assertThat(resultOfEmailFailAfterDomain).isFalse();
-        assertThat(resultOfEmailFailBeforeDotCom).isFalse();
-        assertThat(resultOfNull).isTrue();
+        assertThat(Member.validateEmailFormat(null)).isTrue(); // null은 true 처리
     }
 
     @Test
-    void createNewMember() {
-        //given
-        Member member = Member.builder()
-                .username("user")
-                .password("password")
-                .email("email@naver.com")
-                .role(UserRole.USER)
-                .nickname("nickname")
-                .build();
+    void createNewMember_정상적으로_생성되고_유효하지않으면_예외발생() {
+        // given
+        String username = "user";
+        String password = "password";
+        String email = "email@naver.com";
+        String nickname = "nickname";
 
-        Member memberWithoutUsername = Member.builder()
-                .username(null)
-                .password("password")
-                .email("email@naver.com")
-                .role(UserRole.USER)
-                .nickname("nickname")
-                .build();
+        // when
+        Member member = Member.createNewMember(username, password, email, nickname);
 
-        Member memberWithoutPassword = Member.builder()
-                .username("user")
-                .password(null)
-                .email("email@naver.com")
-                .role(UserRole.USER)
-                .nickname("nickname")
-                .build();
+        // then
+        assertThat(member.getUsername()).isEqualTo(username);
+        assertThat(member.getPassword()).isEqualTo(password);
+        assertThat(member.getEmail()).isEqualTo(email);
+        assertThat(member.getNickname()).isEqualTo(nickname);
+        assertThat(member.getRole()).isEqualTo(UserRole.USER);
+        assertThat(member.isRemoved()).isFalse();
 
-        Member memberWithoutNickname = Member.builder()
-                .username("user")
-                .password("password")
-                .email("email@naver.com")
-                .role(UserRole.USER)
-                .nickname(null)
-                .build();
+        // 예외 검증
+        assertThatThrownBy(() -> Member.createNewMember(null, password, email, nickname))
+                .isInstanceOf(InvalidMemberFieldException.class);
 
-        //when
-        Member createdMember = Member.createNewMember(member.getUsername(), member.getPassword(),
-                member.getEmail(), member.getNickname());
+        assertThatThrownBy(() -> Member.createNewMember(username, null, email, nickname))
+                .isInstanceOf(InvalidMemberFieldException.class);
 
-        //then
-        assertThat(createdMember.getUsername()).isEqualTo(member.getUsername());
-        assertThat(createdMember.getPassword()).isEqualTo(member.getPassword());
-        assertThat(createdMember.getEmail()).isEqualTo(member.getEmail());
-        assertThat(createdMember.getRole()).isEqualTo(member.getRole());
-        assertThat(createdMember.getNickname()).isEqualTo(member.getNickname());
-        assertThat(createdMember.getId()).isNull();
-
-        assertThatThrownBy(() -> Member.createNewMember(memberWithoutUsername.getUsername(), memberWithoutUsername.getPassword(),
-                memberWithoutUsername.getEmail(), memberWithoutUsername.getNickname())).isInstanceOf(InvalidMemberFieldException.class);
-        assertThatThrownBy(() -> Member.createNewMember(memberWithoutPassword.getUsername(), memberWithoutPassword.getPassword(),
-                memberWithoutPassword.getEmail(), memberWithoutPassword.getNickname())).isInstanceOf(InvalidMemberFieldException.class);
-        assertThatThrownBy(() -> Member.createNewMember(memberWithoutNickname.getUsername(), memberWithoutNickname.getPassword(),
-                memberWithoutNickname.getEmail(), memberWithoutNickname.getNickname())).isInstanceOf(InvalidMemberFieldException.class);
+        assertThatThrownBy(() -> Member.createNewMember(username, password, email, null))
+                .isInstanceOf(InvalidMemberFieldException.class);
     }
 
     @Test
-    void createNewAdmin() {
-        //given
-        Member member = Member.builder()
-                .username("user")
-                .password("password")
-                .email("email@naver.com")
-                .role(UserRole.ADMIN)
-                .nickname("nickname")
-                .build();
+    void createNewAdmin_정상적으로_생성되고_유효하지않으면_예외발생() {
+        // given
+        String username = "admin";
+        String password = "adminpass";
+        String email = "admin@naver.com";
+        String nickname = "관리자";
 
-        Member memberWithoutUsername = Member.builder()
-                .username(null)
-                .password("password")
-                .email("email@naver.com")
-                .role(UserRole.ADMIN)
-                .nickname("nickname")
-                .build();
+        // when
+        Member admin = Member.createNewAdmin(username, password, email, nickname);
 
-        Member memberWithoutPassword = Member.builder()
-                .username("user")
-                .password(null)
-                .email("email@naver.com")
-                .role(UserRole.ADMIN)
-                .nickname("nickname")
-                .build();
+        // then
+        assertThat(admin.getUsername()).isEqualTo(username);
+        assertThat(admin.getRole()).isEqualTo(UserRole.ADMIN);
 
-        Member memberWithoutNickname = Member.builder()
-                .username("user")
-                .password("password")
-                .email("email@naver.com")
-                .role(UserRole.ADMIN)
-                .nickname(null)
-                .build();
+        // 예외 검증
+        assertThatThrownBy(() -> Member.createNewAdmin(null, password, email, nickname))
+                .isInstanceOf(InvalidMemberFieldException.class);
 
-        //when
-        Member createdMember = Member.createNewAdmin(member.getUsername(), member.getPassword(),
-                member.getEmail(), member.getNickname());
+        assertThatThrownBy(() -> Member.createNewAdmin(username, null, email, nickname))
+                .isInstanceOf(InvalidMemberFieldException.class);
 
-        //then
-        assertThat(createdMember.getUsername()).isEqualTo(member.getUsername());
-        assertThat(createdMember.getPassword()).isEqualTo(member.getPassword());
-        assertThat(createdMember.getEmail()).isEqualTo(member.getEmail());
-        assertThat(createdMember.getRole()).isEqualTo(member.getRole());
-        assertThat(createdMember.getNickname()).isEqualTo(member.getNickname());
-        assertThat(createdMember.getId()).isNull();
-
-        assertThatThrownBy(() -> Member.createNewAdmin(memberWithoutUsername.getUsername(), memberWithoutUsername.getPassword(),
-                memberWithoutUsername.getEmail(), memberWithoutUsername.getNickname())).isInstanceOf(InvalidMemberFieldException.class);
-        assertThatThrownBy(() -> Member.createNewAdmin(memberWithoutPassword.getUsername(), memberWithoutPassword.getPassword(),
-                memberWithoutPassword.getEmail(), memberWithoutPassword.getNickname())).isInstanceOf(InvalidMemberFieldException.class);
-        assertThatThrownBy(() -> Member.createNewAdmin(memberWithoutNickname.getUsername(), memberWithoutNickname.getPassword(),
-                memberWithoutNickname.getEmail(), memberWithoutNickname.getNickname())).isInstanceOf(InvalidMemberFieldException.class);
+        assertThatThrownBy(() -> Member.createNewAdmin(username, password, email, null))
+                .isInstanceOf(InvalidMemberFieldException.class);
     }
+
     @Test
-    void changeUsername() {
-        //given
-        Member member = Member.createNewMember("username", "password", null, "nickname");
-        String newUsername = "new";
-        String nullUsername = null;
+    void changeUsername_정상수행되고_null이면_예외발생() {
+        Member member = Member.createNewMember("old", "pw", null, "nick");
+        member.changeUsername("new");
 
-        //when
-        member.changeUsername(newUsername);
-
-        //then
         assertThat(member.getUsername()).isEqualTo("new");
-        assertThatThrownBy(() -> member.changeUsername(nullUsername)).isInstanceOf(InvalidMemberFieldException.class);
+
+        assertThatThrownBy(() -> member.changeUsername(null))
+                .isInstanceOf(InvalidMemberFieldException.class);
     }
 
     @Test
-    void changePassword() {
-        //given
-        Member member = Member.createNewMember("username", "password", null, "nickname");
-        String newPassword = "new";
-        String nullPassword = null;
+    void changePassword_정상수행되고_null이면_예외발생() {
+        Member member = Member.createNewMember("user", "pw", null, "nick");
+        member.changePassword("newpw");
 
-        //when
-        member.changePassword(newPassword);
+        assertThat(member.getPassword()).isEqualTo("newpw");
 
-        //then
-        assertThat(member.getPassword()).isEqualTo("new");
-        assertThatThrownBy(() -> member.changePassword(nullPassword));
+        assertThatThrownBy(() -> member.changePassword(null))
+                .isInstanceOf(InvalidMemberFieldException.class);
     }
 
-    //연관관계 편의 메소드가 정상 작동했는지에 대해서는 테스트하지 않는다.
     @Test
-    void writeNewPostWithoutJPA() {
-        //given
-        Member member = Member.createNewMember("username", "password", null, "nickname");
-        Post post = Post.builder()
-                .title("title")
-                .content("content")
-                .writer(member)
-                .build();
+    void changeEmail_정상수행되고_null이면_예외발생() {
+        Member member = Member.createNewMember("user", "pw", "email@naver.com", "nick");
+        member.changeEmail("new@email.com");
 
-        //when
-        Post createdPost = member.writeNewPost(post.getTitle(), post.getContent());
+        assertThat(member.getEmail()).isEqualTo("new@email.com");
 
-        //then
-        assertThat(createdPost.getTitle()).isEqualTo(post.getTitle());
-        assertThat(createdPost.getContent()).isEqualTo(post.getContent());
-        assertThat(createdPost.getWriter()).isEqualTo(post.getWriter());
-        assertThat(createdPost.getId()).isNull();
+        assertThatThrownBy(() -> member.changeEmail(null))
+                .isInstanceOf(InvalidMemberFieldException.class);
+    }
 
-        assertThatThrownBy(() -> member.writeNewPost(null, "content")).isInstanceOf(InvalidMemberFieldException.class);
-        assertThatThrownBy(() -> member.writeNewPost("title", null)).isInstanceOf(InvalidMemberFieldException.class);
+    @Test
+    void changeNickname_정상수행되고_null이면_예외발생() {
+        Member member = Member.createNewMember("user", "pw", "email@naver.com", "nick");
+        member.changeNickname("newnick");
+
+        assertThat(member.getNickname()).isEqualTo("newnick");
+
+        assertThatThrownBy(() -> member.changeNickname(null))
+                .isInstanceOf(InvalidMemberFieldException.class);
+    }
+
+    @Test
+    void writeNewPost_정상적으로_게시글을_작성하고_유효하지않으면_예외발생() {
+        Member member = Member.createNewMember("user", "pw", null, "nick");
+
+        Post post = member.writeNewPost("제목", "내용");
+
+        assertThat(post.getTitle()).isEqualTo("제목");
+        assertThat(post.getContent()).isEqualTo("내용");
+        assertThat(post.getWriter()).isEqualTo(member);
+
+        assertThatThrownBy(() -> member.writeNewPost(null, "내용"))
+                .isInstanceOf(InvalidPostFieldException.class);
+
+        assertThatThrownBy(() -> member.writeNewPost("제목", null))
+                .isInstanceOf(InvalidPostFieldException.class);
+    }
+
+    @Test
+    void remove_회원이_탈퇴하면_isRemoved가_true로_변경된다() {
+        Member member = Member.createNewMember("user", "pw", "email@naver.com", "nick");
+
+        member.remove();
+
+        assertThat(member.isRemoved()).isTrue();
+    }
+
+    @Test
+    void remove_이미_탈퇴된_회원이면_예외가_발생한다() {
+        Member member = Member.createNewMember("user", "pw", "email@naver.com", "nick");
+        member.remove();
+
+        assertThatThrownBy(member::remove)
+                .isInstanceOf(MemberNotFoundException.class);
     }
 }

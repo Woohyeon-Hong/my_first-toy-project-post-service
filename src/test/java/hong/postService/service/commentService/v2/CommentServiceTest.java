@@ -7,6 +7,7 @@ import hong.postService.domain.UserRole;
 import hong.postService.repository.commentRepository.v2.CommentRepository;
 import hong.postService.repository.memberRepository.v2.MemberRepository;
 import hong.postService.repository.postRepository.v2.PostRepository;
+import hong.postService.service.commentService.dto.CommentResponse;
 import hong.postService.service.memberService.v2.MemberService;
 import hong.postService.service.postService.dto.PostCreateRequest;
 import hong.postService.service.postService.v2.PostService;
@@ -127,10 +128,10 @@ class CommentServiceTest {
         PageRequest pageable2 = PageRequest.of(1, 5, Sort.by(Sort.Direction.ASC, "createdDate"));
 
         //when
-        Page<Comment> commentsWithPost1 = commentService.getCommentsByPost(post1, pageable1);
-        Page<Comment> commentsWithPost2 = commentService.getCommentsByPost(post1, pageable2);
-        Page<Comment> commentsWithPost3 = commentService.getCommentsByPost(post2, pageable1);
-        Page<Comment> commentsWithPost4 = commentService.getCommentsByPost(post2, pageable2);
+        Page<CommentResponse> commentsWithPost1 = commentService.getCommentsByPost(post1, pageable1);
+        Page<CommentResponse> commentsWithPost2 = commentService.getCommentsByPost(post1, pageable2);
+        Page<CommentResponse> commentsWithPost3 = commentService.getCommentsByPost(post2, pageable1);
+        Page<CommentResponse> commentsWithPost4 = commentService.getCommentsByPost(post2, pageable2);
 
         //then
         assertThat(commentsWithPost1.getTotalPages()).isEqualTo(5);
@@ -209,10 +210,10 @@ class CommentServiceTest {
         PageRequest pageable2 = PageRequest.of(1, 5, Sort.by(Sort.Direction.ASC, "createdDate"));
 
         //when
-        Page<Comment> replies1 = commentService.getCommentsByParentComment(comment1, pageable1);
-        Page<Comment> replies2 = commentService.getCommentsByParentComment(comment1, pageable2);
-        Page<Comment> replies3 = commentService.getCommentsByParentComment(comment2, pageable1);
-        Page<Comment> replies4 = commentService.getCommentsByParentComment(comment2, pageable2);
+        Page<CommentResponse> replies1 = commentService.getCommentsByParentComment(comment1, pageable1);
+        Page<CommentResponse> replies2 = commentService.getCommentsByParentComment(comment1, pageable2);
+        Page<CommentResponse> replies3 = commentService.getCommentsByParentComment(comment2, pageable1);
+        Page<CommentResponse> replies4 = commentService.getCommentsByParentComment(comment2, pageable2);
 
         //then
         assertThat(replies1.getTotalPages()).isEqualTo(5);
@@ -228,8 +229,8 @@ class CommentServiceTest {
         assertThat(replies3.getContent().get(0).getContent()).isEqualTo("content2");
         assertThat(replies4.getContent().get(0).getContent()).isEqualTo("content12");
 
-        assertThat(replies1.getContent().get(0).getParentComment()).isEqualTo(comment1);
-        assertThat(replies3.getContent().get(0).getParentComment()).isEqualTo(comment2);
+        assertThat(replies1.getContent().get(0).getParentCommentId()).isEqualTo(comment1.getId());
+        assertThat(replies3.getContent().get(0).getParentCommentId()).isEqualTo(comment2.getId());
     }
 
     @Test

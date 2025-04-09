@@ -6,6 +6,7 @@ import hong.postService.exception.comment.InvalidCommentFieldException;
 import hong.postService.exception.member.*;
 import hong.postService.exception.post.InvalidPostFieldException;
 import hong.postService.exception.post.PostNotFoundException;
+import hong.postService.service.commentService.dto.CommentResponse;
 import hong.postService.service.memberService.dto.MemberUpdateInfoRequest;
 import hong.postService.service.memberService.dto.PasswordUpdateRequest;
 import hong.postService.service.memberService.dto.UserCreateRequest;
@@ -53,7 +54,11 @@ public class GlobalExceptionHandler {
             return "INVALID_POST_FIELD";
         }
 
-        return "INVALID_COMMENT_FIELD";
+        if (target instanceof CommentResponse) {
+            return "INVALID_COMMENT_FIELD";
+        }
+
+        return "INVALID_INPUT";
     }
 
     //Member-----------------------------------------------------------------------------

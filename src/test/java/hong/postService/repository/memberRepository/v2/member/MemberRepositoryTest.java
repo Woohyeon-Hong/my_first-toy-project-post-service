@@ -11,6 +11,7 @@ import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -26,177 +27,121 @@ class MemberRepositoryTest {
     EntityManager em;
 
     @Test
-    void save() {
-        //given
-        Member member = Member.createNewMember("username", "password", null, "nickname");
-        Member admin = Member.createNewAdmin("username2", "password2", null, "nickname2");
+    void findByIdAndIsRemovedFalse() {
+        // given
+        Member m1 = Member.createNewMember("user", "pw", "e@e.com", "nick");
+        Member m2 = Member.createNewMember("user2", "pw", "e2@e.com", "nick2");
 
-        //when
-        memberRepository.save(member);
-        memberRepository.save(admin);
+        memberRepository.save(m1);
+        memberRepository.save(m2);
 
-        //then
-        Member findMember = memberRepository.findById(member.getId()).orElseThrow();
-        Member findAdmin = memberRepository.findById(admin.getId()).orElseThrow();
+        m2.remove();
 
-        assertThat(findMember).isEqualTo(member);
-        assertThat(findAdmin).isEqualTo(admin);
+        em();
+
+        // when
+        Optional<Member> result1 = memberRepository.findByIdAndIsRemovedFalse(m1.getId());
+        Optional<Member> result2 = memberRepository.findByIdAndIsRemovedFalse(m2.getId());
+
+        // then
+        assertThat(result1).isPresent();
+        assertThat(result2).isEmpty();
     }
 
     @Test
-    void findAllByUsername() {
-        //given
-        Member member = Member.createNewMember("username", "password", null, "nickname");
-        Member member2 = Member.createNewMember("username", "password2", null, "nickname2");
-        Member member3 = Member.createNewMember("username2", "password3", null, "nickname3");
-        memberRepository.save(member);
-        memberRepository.save(member2);
-        memberRepository.save(member3);
+    void findByUsernameAndIsRemovedFalse() {
+        // given
+        Member m1 = memberRepository.save(Member.createNewMember("user", "pw", "e@e.com", "nick"));
+        Member m2 = memberRepository.save(Member.createNewMember("user", "pw2", "e2@e.com", "nick2"));
 
-        //when
-        List<Member> members = memberRepository.findAllByUsername("username");
+        m2.remove();
 
-        //then
-        assertThat(members).containsExactly(member, member2);
+        em();
+
+        // when
+        Optional<Member> result = memberRepository.findByUsernameAndIsRemovedFalse("user");
+
+        // then
+        assertThat(result).isPresent();
+        assertThat(result.get().getId()).isEqualTo(m1.getId());
     }
 
     @Test
-    void findAllByPassword() {
-        //given
-        Member member = Member.createNewMember("username", "password", null, "nickname");
-        Member member2 = Member.createNewMember("usernam2", "password", null, "nickname2");
-        Member member3 = Member.createNewMember("username3", "password2", null, "nickname3");
-        memberRepository.save(member);
-        memberRepository.save(member2);
-        memberRepository.save(member3);
+    void findAllByUsernameAndIsRemovedFalse() {
+        // given
+        Member m1 = Member.createNewMember("same", "pw", "a@a.com", "n1");
+        Member m2 = Member.createNewMember("same", "pw2", "b@b.com", "n2");
 
-        //when
-        List<Member> members = memberRepository.findAllByPassword("password");
+        memberRepository.save(m1);
+        memberRepository.save(m2);
 
-        //then
-        assertThat(members).containsExactly(member, member2);
+        m2.remove();
+
+        // when
+        List<Member> members = memberRepository.findAllByUsernameAndIsRemovedFalse("same");
+
+        // then
+        assertThat(members).containsExactly(m1);
     }
 
     @Test
-    void findAllByEmail() {
-        //given
-        Member member = Member.createNewMember("username", "password", "hong@naver.com", "nickname");
-        Member member2 = Member.createNewMember("username2", "password2", "hong@naver.com", "nickname2");
-        Member member3 = Member.createNewMember("username3", "password3", "woohyeon@naver.com", "nickname3");
-        memberRepository.save(member);
-        memberRepository.save(member2);
-        memberRepository.save(member3);
+    void findAllByPasswordAndIsRemovedFalse() {
+        // given
+        Member m1 = Member.createNewMember("u1", "1234", "a@a.com", "n1");
+        Member m2 = Member.createNewMember("u2", "1234", "b@b.com", "n2");
+        Member m3 = Member.createNewMember("u3", "0000", "c@c.com", "n3");
 
-        //when
-        List<Member> members = memberRepository.findAllByEmail("hong@naver.com");
+        memberRepository.save(m1);
+        memberRepository.save(m2);
+        memberRepository.save(m3);
 
-        //then
-        assertThat(members).containsExactly(member, member2);
+        m2.remove();
+
+        // when
+        List<Member> members = memberRepository.findAllByPasswordAndIsRemovedFalse("1234");
+
+        // then
+        assertThat(members).containsExactly(m1);
     }
 
     @Test
-    void findAllByNickname() {
-        //given
-        Member member = Member.createNewMember("username", "password", null, "nickname");
-        Member member2 = Member.createNewMember("username", "password2", null, "nickname");
-        Member member3 = Member.createNewMember("username2", "password3", null, "nickname2");
-        memberRepository.save(member);
-        memberRepository.save(member2);
-        memberRepository.save(member3);
+    void findAllByEmailAndIsRemovedFalse() {
+        // given
+        Member m1 = Member.createNewMember("u1", "pw", "same@naver.com", "n1");
+        Member m2 = Member.createNewMember("u2", "pw", "same@naver.com", "n2");
 
-        //when
-        List<Member> members = memberRepository.findAllByNickname("nickname");
+        memberRepository.save(m1);
+        memberRepository.save(m2);
 
-        //then
-        assertThat(members).containsExactly(member, member2);
+        m2.remove();
+
+        // when
+        List<Member> members = memberRepository.findAllByEmailAndIsRemovedFalse("same@naver.com");
+
+        // then
+        assertThat(members).containsExactly(m1);
     }
 
     @Test
-    void updateInfo() {
-        //given
-        Member member = Member.createNewMember("oldUsername", "oldPassword", "old@naver.com", "oldNickname");
-        memberRepository.save(member);
+    void findAllByNicknameAndIsRemovedFalse() {
+        // given
+        Member m1 = Member.createNewMember("u1", "pw", "a@a.com", "동일닉");
+        Member m2 = Member.createNewMember("u2", "pw", "b@b.com", "동일닉");
 
-        MemberUpdateInfoRequest updateParam = MemberUpdateInfoRequest.builder()
-                .username("newUsername")
-                .email("new@naver.com")
-                .nickname("newNickname")
-                .build();
+        memberRepository.save(m1);
+        memberRepository.save(m2
+        );
+        m2.remove();
 
+        // when
+        List<Member> members = memberRepository.findAllByNicknameAndIsRemovedFalse("동일닉");
 
-        //when
-        Member findMember = memberRepository.findById(member.getId()).orElseThrow();
-        findMember.changeUsername(updateParam.getUsername());
-        findMember.changeEmail(updateParam.getEmail());
-        findMember.changeNickname(updateParam.getNickname());
+        // then
+        assertThat(members).containsExactly(m1);
+    }
 
+    private void em() {
         em.flush();
         em.clear();
-
-        //then
-        Member changedMember = memberRepository.findById(findMember.getId()).orElseThrow();
-        assertThat(changedMember.getUsername()).isEqualTo(updateParam.getUsername());
-        assertThat(changedMember.getEmail()).isEqualTo(updateParam.getEmail());
-        assertThat(changedMember.getNickname()).isEqualTo(updateParam.getNickname());
-        assertThat(changedMember.getLastModifiedDate()).isAfter(changedMember.getCreatedDate());
     }
-
-    @Test
-    void updatePassword() {
-        //given
-        Member member = Member.createNewMember("oldUsername", "oldPassword", "old@naver.com", "oldNickname");
-        memberRepository.save(member);
-
-        String newPassword = "newPassword";
-        String nullPassword = null;
-
-        //when
-        Member findMember = memberRepository.findById(member.getId()).orElseThrow();
-        findMember.changePassword(newPassword);
-
-        em.flush();
-        em.clear();
-
-        //then
-        Member changedMember = memberRepository.findById(findMember.getId()).orElseThrow();
-        assertThat(changedMember.getPassword()).isEqualTo(newPassword);
-        assertThatThrownBy(() -> findMember.changePassword(nullPassword)).isInstanceOf(NullPointerException.class);
-        assertThat(changedMember.getLastModifiedDate()).isAfter(changedMember.getCreatedDate());
-    }
-
-
-    @Test
-    void delete() {
-        //given
-        Member member = Member.createNewMember("username", "password", null, "nickname");
-        memberRepository.save(member);
-
-        //when
-        memberRepository.delete(member);
-
-        //then
-        List<Member> members = memberRepository.findAll();
-        assertThat(members).doesNotContain(member);
-
-        assertThatThrownBy(() -> memberRepository.delete(null)).isInstanceOf(InvalidDataAccessApiUsageException.class);
-    }
-
-    @Test
-    void findByUsername() {
-        //given
-        Member member = Member.createNewMember("username", "password", "null@naver.com", "nickname");
-        memberRepository.save(member);
-
-        String username = "username";
-
-        //when
-        Member findMember = memberRepository.findByUsername(username);
-
-        //then
-        assertThat(findMember.getUsername()).isEqualTo(member.getUsername());
-        assertThat(findMember.getPassword()).isEqualTo(member.getPassword());
-        assertThat(findMember.getEmail()).isEqualTo(member.getEmail());
-        assertThat(findMember.getNickname()).isEqualTo(member.getNickname());
-    }
-
 }

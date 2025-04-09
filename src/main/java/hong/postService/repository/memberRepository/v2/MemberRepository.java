@@ -4,6 +4,7 @@ import hong.postService.domain.Member;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
+import java.util.Optional;
 
 
 /**
@@ -13,23 +14,25 @@ import java.util.List;
  *      Member save(member) - 회원/어드민 가입 시
  *
  * Read
- *      Member findById(id)
+ *      Member findByIdAndIsRemovedFalse(id)
+ *      Member findByUsernameAndIsRemovedFalse(id)
  *
- *      List<Member> findAllByUsername(String username) - username 중복 조회 시
- *      List<Member> findAllByPassword(String password) - password 중복 조회 시
- *      List<Member> findAllByEmail(String email) - email 중복 조회 시
- *      List<Member> findAllByNickname(String nickname) - nickname 중복 조회 시
+ *      List<Member> findAllByUsernameAndIsRemovedFalse(String username) - username 중복 조회 시
+ *      List<Member> findAllByPasswordAndIsRemovedFalse(String password) - password 중복 조회 시
+ *      List<Member> findAllByEmailAndIsRemovedFalse(String email) - email 중복 조회 시
+ *      List<Member> findAllByNicknameAndIsRemovedFalse(String nickname) - nickname 중복 조회 시
  *
  *Delete
  *      void delete(member) - 회원 탈퇴 시
  */
 public interface MemberRepository extends JpaRepository<Member, Long> {
 
-    List<Member> findAllByUsername(String username);
-    List<Member> findAllByPassword(String password);
-    List<Member> findAllByEmail(String email);
-    List<Member> findAllByNickname(String nickname);
+    Optional<Member> findByIdAndIsRemovedFalse(Long id);
+    Optional<Member> findByUsernameAndIsRemovedFalse(String username);
 
-    Member findByUsername(String username);
+    List<Member> findAllByUsernameAndIsRemovedFalse(String username);
+    List<Member> findAllByPasswordAndIsRemovedFalse(String password);
+    List<Member> findAllByEmailAndIsRemovedFalse(String email);
+    List<Member> findAllByNicknameAndIsRemovedFalse(String nickname);
 
 }

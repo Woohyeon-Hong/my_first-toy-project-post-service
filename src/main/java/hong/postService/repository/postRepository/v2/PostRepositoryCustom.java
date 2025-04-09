@@ -9,5 +9,4 @@ import java.util.List;
 public interface PostRepositoryCustom {
 
     Page<Post> searchPosts(SearchCond cond, Pageable pageable);
-    List<Post> searchPosts(SearchCond cond);
 }

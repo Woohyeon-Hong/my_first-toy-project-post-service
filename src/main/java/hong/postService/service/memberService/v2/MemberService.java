@@ -101,7 +101,7 @@ public class MemberService {
 
 //검증 로직-------------------------------------------------------------------------
     public void usernameValidate(String username) {
-        List<Member> members = memberRepository.findAllByUsername(username);
+        List<Member> members = memberRepository.findAllByUsernameAndIsRemovedFalse(username);
 
         if (!members.isEmpty()) {
             throw new DuplicateMemberFieldException("해당 username이 이미 존재함.");
@@ -109,7 +109,7 @@ public class MemberService {
     }
 
     public void passwordValidate(String password) {
-        List<Member> members = memberRepository.findAllByPassword(password);
+        List<Member> members = memberRepository.findAllByPasswordAndIsRemovedFalse(password);
 
         if (!members.isEmpty()) {
             throw new DuplicateMemberFieldException("해당 password가 이미 존재함.");
@@ -117,7 +117,7 @@ public class MemberService {
     }
 
     public void emailValidate(String email) {
-        List<Member> members = memberRepository.findAllByEmail(email);
+        List<Member> members = memberRepository.findAllByEmailAndIsRemovedFalse(email);
 
         if (!members.isEmpty()) {
             throw new DuplicateMemberFieldException("해당 email이 이미 존재함.");
@@ -126,7 +126,7 @@ public class MemberService {
     }
 
     public void nicknameValidate(String nickname) {
-        List<Member> members = memberRepository.findAllByNickname(nickname);
+        List<Member> members = memberRepository.findAllByNicknameAndIsRemovedFalse(nickname);
 
         if (!members.isEmpty()) {
             throw new DuplicateMemberFieldException("해당 nickname이 이미 존재함.");

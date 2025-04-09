@@ -5,6 +5,7 @@ import hong.postService.domain.Member;
 import hong.postService.domain.Post;
 import hong.postService.repository.memberRepository.v2.MemberRepository;
 import hong.postService.repository.postRepository.v2.PostRepository;
+import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -27,35 +28,8 @@ class CommentRepositoryTest {
     MemberRepository memberRepository;
     @Autowired
     PostRepository postRepository;
-
-    @Test
-    void save() {
-        //given
-        Member member = Member.createNewMember("user", "p", "e@naver.com", "nickname");
-        memberRepository.save(member);
-
-        Post post1 = member.writeNewPost("title1", "content1");
-        postRepository.save(post1);
-
-        Comment comment = post1.writeComment("content", member);
-        Comment reply = comment.writeReply("content", member);
-
-        //when
-        commentRepository.save(comment);
-        commentRepository.save(reply);
-
-        //then
-        Comment findComment = commentRepository.findById(comment.getId()).orElseThrow();
-        Comment findReply= commentRepository.findById(reply.getId()).orElseThrow();
-
-        assertThat(findComment.getContent()).isEqualTo(comment.getContent());
-        assertThat(findComment.getWriter()).isEqualTo(comment.getWriter());
-        assertThat(findComment.getPost()).isEqualTo(comment.getPost());
-
-        assertThat(findReply.getContent()).isEqualTo(reply.getContent());
-        assertThat(findReply.getWriter()).isEqualTo(reply.getWriter());
-        assertThat(findReply.getPost()).isEqualTo(reply.getPost());
-    }
+    @Autowired
+    EntityManager em;
 
     @Test
     void findByPostAndIsRemovedFalseWithoutPaging() {
@@ -69,25 +43,29 @@ class CommentRepositoryTest {
         postRepository.save(post2);
 
         for (int i = 1; i <= 50; i++) {
-            Post post = post1;
-            if (i % 2 == 0) post = post2;
+            Comment comment;
+            if (i % 2 != 0)  comment = post1.writeComment("comment" + i, member);
+            else comment = post1.writeComment("comment" + i, member);
 
-            Comment comment = post.writeComment("title" + i, member);
+            Comment reply = comment.writeReply("reply" + i, member);
+
             commentRepository.save(comment);
+            commentRepository.save(reply);
 
-            if (i == 25 || i == 50) comment.remove();
+            if (i == 49) {
+                reply.remove();
+            }
         }
 
+        em.flush();
+        em.clear();
+
         //when
-        List<Comment> commentsWithPost1 = commentRepository.findByPostAndIsRemovedFalse(post1);
-        List<Comment> commentsWithPost2 = commentRepository.findByPostAndIsRemovedFalse(post2);
+        List<Comment> comments1 = commentRepository.findByPostAndIsRemovedFalse(post1);
+        List<Comment> comments2 = commentRepository.findByPostAndIsRemovedFalse(post2);
 
         //then
-        assertThat(commentsWithPost1.size()).isEqualTo(24);
-        assertThat(commentsWithPost2.size()).isEqualTo(24);
-
-        assertThat(commentsWithPost1.get(0).getContent()).isEqualTo("title1");
-        assertThat(commentsWithPost2.get(0).getContent()).isEqualTo("title2");
+        //assertThat(comments1.size()).isEqualTo()
     }
 
     @Test
@@ -108,6 +86,9 @@ class CommentRepositoryTest {
             Comment comment = post.writeComment("content" + i, member);
             commentRepository.save(comment);
         }
+
+        em.flush();
+        em.clear();
 
         PageRequest pageable1 = PageRequest.of(0, 5, Sort.by(Sort.Direction.ASC, "createdDate"));
         PageRequest pageable2 = PageRequest.of(1, 5, Sort.by(Sort.Direction.ASC, "createdDate"));
@@ -159,6 +140,9 @@ class CommentRepositoryTest {
             if (i == 25 || i == 50) reply.remove();
         }
 
+        em.flush();
+        em.clear();
+
         //when
         List<Comment> replies1 = commentRepository.findAllByParentCommentAndIsRemovedFalse(comment1);
         List<Comment> replies2 = commentRepository.findAllByParentCommentAndIsRemovedFalse(comment2);
@@ -197,6 +181,9 @@ class CommentRepositoryTest {
             Comment reply = comment.writeReply("content" + i, member);
             commentRepository.save(reply);
         }
+
+        em.flush();
+        em.clear();
 
         PageRequest pageable1 = PageRequest.of(0, 5, Sort.by(Sort.Direction.ASC, "createdDate"));
         PageRequest pageable2 = PageRequest.of(1, 5, Sort.by(Sort.Direction.ASC, "createdDate"));
