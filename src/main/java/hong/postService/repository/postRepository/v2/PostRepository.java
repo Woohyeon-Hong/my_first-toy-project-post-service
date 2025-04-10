@@ -36,9 +36,6 @@ public interface PostRepository extends JpaRepository<Post, Long>, PostRepositor
     Optional<Post> findByIdAndIsRemovedFalse(Long id);
 
     Page<Post> findAllByWriterAndIsRemovedFalse(Member writer, Pageable pageable);
-    List<Post> findAllByWriterAndIsRemovedFalse(Member writer);
 
     Page<Post> findAllByIsRemovedFalse(Pageable pageable);
-    List<Post> findAllByIsRemovedFalse();
-
 }

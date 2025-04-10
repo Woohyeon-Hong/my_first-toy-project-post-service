@@ -57,62 +57,12 @@ class PostRepositoryTest {
         assertThat(result2).isEmpty();
     }
 
-    @Test
-    void findAllByWriterAndIsRemovedFalseWithoutPaging() {
-        //given
-        Member m1 = Member.createNewMember("user", "pw", "e@e.com", "nick");
-        Member m2 = Member.createNewMember("user2", "pw", "e2@e.com", "nick2");
-
-        memberRepository.save(m1);
-        memberRepository.save(m2);
-
-
-        for (int i = 1; i <= 10; i++) {
-            Post post = (i % 2 != 0)
-                    ? m1.writeNewPost("title" + i, "content" + i)
-                    : m2.writeNewPost("title" + i, "content" + i);
-            if (i == 10) post.remove();
-            postRepository.save(post);
-        }
-
-        flushAndClear();
-
-        // when
-        List<Post> postsOfM1 = postRepository.findAllByWriterAndIsRemovedFalse(m1);
-        List<Post> postsOfM2 = postRepository.findAllByWriterAndIsRemovedFalse(m2);
-
-        // then
-        assertThat(postsOfM1.size()).isEqualTo(5);
-        assertThat(postsOfM2.size()).isEqualTo(4);
-    }
-
-    @Test
-    void findAllByWriterAndIsRemovedFalseWithoutPaging_빈문자열_반환() {
-        //given
-        Member m = Member.createNewMember("user", "pw", "e@e.com", "nick");
-        memberRepository.save(m);
-
-        Post post = m.writeNewPost("title", "content");
-        postRepository.save(post);
-        post.remove();
-
-
-        flushAndClear();
-
-        // when
-        List<Post> posts = postRepository.findAllByWriterAndIsRemovedFalse(m);
-
-        // then
-        assertThat(posts).isEmpty();
-    }
-
-
     /**
      * getSize():	        요청한 페이지의 page size(요청 크기)	PageRequest.of(0, 5) → getSize()는 항상 5
      * getContent().size():	현재 페이지에 실제로 반환된 요소 개수	예: 마지막 페이지라면 4일 수도 있음
      */
     @Test
-    void findAllByWriterAndIsRemovedFalseWithPaging() {
+    void findAllByWriterAndIsRemovedFalse() {
         //given
         Member m1 = memberRepository.save(Member.createNewMember("userA", "pw", "a@a.com", "nickA"));
         Member m2 = memberRepository.save(Member.createNewMember("userB", "pw", "b@b.com", "nickB"));
@@ -153,7 +103,7 @@ class PostRepositoryTest {
     }
 
     @Test
-    void findAllByWriterAndIsRemovedFalseWithPaging_빈문자열_반환() {
+    void findAllByWriterAndIsRemovedFalse_빈문자열_반환() {
         //given
         Member m1 = memberRepository.save(Member.createNewMember("userA", "pw", "a@a.com", "nickA"));
 
@@ -175,49 +125,8 @@ class PostRepositoryTest {
 
     }
 
-
     @Test
-    void findAllByIsRemovedFalseWithoutPaging() {
-        // given
-        Member member = memberRepository.save(Member.createNewMember("user", "pw", "e@e.com", "nick"));
-
-        for (int i = 1; i <= 10; i++) {
-            Post post = member.writeNewPost("title" + i, "content" + i);
-            postRepository.save(post);
-            if (i == 10) post.remove();
-        }
-
-        flushAndClear();
-
-        // when
-        List<Post> posts = postRepository.findAllByIsRemovedFalse();
-
-        // then
-        assertThat(posts.size()).isEqualTo(9);
-    }
-
-    @Test
-    void findAllByIsRemovedFalseWithoutPaging_빈문자열_반환() {
-        // given
-        Member member = memberRepository.save(Member.createNewMember("user", "pw", "e@e.com", "nick"));
-
-        Post post = member.writeNewPost("ttile", "content");
-        postRepository.save(post);
-
-        post.remove();
-
-        flushAndClear();
-
-        // when
-        List<Post> posts = postRepository.findAllByIsRemovedFalse();
-
-        // then
-        assertThat(posts).isEmpty();
-    }
-
-
-    @Test
-    void findAllByIsRemovedFalseWithPaging() {
+    void findAllByIsRemovedFalse() {
         //given
         Member member = memberRepository.save(Member.createNewMember("user", "pw", "e@e.com", "nick"));
 
@@ -246,7 +155,7 @@ class PostRepositoryTest {
     }
 
     @Test
-    void findAllByIsRemovedFalseWithPaging_빈문자열_반환() {
+    void findAllByIsRemovedFalse_빈문자열_반환() {
         //given
         Member member = memberRepository.save(Member.createNewMember("user", "pw", "e@e.com", "nick"));
 
