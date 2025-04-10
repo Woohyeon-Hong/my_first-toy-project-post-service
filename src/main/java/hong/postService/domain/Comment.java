@@ -43,6 +43,7 @@ public class Comment extends BaseTimeEntity {
 
 //생성---------------------------------------------------------------------------------------------------
     public Comment writeReply(String content, Member writer) {
+        validateComment();
         if (content == null) throw new InvalidCommentFieldException("writeReply: content == null");
         if (writer == null) throw new InvalidCommentFieldException("writeComment: writer == null");
 
@@ -63,12 +64,13 @@ public class Comment extends BaseTimeEntity {
 //업데이트---------------------------------------------------------------------------------------------------
 
     public void updateContent(String newContent) {
+        validateComment();
         if (newContent == null) throw new InvalidCommentFieldException("updateContent: newContent == null");
         this.content = newContent;
     }
 
     public void remove() {
-        if (isRemoved) throw new CommentNotFoundException(this.id);
+        validateComment();
 
         for (Comment child : childComments) {
             if (!child.isRemoved()) {
@@ -77,5 +79,9 @@ public class Comment extends BaseTimeEntity {
         }
 
         this.isRemoved = true;
+    }
+
+    private void validateComment() {
+        if (this.isRemoved()) throw new CommentNotFoundException(this.getId());
     }
 }

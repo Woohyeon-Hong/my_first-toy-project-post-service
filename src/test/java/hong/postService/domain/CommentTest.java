@@ -23,11 +23,24 @@ class CommentTest {
         assertThat(reply.getParentComment()).isEqualTo(comment);
         assertThat(reply.getPost()).isEqualTo(post);
 
-        // when & then - 예외
+        // when & then
         assertThatThrownBy(() -> comment.writeReply(null, member))
                 .isInstanceOf(InvalidCommentFieldException.class);
         assertThatThrownBy(() -> comment.writeReply("대댓글", null))
                 .isInstanceOf(InvalidCommentFieldException.class);
+    }
+
+    @Test
+    void writeReply_댓글이_삭제된_상태() {
+        // given
+        Member member = Member.createNewMember("user", "pw", null, "nick");
+        Post post = member.writeNewPost("title", "content");
+        Comment comment = post.writeComment("댓글", member);
+        comment.remove();
+
+        // when & then
+        assertThatThrownBy(() -> comment.writeReply("대댓글", member))
+                .isInstanceOf(CommentNotFoundException.class);
     }
 
     @Test
@@ -43,9 +56,22 @@ class CommentTest {
         // then
         assertThat(comment.getContent()).isEqualTo("수정됨");
 
-        // when & then - 예외
+        // when & then
         assertThatThrownBy(() -> comment.updateContent(null))
                 .isInstanceOf(InvalidCommentFieldException.class);
+    }
+
+    @Test
+    void updateContent_댓글이_삭제된_상태() {
+        // given
+        Member member = Member.createNewMember("user", "pw", null, "nick");
+        Post post = member.writeNewPost("title", "content");
+        Comment comment = post.writeComment("댓글", member);
+        comment.remove();
+
+        // when & then
+        assertThatThrownBy(() -> comment.updateContent("new"))
+                .isInstanceOf(CommentNotFoundException.class);
     }
 
     @Test
