@@ -98,27 +98,31 @@ public class Member extends BaseTimeEntity {
 
 
     public void changeUsername(String username) {
+        validateMember();
         if (username == null) throw new InvalidMemberFieldException("changeUsername: username == null");
         this.username = username;
     }
 
     public void changePassword(String password) {
+        validateMember();
         if (password == null) throw new InvalidMemberFieldException("changePassword: password == null");
         this.password = password;
     }
 
     public void changeEmail(String email) {
+        validateMember();
         if (email == null) throw new InvalidMemberFieldException("changeEmail: email == null");
         this.email = email;
     }
 
     public void changeNickname(String nickname) {
+        validateMember();
         if (nickname == null) throw new InvalidMemberFieldException("changeNickname: nickname == null");
         this.nickname = nickname;
     }
 
     public void remove() {
-        if (isRemoved) throw new MemberNotFoundException(this.id);
+        validateMember();
         this.isRemoved = true;
     }
 
@@ -126,6 +130,7 @@ public class Member extends BaseTimeEntity {
 
 
     public Post writeNewPost(String title, String content) {
+        validateMember();
         if (title == null) throw new InvalidPostFieldException("writeNewPost: title == null");
         if (content == null) throw new InvalidPostFieldException("writeNewPost: content == null");
 
@@ -138,5 +143,9 @@ public class Member extends BaseTimeEntity {
         this.getPosts().add(post);
 
         return post;
+    }
+
+    private void validateMember() {
+        if (this.isRemoved()) throw new MemberNotFoundException(this.getId());
     }
 }

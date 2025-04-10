@@ -10,24 +10,6 @@ import static org.assertj.core.api.Assertions.*;
 class MemberTest {
 
     @Test
-    void validateEmailFormat_이메일형식이_유효하면_true_그외_false() {
-        // given
-        String validEmail = "true@naver.com";
-        String[] invalidEmails = {
-                "fjdkfkfjkf", "@naver.com", "fjdkfkfjkf@", "@naver", "@.com"
-        };
-
-        // when & then
-        assertThat(Member.validateEmailFormat(validEmail)).isTrue();
-
-        for (String email : invalidEmails) {
-            assertThat(Member.validateEmailFormat(email)).isFalse();
-        }
-
-        assertThat(Member.validateEmailFormat(null)).isTrue(); // null은 true 처리
-    }
-
-    @Test
     void createNewMember_정상적으로_생성되고_유효하지않으면_예외발생() {
         // given
         String username = "user";
@@ -46,7 +28,6 @@ class MemberTest {
         assertThat(member.getRole()).isEqualTo(UserRole.USER);
         assertThat(member.isRemoved()).isFalse();
 
-        // 예외 검증
         assertThatThrownBy(() -> Member.createNewMember(null, password, email, nickname))
                 .isInstanceOf(InvalidMemberFieldException.class);
 
@@ -72,7 +53,6 @@ class MemberTest {
         assertThat(admin.getUsername()).isEqualTo(username);
         assertThat(admin.getRole()).isEqualTo(UserRole.ADMIN);
 
-        // 예외 검증
         assertThatThrownBy(() -> Member.createNewAdmin(null, password, email, nickname))
                 .isInstanceOf(InvalidMemberFieldException.class);
 
@@ -84,36 +64,95 @@ class MemberTest {
     }
 
     @Test
-    void changeUsername_정상수행되고_null이면_예외발생() {
+    void validateEmailFormat_이메일형식이_유효하면_true_그외_false() {
+        // given
+        String validEmail = "true@naver.com";
+        String[] invalidEmails = {
+                "fjdkfkfjkf", "@naver.com", "fjdkfkfjkf@", "@naver", "@.com"
+        };
+
+        // when & then
+        assertThat(Member.validateEmailFormat(validEmail)).isTrue();
+
+        for (String email : invalidEmails) {
+            assertThat(Member.validateEmailFormat(email)).isFalse();
+        }
+
+        assertThat(Member.validateEmailFormat(null)).isTrue(); // null은 true 처리
+    }
+
+    @Test
+    void changeUsername_정상수행() {
         Member member = Member.createNewMember("old", "pw", null, "nick");
         member.changeUsername("new");
 
         assertThat(member.getUsername()).isEqualTo("new");
+    }
+
+    @Test
+    void changeUsername_바꿀_이름이_null() {
+        Member member = Member.createNewMember("old", "pw", null, "nick");
 
         assertThatThrownBy(() -> member.changeUsername(null))
                 .isInstanceOf(InvalidMemberFieldException.class);
     }
 
     @Test
-    void changePassword_정상수행되고_null이면_예외발생() {
+    void changeUsername_회원이_삭제된_상태() {
+        Member member = Member.createNewMember("old", "pw", null, "nick");
+
+        member.remove();
+
+        assertThatThrownBy(() -> member.changeUsername("new")).isInstanceOf(MemberNotFoundException.class);
+    }
+
+    @Test
+    void changePassword_정상수행() {
         Member member = Member.createNewMember("user", "pw", null, "nick");
+
         member.changePassword("newpw");
 
         assertThat(member.getPassword()).isEqualTo("newpw");
+    }
+
+    @Test
+    void changePassword_바꿀_비번이_null() {
+        Member member = Member.createNewMember("user", "pw", null, "nick");
 
         assertThatThrownBy(() -> member.changePassword(null))
                 .isInstanceOf(InvalidMemberFieldException.class);
     }
 
     @Test
-    void changeEmail_정상수행되고_null이면_예외발생() {
+    void changePassword_회원이_삭제된_상태() {
+        Member member = Member.createNewMember("user", "pw", null, "nick");
+        member.remove();
+
+        assertThatThrownBy(() -> member.changePassword("new"))
+                .isInstanceOf(MemberNotFoundException.class);
+    }
+
+    @Test
+    void changeEmail_정상수행() {
         Member member = Member.createNewMember("user", "pw", "email@naver.com", "nick");
         member.changeEmail("new@email.com");
 
         assertThat(member.getEmail()).isEqualTo("new@email.com");
+    }
 
+    @Test
+    void changeEmail_바꿀_이메일이_null() {
+        Member member = Member.createNewMember("user", "pw", "email@naver.com", "nick");
         assertThatThrownBy(() -> member.changeEmail(null))
                 .isInstanceOf(InvalidMemberFieldException.class);
+    }
+
+    @Test
+    void changeEmail_회원이_삭제된_상태() {
+        Member member = Member.createNewMember("user", "pw", "email@naver.com", "nick");
+        member.remove();
+        assertThatThrownBy(() -> member.changeEmail("new@naver.com"))
+                .isInstanceOf(MemberNotFoundException.class);
     }
 
     @Test
@@ -122,9 +161,22 @@ class MemberTest {
         member.changeNickname("newnick");
 
         assertThat(member.getNickname()).isEqualTo("newnick");
+    }
+
+    @Test
+    void changeNickname_바꿀_닉네임이_null() {
+        Member member = Member.createNewMember("user", "pw", "email@naver.com", "nick");
 
         assertThatThrownBy(() -> member.changeNickname(null))
                 .isInstanceOf(InvalidMemberFieldException.class);
+    }
+
+    @Test
+    void changeNickname_회원이_삭제된_상태() {
+        Member member = Member.createNewMember("user", "pw", "email@naver.com", "nick");
+        member.remove();
+        assertThatThrownBy(() -> member.changeNickname("new"))
+                .isInstanceOf(MemberNotFoundException.class);
     }
 
     @Test
@@ -142,6 +194,17 @@ class MemberTest {
 
         assertThatThrownBy(() -> member.writeNewPost("제목", null))
                 .isInstanceOf(InvalidPostFieldException.class);
+    }
+
+    @Test
+    void writeNewPost_회원이_삭제된_상태() {
+        Member member = Member.createNewMember("user", "pw", null, "nick");
+
+        member.remove();
+
+
+        assertThatThrownBy(() -> member.writeNewPost("제목", "내용"))
+                .isInstanceOf(MemberNotFoundException.class);
     }
 
     @Test
