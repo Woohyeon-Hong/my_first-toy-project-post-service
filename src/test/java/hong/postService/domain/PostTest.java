@@ -11,6 +11,66 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 class PostTest {
 
     @Test
+    void updateTitle_정상수행되고_null이면_예외가_발생한다() {
+        // given
+        Member member = Member.createNewMember("user", "pw", null, "nick");
+        Post post = member.writeNewPost("old", "content");
+
+        // when
+        post.updateTitle("new");
+
+        // then
+        assertThat(post.getTitle()).isEqualTo("new");
+
+        // when & then
+        assertThatThrownBy(() -> post.updateTitle(null))
+                .isInstanceOf(InvalidPostFieldException.class);
+    }
+
+    @Test
+    void updateTitle_글이_삭제된_상태() {
+        // given
+        Member member = Member.createNewMember("user", "pw", null, "nick");
+        Post post = member.writeNewPost("old", "content");
+
+        post.remove();
+
+        // when & then
+        assertThatThrownBy(() -> post.updateTitle("new"))
+                .isInstanceOf(PostNotFoundException.class);
+    }
+
+    @Test
+    void updateContent_정상수행되고_null이면_예외가_발생한다() {
+        // given
+        Member member = Member.createNewMember("user", "pw", null, "nick");
+        Post post = member.writeNewPost("title", "old");
+
+        // when
+        post.updateContent("new");
+
+        // then
+        assertThat(post.getContent()).isEqualTo("new");
+
+        // when & then
+        assertThatThrownBy(() -> post.updateContent(null))
+                .isInstanceOf(InvalidPostFieldException.class);
+    }
+
+    @Test
+    void updateContent_글이_삭제된_상태() {
+        // given
+        Member member = Member.createNewMember("user", "pw", null, "nick");
+        Post post = member.writeNewPost("title", "old");
+
+        post.remove();
+
+        // when & then
+        assertThatThrownBy(() -> post.updateContent("new"))
+                .isInstanceOf(PostNotFoundException.class);
+    }
+
+    @Test
     void remove_댓글과_대댓글까지_모두_함께_삭제된다() {
         // given
         Member member = Member.createNewMember("user", "pw", null, "nick");
@@ -43,40 +103,6 @@ class PostTest {
         // when & then
         assertThatThrownBy(post::remove)
                 .isInstanceOf(PostNotFoundException.class);
-    }
-
-    @Test
-    void updateTitle_정상수행되고_null이면_예외가_발생한다() {
-        // given
-        Member member = Member.createNewMember("user", "pw", null, "nick");
-        Post post = member.writeNewPost("old", "content");
-
-        // when
-        post.updateTitle("new");
-
-        // then
-        assertThat(post.getTitle()).isEqualTo("new");
-
-        // when & then - 예외
-        assertThatThrownBy(() -> post.updateTitle(null))
-                .isInstanceOf(InvalidPostFieldException.class);
-    }
-
-    @Test
-    void updateContent_정상수행되고_null이면_예외가_발생한다() {
-        // given
-        Member member = Member.createNewMember("user", "pw", null, "nick");
-        Post post = member.writeNewPost("title", "old");
-
-        // when
-        post.updateContent("new");
-
-        // then
-        assertThat(post.getContent()).isEqualTo("new");
-
-        // when & then - 예외
-        assertThatThrownBy(() -> post.updateContent(null))
-                .isInstanceOf(InvalidPostFieldException.class);
     }
 
     @Test
@@ -115,5 +141,17 @@ class PostTest {
         assertThat(child.getParentComment()).isEqualTo(parent);
         assertThat(grandChild.getParentComment()).isEqualTo(child);
         assertThat(grandChild.getPost()).isEqualTo(post);
+    }
+
+    @Test
+    void writeComment_글이_삭제된_상태() {
+        // given
+        Member member = Member.createNewMember("user", "pw", null, "nick");
+        Post post = member.writeNewPost("title", "content");
+
+        post.remove();
+
+        // when & then
+        assertThatThrownBy(() ->  post.writeComment("댓글", member)).isInstanceOf(PostNotFoundException.class);
     }
 }

@@ -1,7 +1,6 @@
 package hong.postService.domain;
 
 import hong.postService.domain.baseEntity.BaseTimeEntity;
-import hong.postService.exception.comment.CommentNotFoundException;
 import hong.postService.exception.comment.InvalidCommentFieldException;
 import hong.postService.exception.post.InvalidPostFieldException;
 import hong.postService.exception.post.PostNotFoundException;
@@ -40,17 +39,19 @@ public class Post extends BaseTimeEntity {
 //비즈니스 로직---------------------------------------------------------------------------------------------------
 
     public void updateTitle(String newTitle) {
+        validatePost();
         if (newTitle == null) throw new InvalidPostFieldException("updateTitle: newTitle == null");
         this.title = newTitle;
     }
 
     public void updateContent(String newContent) {
+        validatePost();
         if (newContent == null) throw new InvalidPostFieldException("updateContent: newContent == null");
         this.content = newContent;
     }
 
     public void remove() {
-        if (isRemoved) throw new PostNotFoundException(this.id);
+        validatePost();
 
         for (Comment comment : comments) {
             if (!comment.isRemoved()) {
@@ -64,7 +65,7 @@ public class Post extends BaseTimeEntity {
 //Comment 작성---------------------------------------------------------------------------------------------------
 
     public  Comment writeComment(String content, Member writer) {
-
+        validatePost();
         if (content == null) throw new InvalidCommentFieldException("writeComment: content == null");
         if (writer == null) throw new InvalidCommentFieldException("writeComment: writer == null");
 
@@ -80,5 +81,9 @@ public class Post extends BaseTimeEntity {
         this.getComments().add(comment);
 
         return comment;
+    }
+
+    private void validatePost() {
+        if (this.isRemoved()) throw new PostNotFoundException(this.getId());
     }
 }
