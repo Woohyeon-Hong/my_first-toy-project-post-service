@@ -27,7 +27,7 @@ class MemberRepositoryTest {
     EntityManager em;
 
     @Test
-    void findByIdAndIsRemovedFalse() {
+    void findByIdAndIsRemovedFalse_Optional로_감싸서_반환() {
         // given
         Member m1 = Member.createNewMember("user", "pw", "e@e.com", "nick");
         Member m2 = Member.createNewMember("user2", "pw", "e2@e.com", "nick2");
@@ -49,7 +49,7 @@ class MemberRepositoryTest {
     }
 
     @Test
-    void findByUsernameAndIsRemovedFalse() {
+    void findByUsernameAndIsRemovedFalse_Optional로_감싸서_반환() {
         // given
         Member m1 = memberRepository.save(Member.createNewMember("user", "pw", "e@e.com", "nick"));
         Member m2 = memberRepository.save(Member.createNewMember("user", "pw2", "e2@e.com", "nick2"));
@@ -70,7 +70,7 @@ class MemberRepositoryTest {
     }
 
     @Test
-    void findAllByUsernameAndIsRemovedFalse() {
+    void findAllByUsernameAndIsRemovedFalse_정상_반환() {
         // given
         Member m1 = Member.createNewMember("same", "pw", "a@a.com", "n1");
         Member m2 = Member.createNewMember("same", "pw2", "b@b.com", "n2");
@@ -88,7 +88,7 @@ class MemberRepositoryTest {
     }
 
     @Test
-    void findAllByUsernameAndIsRemovedFalse_빈문자열_반환() {
+    void findAllByUsernameAndIsRemovedFalse_빈_배열_반환() {
         // given
         Member m = Member.createNewMember("same", "pw", "a@a.com", "n1");
 
@@ -104,7 +104,7 @@ class MemberRepositoryTest {
     }
 
     @Test
-    void findAllByPasswordAndIsRemovedFalse() {
+    void findAllByPasswordAndIsRemovedFalse_정상_반환() {
         // given
         Member m1 = Member.createNewMember("u1", "1234", "a@a.com", "n1");
         Member m2 = Member.createNewMember("u2", "1234", "b@b.com", "n2");
@@ -124,7 +124,7 @@ class MemberRepositoryTest {
     }
 
     @Test
-    void findAllByPasswordndIsRemovedFalse_빈문자열_반환() {
+    void findAllByPasswordndIsRemovedFalse_빈_배열_반환() {
         // given
         Member m = Member.createNewMember("same", "pw", "a@a.com", "n1");
 
@@ -140,7 +140,7 @@ class MemberRepositoryTest {
     }
 
     @Test
-    void findAllByEmailAndIsRemovedFalse() {
+    void findAllByEmailAndIsRemovedFalse_정상_반환() {
         // given
         Member m1 = Member.createNewMember("u1", "pw", "same@naver.com", "n1");
         Member m2 = Member.createNewMember("u2", "pw", "same@naver.com", "n2");
@@ -158,7 +158,7 @@ class MemberRepositoryTest {
     }
 
     @Test
-    void findAllByEmailAndIsRemovedFalse_빈문자열_반환() {
+    void findAllByEmailAndIsRemovedFalse_빈_배열_반환() {
         // given
         Member m = Member.createNewMember("same", "pw", "a@a.com", "n1");
 
@@ -174,7 +174,7 @@ class MemberRepositoryTest {
     }
 
     @Test
-    void findAllByNicknameAndIsRemovedFalse() {
+    void findAllByNicknameAndIsRemovedFalse_정상_반환() {
         // given
         Member m1 = Member.createNewMember("u1", "pw", "a@a.com", "동일닉");
         Member m2 = Member.createNewMember("u2", "pw", "b@b.com", "동일닉");
@@ -192,7 +192,7 @@ class MemberRepositoryTest {
     }
 
     @Test
-    void findAllByNicknameAndIsRemovedFalse_빈문자열_반환() {
+    void findAllByNicknameAndIsRemovedFalse_빈_배열_반환() {
         // given
         Member m = Member.createNewMember("same", "pw", "a@a.com", "n1");
 

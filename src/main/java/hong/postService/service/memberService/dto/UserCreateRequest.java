@@ -22,7 +22,6 @@ public class UserCreateRequest {
     @Size(min = 6, message = "password 6자 이상이어야 합니다.")
     private String password;
 
-    @Email(message = "email 형식이 올바르지 않습니다.")
     private String email;
 
     @NotBlank(message = "nickname은 필수입니다.")
