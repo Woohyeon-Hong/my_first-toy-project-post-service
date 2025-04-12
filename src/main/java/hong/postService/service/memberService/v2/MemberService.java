@@ -126,7 +126,7 @@ public class MemberService {
     }
 
     public Member findMember(Long id) {
-        return memberRepository.findById(id)
+        return memberRepository.findByIdAndIsRemovedFalse(id)
                 .orElseThrow(() -> new MemberNotFoundException(id));
     }
 

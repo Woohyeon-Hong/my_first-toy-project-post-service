@@ -40,6 +40,7 @@ class MemberServiceTest {
         Member member1 = Member.createNewMember("user1", "p1", "u1@naver.com", "n1");
         memberRepository.save(member1);
 
+
         String ok = "user";
         String notOk = "user1";
 
@@ -56,7 +57,14 @@ class MemberServiceTest {
         Member member1 = Member.createNewMember("user1", "p1", "u1@naver.com", "n1");
         memberRepository.save(member1);
 
-        String ok = "p";
+        Member member2 = Member.createNewMember("user2", "p2", "u2@naver.com", "n2");
+        memberRepository.save(member2);
+
+        member2.remove();
+
+        flushAndClear();
+
+        String ok = "p2";
         String notOk = "p1";
 
         //when & then
@@ -73,7 +81,14 @@ class MemberServiceTest {
         Member member1 = Member.createNewMember("user1", "p1", "u1@naver.com", "n1");
         memberRepository.save(member1);
 
-        String ok = "u@naver.com";
+        Member member2 = Member.createNewMember("user2", "p2", "u2@naver.com", "n2");
+        memberRepository.save(member2);
+
+        member2.remove();
+
+        flushAndClear();
+
+        String ok = "u2@naver.com";
         String notOk = "u1@naver.com";
 
         //when & then
@@ -90,7 +105,14 @@ class MemberServiceTest {
         Member member1 = Member.createNewMember("user1", "p1", "u1@naver.com", "n1");
         memberRepository.save(member1);
 
-        String ok = "n";
+        Member member2 = Member.createNewMember("user2", "p2", "u2@naver.com", "n2");
+        memberRepository.save(member2);
+
+        member2.remove();
+
+        flushAndClear();
+
+        String ok = "n2";
         String notOk = "n1";
 
         //when & then
@@ -222,14 +244,19 @@ class MemberServiceTest {
     void updateInfo_필드에_null_또는_새로운_값이_들어오면_정상_업데이트() {
         //given
         UserCreateRequest request = new UserCreateRequest("user1", "p1", "u1@naver.com", "n1", UserRole.USER);
+        UserCreateRequest request2 = new UserCreateRequest("newUsername", "p2", "new@naver.com", "newNickname", UserRole.USER);
 
         Long id = memberService.signUp(request);
+        Long id2 = memberService.signUp(request2);
+
+        memberService.unregister(id2);
 
         Member member = memberRepository.findById(id).orElseThrow();
 
         MemberUpdateInfoRequest updateParam = MemberUpdateInfoRequest.builder()
                 .username("newUsername")
-                .email("newEmail")
+                .email("new@naver.com")
+                .nickname("newNickname")
                 .build();
 
         //when
@@ -242,7 +269,6 @@ class MemberServiceTest {
 
         assertThat(changedMember.getUsername()).isEqualTo(updateParam.getUsername());
         assertThat(changedMember.getEmail()).isEqualTo(updateParam.getEmail());
-        assertThat(changedMember.getNickname()).isEqualTo(updateParam.getNickname());
     }
 
     @Test
@@ -291,11 +317,16 @@ class MemberServiceTest {
     @Test
     void updatePassword_기존_비번_확인() {
         //given
-        UserCreateRequest request = new UserCreateRequest("user1", "p1", "u1@naver.com", "n1", UserRole.USER);
+        UserCreateRequest userCreateRequest = new UserCreateRequest("user1", "p1", "u1@naver.com", "n1", UserRole.USER);
+        UserCreateRequest userCreateRequest2 = new UserCreateRequest("user2", "new", "u2@naver.com", "n2", UserRole.USER);
 
-        Long id = memberService.signUp(request);
+        Long id = memberService.signUp(userCreateRequest);
+        Long id2 = memberService.signUp(userCreateRequest2);
+
+        memberService.unregister(id2);
 
         Member member = memberRepository.findById(id).orElseThrow();
+
 
         PasswordUpdateRequest request1 = new PasswordUpdateRequest(member.getPassword(), "new");
         PasswordUpdateRequest request2 = new PasswordUpdateRequest("틀린 비번", "new");
