@@ -2,9 +2,14 @@ package hong.postService.service.postService.v2;
 
 import hong.postService.domain.Member;
 import hong.postService.domain.Post;
+import hong.postService.domain.UserRole;
+import hong.postService.exception.post.InvalidPostFieldException;
+import hong.postService.exception.post.PostNotFoundException;
 import hong.postService.repository.memberRepository.v2.MemberRepository;
 import hong.postService.repository.postRepository.v2.PostRepository;
 import hong.postService.repository.postRepository.v2.SearchCond;
+import hong.postService.service.memberService.dto.UserCreateRequest;
+import hong.postService.service.memberService.v2.MemberService;
 import hong.postService.service.postService.dto.PostCreateRequest;
 import hong.postService.service.postService.dto.PostSummaryResponse;
 import hong.postService.service.postService.dto.PostUpdateRequest;
@@ -19,14 +24,14 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 @SpringBootTest
 @Transactional
 class PostServiceTest {
 
     @Autowired
-    MemberRepository memberRepository;
+    MemberService memberService;
     @Autowired
     PostRepository postRepository;
     @Autowired
@@ -35,48 +40,57 @@ class PostServiceTest {
     EntityManager em;
 
     @Test
-    void write() {
+    void write_회원조회_후_회원이_있으면_정상_수행() {
         //given
-        Member writer = Member.createNewMember("user", "p", "e@naver.com", "nickname");
-        memberRepository.save(writer);
+        Long memberId1 = memberService.signUp(new UserCreateRequest("user", "p", "e@naver.com", "nickname", UserRole.USER));
+        Long memberId2 = memberService.signUp(new UserCreateRequest("user2", "p2", "e2@naver.com", "nickname2", UserRole.USER));
+
+        memberService.findMember(memberId2).remove();
 
         //when
-        Long savedId = postService.write(writer.getId(), new PostCreateRequest("title1", "content1"));
+        Long postId = postService.write(memberId1, new PostCreateRequest("title1", "content1"));
 
         //then
-        Post post = postRepository.findById(savedId).orElseThrow();
+        Post findPost = postService.getPost(postId);
 
-        assertThat(post.getTitle()).isEqualTo("title1");
-        assertThat(post.getContent()).isEqualTo("content1");
-        assertThat(post.getWriter()).isEqualTo(writer);
+        assertThat(findPost.getTitle()).isEqualTo("title1");
+        assertThat(findPost.getContent()).isEqualTo("content1");
+        assertThat(findPost.getWriter().getId()).isEqualTo(memberId1);
+
+        assertThatThrownBy(() -> postService.write(memberId2, new PostCreateRequest("title2", "content2")));
     }
 
     @Test
-    void deletePost() {
+    void deletePost_postId가_존재하면_정상_삭제() {
         //given
-        Member writer = Member.createNewMember("user", "p", "e@naver.com", "nickname");
-        memberRepository.save(writer);
+        Long memberId = memberService.signUp(new UserCreateRequest("user", "p", "e@naver.com", "nickname", UserRole.USER));
 
-        Long savedId = postService.write(writer.getId(), new PostCreateRequest("title1", "content1"));
-        Post post = postRepository.findById(savedId).orElseThrow();
+        Long postId = postService.write(memberId, new PostCreateRequest("title1", "content1"));
+        Post post = postService.getPost(postId);
 
         //when
-        postService.delete(savedId);
+        postService.delete(postId);
+        flushAndClear();
 
         //then
-        List<Post> posts = postRepository.findAll();
+        Page<Post> posts = postRepository.findAllByIsRemovedFalse(PageRequest.of(0, 5, Sort.by(Sort.Direction.ASC, "createdDate")));
+
         assertThat(posts).doesNotContain(post);
+        assertThatThrownBy(() -> postService.delete(10000L)).isInstanceOf(PostNotFoundException.class);
     }
 
     @Test
-    void getPosts() {
+    void getPosts_삭제된_글_제외하고_모두_반환() {
         //given
-        Member writer = Member.createNewMember("user", "p", "e@naver.com", "nickname");
-        memberRepository.save(writer);
+        Long memberId = memberService.signUp(new UserCreateRequest("user", "p", "e@naver.com", "nickname", UserRole.USER));
 
+        Long postId;
         for (int i = 1; i <= 50; i++) {
-            postService.write(writer.getId(), new PostCreateRequest("title" + i, "content" + i));
+            postId = postService.write(memberId, new PostCreateRequest("title" + i, "content" + i));
+            if (i == 50) postService.delete(postId);
         }
+
+        flushAndClear();
 
         PageRequest pageRequest1 = PageRequest.of(0, 25, Sort.by(Sort.Direction.ASC, "createdDate"));
         PageRequest pageRequest2 = PageRequest.of(1, 25, Sort.by(Sort.Direction.ASC, "createdDate"));
@@ -86,113 +100,180 @@ class PostServiceTest {
         Page<PostSummaryResponse> posts2 = postService.getPosts(pageRequest2);
 
         //then
-        assertThat(posts1.getTotalPages()).isEqualTo(2);
         assertThat(posts1.getSize()).isEqualTo(25);
         assertThat(posts2.getSize()).isEqualTo(25);
-        assertThat(posts1.getContent().get(0).getTitle()).isEqualTo("title1");
-        assertThat(posts2.getContent().get(0).getTitle()).isEqualTo("title26");
+
+        assertThat(posts1.getTotalPages()).isEqualTo(2);
+
+        assertThat(posts1.getTotalElements()).isEqualTo(49);
     }
 
     @Test
-    void getMemberPosts() {
+    void getMemberPosts_회원이_작성한_글_중에서_삭제된_글_제외하고_모두_반환() {
         //given
-        Member member = Member.createNewMember("userA", "pA", "userA@naver.com", "nicknameA");
-        memberRepository.save(member);
+        Long memberId1 = memberService.signUp(new UserCreateRequest("userA", "pA", "userA@naver.com", "nicknameA", UserRole.USER));
+        Long memberId2 = memberService.signUp(new UserCreateRequest("userB", "pB", "userB@naver.com", "nicknameB", UserRole.USER));
 
-        Member member2 = Member.createNewMember("userB", "pB", "userB@naver.com", "nicknameB");
-        memberRepository.save(member2);
-
+        Long postId;
         for (int i = 1; i <= 100; i++) {
-            if (i % 2 != 0) postService.write(member.getId(), new PostCreateRequest("title" + i, "content" + i));
-            else postService.write(member2.getId(), new PostCreateRequest("title" + i, "content" + i));
+            if (i % 2 != 0) postId = postService.write(memberId1, new PostCreateRequest("title" + i, "content" + i));
+            else postId = postService.write(memberId2, new PostCreateRequest("title" + i, "content" + i));
+
+            if (i == 99 || i == 100) postService.delete(postId);
         }
 
-        PageRequest pageRequest = PageRequest.of(0, 10, Sort.by(Sort.Direction.ASC, "createdDate"));
+        flushAndClear();
+
+        PageRequest pageRequest = PageRequest.of(0, 25, Sort.by(Sort.Direction.ASC, "createdDate"));
 
         //when
-        Page<PostSummaryResponse> posts = postService.getMemberPosts(member.getId(), pageRequest);
-        Page<PostSummaryResponse> posts2 = postService.getMemberPosts(member2.getId(), pageRequest);
+        Page<PostSummaryResponse> posts1 = postService.getMemberPosts(memberId1, pageRequest);
+        Page<PostSummaryResponse> posts2 = postService.getMemberPosts(memberId2, pageRequest);
 
         //then
-        assertThat(posts.getSize()).isEqualTo(10);
-        assertThat(posts2.getSize()).isEqualTo(10);
-        assertThat(posts.getTotalPages()).isEqualTo(5);
-        assertThat(posts2.getTotalPages()).isEqualTo(5);
+        assertThat(posts1.getSize()).isEqualTo(25);
+        assertThat(posts2.getSize()).isEqualTo(25);
+
+        assertThat(posts1.getTotalPages()).isEqualTo(2);
+        assertThat(posts2.getTotalPages()).isEqualTo(2);
+
+        assertThat(posts1.getTotalElements()).isEqualTo(49);
+        assertThat(posts2.getTotalElements()).isEqualTo(49);
+    }
+
+   @Test
+   void search_작성자_닉네임만() {
+        //given
+       Long memberId1 = memberService.signUp(new UserCreateRequest("user", "p", "e@naver.com", "nickname1", UserRole.USER));
+       Long memberId2 = memberService.signUp(new UserCreateRequest("user2", "p2", "e2@naver.com", "nickname2", UserRole.USER));
+
+       Long postId;
+       for (int i = 1; i <= 100; i++) {
+           if (i % 2 != 0) postId = postService.write(memberId1, new PostCreateRequest("title" + i, "content" + i));
+           else postId =  postService.write(memberId2, new PostCreateRequest("title" + i, "content" + i));;
+
+           if (postId == 99) postService.delete(postId);
+       }
+
+       flushAndClear();
+
+       SearchCond cond = SearchCond.builder()
+               .writer("nickname1")
+               .build();
+
+       PageRequest pageRequest1 = PageRequest.of(0, 25, Sort.by(Sort.Direction.ASC, "createdDate"));
+       PageRequest pageRequest2 = PageRequest.of(1, 25, Sort.by(Sort.Direction.ASC, "createdDate"));
+
+       //when
+       Page<PostSummaryResponse> posts1 = postService.search(cond, pageRequest1);
+       Page<PostSummaryResponse> posts2 = postService.search(cond, pageRequest2);
+
+       //then
+        assertThat(posts1.getSize()).isEqualTo(25);
+        assertThat(posts2.getSize()).isEqualTo(25);
+
+        assertThat(posts1.getTotalPages()).isEqualTo(2);
+        assertThat(posts2.getTotalPages()).isEqualTo(2);
+
+        assertThat(posts1.getTotalElements()).isEqualTo(49);
+   }
+
+    @Test
+    void search_제목만() {
+        //given
+        Long memberId1 = memberService.signUp(new UserCreateRequest("user", "p", "e@naver.com", "nickname1", UserRole.USER));
+        Long memberId2 = memberService.signUp(new UserCreateRequest("user2", "p2", "e2@naver.com", "nickname2", UserRole.USER));
+
+        Long postId;
+        for (int i = 1; i <= 100; i++) {
+            if (i % 2 != 0) postId =  postService.write(memberId1, new PostCreateRequest("title" + i, "content" + i));
+            else postId = postService.write(memberId2, new PostCreateRequest("title" + i, "content" + i));;
+            if (i == 99) postService.delete(postId);
+        }
+
+        flushAndClear();
+
+        SearchCond cond = SearchCond.builder()
+                .title("title9")
+                .build();
+
+        PageRequest pageRequest1 = PageRequest.of(0, 25, Sort.by(Sort.Direction.ASC, "createdDate"));
+
+        //when
+        Page<PostSummaryResponse> posts = postService.search(cond, pageRequest1);
+
+        //then
+        assertThat(posts.getTotalElements()).isEqualTo(10);
     }
 
     @Test
-    void search() {
+    void search_작성자_닉네임_제목_둘다() {
         //given
-        Member member = Member.createNewMember("userA", "pA", "userA@naver.com", "nicknameA");
-        memberRepository.save(member);
-
-        Member member2 = Member.createNewMember("userB", "pB", "userB@naver.com", "nicknameB");
-        memberRepository.save(member2);
+        Long memberId1 = memberService.signUp(new UserCreateRequest("user", "p", "e@naver.com", "nickname1", UserRole.USER));
+        Long memberId2 = memberService.signUp(new UserCreateRequest("user2", "p2", "e2@naver.com", "nickname2", UserRole.USER));
 
         for (int i = 1; i <= 100; i++) {
-            if (i % 2 != 0) postService.write(member.getId(), new PostCreateRequest("title" + i, "content" + i));
-            else postService.write(member2.getId(), new PostCreateRequest("title" + i, "content" + i));
+            if (i % 2 != 0) postService.write(memberId1, new PostCreateRequest("title" + i, "content" + i));
+            else postService.write(memberId2, new PostCreateRequest("title" + i, "content" + i));;
         }
 
-        SearchCond usernameCond = SearchCond.builder()
-                .writer("user")
-                .build();
+        flushAndClear();
 
-        SearchCond usernameCond2 = SearchCond.builder()
-                .writer("userB")
-                .build();
-
-        SearchCond titleCond = SearchCond.builder()
-                .title("title")
-                .build();
-
-        SearchCond titleCond2 = SearchCond.builder()
+        SearchCond cond = SearchCond.builder()
+                .writer("nickname1")
                 .title("title99")
                 .build();
 
-        PageRequest pageable = PageRequest.of(0, 10, Sort.by(Sort.Direction.ASC, "createdDate"));
-        PageRequest pageable2 = PageRequest.of(1, 10, Sort.by(Sort.Direction.ASC, "createdDate"));
+        PageRequest pageRequest1 = PageRequest.of(0, 25, Sort.by(Sort.Direction.ASC, "createdDate"));
 
         //when
-        Page<PostSummaryResponse> posts1 = postService.search(usernameCond, pageable);
-        Page<PostSummaryResponse> posts2 = postService.search(usernameCond, pageable2);
-
-        Page<PostSummaryResponse> posts3 = postService.search(usernameCond2, pageable);
-        Page<PostSummaryResponse> posts4 = postService.search(usernameCond2, pageable2);
-
-        Page<PostSummaryResponse> posts5 = postService.search(titleCond, pageable);
-        Page<PostSummaryResponse> posts6 = postService.search(titleCond, pageable2);
-
-        Page<PostSummaryResponse> posts7 = postService.search(titleCond2, pageable);
+        Page<PostSummaryResponse> posts = postService.search(cond, pageRequest1);
 
         //then
-        assertThat(posts1.getTotalPages()).isEqualTo(10);
-        assertThat(posts3.getTotalPages()).isEqualTo(5);
-        assertThat(posts5.getTotalPages()).isEqualTo(10);
-        assertThat(posts7.getTotalPages()).isEqualTo(1);
-
-        assertThat(posts1.getSize()).isEqualTo(10);
-        assertThat(posts2.getSize()).isEqualTo(10);
-        assertThat(posts3.getSize()).isEqualTo(10);
-        assertThat(posts4.getSize()).isEqualTo(10);
-        assertThat(posts5.getSize()).isEqualTo(10);
-        assertThat(posts6.getSize()).isEqualTo(10);
-
-        assertThat(posts1.getContent().get(0).getTitle()).isEqualTo("title1");
-        assertThat(posts2.getContent().get(0).getTitle()).isEqualTo("title11");
-        assertThat(posts3.getContent().get(0).getTitle()).isEqualTo("title2");
-        assertThat(posts4.getContent().get(0).getTitle()).isEqualTo("title22");
-        assertThat(posts5.getContent().get(0).getTitle()).isEqualTo("title1");
-        assertThat(posts6.getContent().get(0).getTitle()).isEqualTo("title11");
+        assertThat(posts.getTotalElements()).isEqualTo(1);
     }
 
     @Test
-    void update() {
+    void search_결과x() {
         //given
-        Member writer = Member.createNewMember("user", "p", "e@naver.com", "nickname");
-        memberRepository.save(writer);
+        Long memberId1 = memberService.signUp(new UserCreateRequest("user", "p", "e@naver.com", "nickname1", UserRole.USER));
+        Long memberId2 = memberService.signUp(new UserCreateRequest("user2", "p2", "e2@naver.com", "nickname2", UserRole.USER));
 
-        Long savedId = postService.write(writer.getId(), new PostCreateRequest("title1", "content1"));
+        Long postId;
+        for (int i = 1; i <= 100; i++) {
+            if (i % 2 != 0) postId = postService.write(memberId1, new PostCreateRequest("title" + i, "content" + i));
+            else postId = postService.write(memberId2, new PostCreateRequest("title" + i, "content" + i));;
+            if (i == 99) postService.delete(postId);
+        }
+
+        flushAndClear();
+
+        SearchCond cond = SearchCond.builder()
+                .writer("존재하지 않는 닉네임")
+                .title("존재한지 않는 제목")
+                .build();
+
+        PageRequest pageRequest1 = PageRequest.of(0, 25, Sort.by(Sort.Direction.ASC, "createdDate"));
+
+        //when
+        Page<PostSummaryResponse> posts = postService.search(cond, pageRequest1);
+
+        //then
+        assertThat(posts.getTotalElements()).isEqualTo(0);
+    }
+
+
+    @Test
+    void update_postId가_있으면_정상_수행() {
+        //given
+        Long memberId = memberService.signUp(new UserCreateRequest("user", "p", "e@naver.com", "nickname", UserRole.USER));
+
+        Long postId1 = postService.write(memberId, new PostCreateRequest("title1", "content1"));
+
+        Long postId2 = postService.write(memberId, new PostCreateRequest("title2", "content2"));
+        postService.delete(postId2);
+
+        flushAndClear();
 
         String newTitle = "newTitle";
         String newContent = "newContent";
@@ -203,15 +284,23 @@ class PostServiceTest {
                 .build();
 
         //when
-        postService.update(savedId, updateParam);
-        em.flush();
-        em.clear();
+        postService.update(postId1, updateParam);
+
+        flushAndClear();
 
         //then
-        Post findPost = postRepository.findById(savedId).orElseThrow();
+        Post findPost = postService.getPost(postId1);
 
         assertThat(findPost.getTitle()).isEqualTo(newTitle);
         assertThat(findPost.getContent()).isEqualTo(newContent);
+
         assertThat(findPost.getLastModifiedDate()).isAfter(findPost.getCreatedDate());
+
+        assertThatThrownBy(() -> postService.delete(postId2)).isInstanceOf(PostNotFoundException.class);
+    }
+
+    private void flushAndClear() {
+        em.flush();
+        em.clear();
     }
 }

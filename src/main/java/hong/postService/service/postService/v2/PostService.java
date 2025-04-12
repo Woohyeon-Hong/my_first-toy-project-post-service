@@ -30,8 +30,6 @@ public class PostService {
 
         Member member = memberService.findMember(memberId);
 
-        System.out.println("request.getTitle() = " + request.getTitle());
-        System.out.println("request.getContent() = " + request.getContent());
         Post post = member.writeNewPost(request.getTitle(), request.getContent());
         Post saved = postRepository.save(post);
 
@@ -40,23 +38,23 @@ public class PostService {
 
     @Transactional
     public void delete(Long id) {
-        Post post = postRepository.findById(id).orElseThrow(() ->
+        Post post = postRepository.findByIdAndIsRemovedFalse(id).orElseThrow(() ->
                 new PostNotFoundException(id));
 
         post.remove();
     }
 
-    public PostDetailResponse getPostDetailResponse(Long postId) {
-        Post post = postRepository.findById(postId).orElseThrow(() -> new PostNotFoundException(postId));
-        return PostDetailResponse.from(post);
+    public Post getPost(Long postId) {
+        return postRepository.findByIdAndIsRemovedFalse(postId).orElseThrow(() -> new PostNotFoundException(postId));
     }
 
-    public Post findPost(Long postId) {
-        return postRepository.findById(postId).orElseThrow(() -> new PostNotFoundException(postId));
+    public PostDetailResponse getPostDetailResponse(Long postId) {
+        return PostDetailResponse.from(getPost(postId));
     }
+
 
     public Page<PostSummaryResponse> getPosts(Pageable pageable) {
-        return postRepository.findAll(pageable).map(PostSummaryResponse::from);
+        return postRepository.findAllByIsRemovedFalse(pageable).map(PostSummaryResponse::from);
     }
 
     public Page<PostSummaryResponse> search(SearchCond cond, Pageable pageable) {
@@ -70,10 +68,12 @@ public class PostService {
 
     @Transactional
     public void update(Long id, PostUpdateRequest updateParam) {
-        Post post = postRepository.findById(id).orElseThrow(()
+        Post post = postRepository.findByIdAndIsRemovedFalse(id).orElseThrow(()
                 -> new PostNotFoundException(id));
 
-        post.updateTitle(updateParam.getTitle());
-        post.updateContent(updateParam.getContent());
+        String title = updateParam.getTitle();
+        String content = updateParam.getContent();
+        if (title != null) post.updateTitle(title);
+        if (content != null) post.updateContent(content);
     }
 }

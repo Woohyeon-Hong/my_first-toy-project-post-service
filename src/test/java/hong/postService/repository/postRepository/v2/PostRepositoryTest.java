@@ -33,7 +33,7 @@ class PostRepositoryTest {
     EntityManager em;
 
     @Test
-    void findByIdAndIsRemovedFalse() {
+    void findByIdAndIsRemovedFalse_Optional로_감싸서_반환() {
         //given
         Member m = Member.createNewMember("user", "pw", "e@e.com", "nick");
         memberRepository.save(m);
@@ -62,7 +62,7 @@ class PostRepositoryTest {
      * getContent().size():	현재 페이지에 실제로 반환된 요소 개수	예: 마지막 페이지라면 4일 수도 있음
      */
     @Test
-    void findAllByWriterAndIsRemovedFalse() {
+    void findAllByWriterAndIsRemovedFalse_정상_반환() {
         //given
         Member m1 = memberRepository.save(Member.createNewMember("userA", "pw", "a@a.com", "nickA"));
         Member m2 = memberRepository.save(Member.createNewMember("userB", "pw", "b@b.com", "nickB"));
@@ -103,7 +103,7 @@ class PostRepositoryTest {
     }
 
     @Test
-    void findAllByWriterAndIsRemovedFalse_빈문자열_반환() {
+    void findAllByWriterAndIsRemovedFalse_빈_배열_반환() {
         //given
         Member m1 = memberRepository.save(Member.createNewMember("userA", "pw", "a@a.com", "nickA"));
 
@@ -126,7 +126,7 @@ class PostRepositoryTest {
     }
 
     @Test
-    void findAllByIsRemovedFalse() {
+    void findAllByIsRemovedFalse_정상_반환() {
         //given
         Member member = memberRepository.save(Member.createNewMember("user", "pw", "e@e.com", "nick"));
 
@@ -155,7 +155,7 @@ class PostRepositoryTest {
     }
 
     @Test
-    void findAllByIsRemovedFalse_빈문자열_반환() {
+    void findAllByIsRemovedFalse_빈_배열_반환() {
         //given
         Member member = memberRepository.save(Member.createNewMember("user", "pw", "e@e.com", "nick"));
 
