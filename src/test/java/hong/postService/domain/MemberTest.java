@@ -173,6 +173,16 @@ class MemberTest {
     }
 
     @Test
+    void changeEmail_바꿀_이메일이_잘못된_형식() {
+        //given
+        Member member = Member.createNewMember("user", "pw", "email@naver.com", "nick");
+
+        //when & then
+        assertThatThrownBy(() -> member.changeEmail("잘못된 형식"))
+                .isInstanceOf(InvalidMemberFieldException.class);
+    }
+
+    @Test
     void changeEmail_회원이_삭제된_상태() {
         //given
         Member member = Member.createNewMember("user", "pw", "email@naver.com", "nick");

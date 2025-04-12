@@ -112,6 +112,8 @@ public class Member extends BaseTimeEntity {
     public void changeEmail(String email) {
         validateMember();
         if (email == null) throw new InvalidMemberFieldException("changeEmail: email == null");
+        if (!validateEmailFormat(email)) throw new InvalidMemberFieldException("changeEmail: email 형식이 잘못됨");
+
         this.email = email;
     }
 
