@@ -49,8 +49,7 @@ public class PostController {
             @PathVariable("postId") Long postId,
             Pageable pageable
     ) {
-        Post post = postService.findPost(postId);
-        Page<CommentResponse> comments = commentService.getCommentsByPost(post, pageable);
+        Page<CommentResponse> comments = commentService.getCommentsByPost(postId, pageable);
 
         return ResponseEntity
                 .ok(comments);

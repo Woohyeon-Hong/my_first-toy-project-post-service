@@ -40,8 +40,14 @@ class MemberServiceTest {
         Member member1 = Member.createNewMember("user1", "p1", "u1@naver.com", "n1");
         memberRepository.save(member1);
 
+        Member member2 = Member.createNewMember("user2", "p2", "u2@naver.com", "n2");
+        memberRepository.save(member2);
 
-        String ok = "user";
+        member2.remove();
+
+        flushAndClear();
+
+        String ok = "user2";
         String notOk = "user1";
 
         //when & then
@@ -256,7 +262,6 @@ class MemberServiceTest {
         MemberUpdateInfoRequest updateParam = MemberUpdateInfoRequest.builder()
                 .username("newUsername")
                 .email("new@naver.com")
-                .nickname("newNickname")
                 .build();
 
         //when
@@ -269,6 +274,8 @@ class MemberServiceTest {
 
         assertThat(changedMember.getUsername()).isEqualTo(updateParam.getUsername());
         assertThat(changedMember.getEmail()).isEqualTo(updateParam.getEmail());
+
+        assertThat(changedMember.getLastModifiedDate()).isAfter(changedMember.getCreatedDate());
     }
 
     @Test
@@ -292,6 +299,8 @@ class MemberServiceTest {
         //then
         Member changedMember = memberRepository.findById(id).orElseThrow();
         assertThat(changedMember).isEqualTo(member);
+
+        assertThat(changedMember.getLastModifiedDate()).isEqualTo(changedMember.getCreatedDate());
     }
 
     @Test
@@ -339,6 +348,7 @@ class MemberServiceTest {
         //then
         Member findMember = memberService.findMember(id);
         assertThat(findMember.getPassword()).isEqualTo(request1.getNewPassword());
+        assertThat(findMember.getLastModifiedDate()).isAfter(findMember.getCreatedDate());
 
         assertThatThrownBy(() ->  memberService.updatePassword(member.getId(), request2))
                 .isInstanceOf(PasswordMismatchException.class);

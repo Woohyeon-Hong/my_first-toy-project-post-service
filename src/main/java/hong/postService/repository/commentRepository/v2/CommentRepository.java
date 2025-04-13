@@ -6,7 +6,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import java.util.List;
 import java.util.Optional;
 
 /**
@@ -35,9 +34,7 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
 
     Optional<Comment> findByIdAndIsRemovedFalse(Long id);
 
-    Page<Comment> findByPostAndIsRemovedFalse(Post post, Pageable pageable);
-    List<Comment> findByPostAndIsRemovedFalse(Post post);
+    Page<Comment> findAllByPostAndIsRemovedFalse(Post post, Pageable pageable);
 
     Page<Comment> findAllByParentCommentAndIsRemovedFalse(Comment parentComment, Pageable pageable);
-    List<Comment> findAllByParentCommentAndIsRemovedFalse(Comment parentComment);
 }

@@ -4,6 +4,9 @@ import hong.postService.domain.Comment;
 import hong.postService.domain.Member;
 import hong.postService.domain.Post;
 import hong.postService.domain.UserRole;
+import hong.postService.exception.comment.CommentNotFoundException;
+import hong.postService.exception.member.MemberNotFoundException;
+import hong.postService.exception.post.PostNotFoundException;
 import hong.postService.repository.commentRepository.v2.CommentRepository;
 import hong.postService.repository.memberRepository.v2.MemberRepository;
 import hong.postService.repository.postRepository.v2.PostRepository;
@@ -23,7 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 @SpringBootTest
 @Transactional
@@ -42,222 +45,155 @@ class CommentServiceTest {
     PostRepository postRepository;
 
     @Test
-    void write() {
+    void write_memberId와_postId가_null이_아니면_정상_수행하고_id_반환() {
         //given
-        UserCreateRequest request = new UserCreateRequest("user", "p", "e@naver.com", "nickname", UserRole.USER);
-        Long id = memberService.signUp(request);
+        Long memberId = memberService.signUp(new UserCreateRequest("user", "p", "e@naver.com", "nickname", UserRole.USER));
 
-        Long postId = postService.write(id, new PostCreateRequest("title1", "content1"));
+        Long postId = postService.write(memberId, new PostCreateRequest("title", "content"));
 
         //when
-        Long commentId = commentService.write(postId, id, "content");
+        Long commentId = commentService.write(postId, memberId, "comment");
 
         //then
-        Comment comment = commentRepository.findById(commentId).orElseThrow();
+        Comment comment = commentService.getComment(commentId);
+        assertThat(comment.getContent()).isEqualTo("comment");
 
-        Assertions.assertThat(comment.getContent()).isEqualTo("content");
+        assertThatThrownBy(() -> commentService.write(null, memberId, "comment")).isInstanceOf(PostNotFoundException.class);
+        assertThatThrownBy(() -> commentService.write(postId, null, "comment")).isInstanceOf(MemberNotFoundException.class);
     }
 
     @Test
-    void writeReply() {
+    void writeReply_memberId와_commentId가_null이_아니면_정상_수행하고_id_반환() {
         //given
-        UserCreateRequest request = new UserCreateRequest("user", "p", "e@naver.com", "nickname", UserRole.USER);
-        Long id = memberService.signUp(request);
+        Long memberId = memberService.signUp(new UserCreateRequest("user", "p", "e@naver.com", "nickname", UserRole.USER));
 
-        Long postId = postService.write(id, new PostCreateRequest("title1", "content1"));
-        Long commentId = commentService.write(postId, id, "content");
+        Long postId = postService.write(memberId, new PostCreateRequest("title", "content"));
+
+        Long commentId = commentService.write(postId, memberId, "comment");
 
         //when
-        Long replyId = commentService.writeReply(commentId, id, "content");
+        Long replyId = commentService.writeReply(commentId, memberId, "reply");
 
         //then
-        Comment reply = commentRepository.findById(replyId).orElseThrow();
+        Comment reply = commentService.getComment(replyId);
+        assertThat(reply.getContent()).isEqualTo("reply");
 
-        Assertions.assertThat(reply.getContent()).isEqualTo("content");
+        assertThatThrownBy(() -> commentService.writeReply(null, memberId, "comment")).isInstanceOf(CommentNotFoundException.class);
+        assertThatThrownBy(() -> commentService.writeReply(commentId, null, "comment")).isInstanceOf(MemberNotFoundException.class);
     }
 
     @Test
-    void getCommentsByPostWithoutPaging() {
+    void getCommentsByPost_postId가_null이_아니면_삭제된_댓글을_제외하고_모두_반환() {
         //given
-        UserCreateRequest request = new UserCreateRequest("user", "p", "e@naver.com", "nickname", UserRole.USER);
-        Long id = memberService.signUp(request);
+        Long memberId = memberService.signUp(new UserCreateRequest("user", "p", "e@naver.com", "nickname", UserRole.USER));
 
-        Member member = memberRepository.findById(id).orElseThrow();
-
-        Long postId = postService.write(id, new PostCreateRequest("title1", "content1"));
-        Post post1 = postRepository.findById(postId).orElseThrow();
-        Long postId2 = postService.write(id, new PostCreateRequest("title2", "content2"));
-        Post post2 = postRepository.findById(postId2).orElseThrow();
+        Long postId1 = postService.write(memberId, new PostCreateRequest("title1", "content1"));
+        Long postId2 = postService.write(memberId, new PostCreateRequest("title2", "content2"));
 
         for (int i = 1; i <= 50; i++) {
-            if (i % 2 != 0)  commentService.write(post1.getId(), member.getId(), "title" + i);
-            else  commentService.write(post2.getId(), member.getId(), "title" + i);
+            Long commentId;
+            if (i % 2 != 0) commentId = commentService.write(postId1, memberId, "comment" + i);
+            else commentId = commentService.write(postId2, memberId, "comment" + i);
+            Long replyId = commentService.writeReply(commentId, memberId, "reply" + i);
+
+            if (i == 49) commentService.getComment(replyId).remove();
+            if (i == 50) commentService.getComment(commentId).remove();
         }
 
         //when
-        List<Comment> commentsWithPost1 = commentService.getCommentsByPost(post1);
-        List<Comment> commentsWithPost2 = commentService.getCommentsByPost(post2);
+        Page<CommentResponse> comments1 = commentService.getCommentsByPost(postId1, PageRequest.of(0, 10, Sort.by(Sort.Direction.ASC, "createdDate")));
+        Page<CommentResponse> comments2 = commentService.getCommentsByPost(postId2, PageRequest.of(0, 10, Sort.by(Sort.Direction.ASC, "createdDate")));
 
         //then
-        assertThat(commentsWithPost1.size()).isEqualTo(25);
-        assertThat(commentsWithPost2.size()).isEqualTo(25);
+        assertThat(comments1.getSize()).isEqualTo(10);
+        assertThat(comments2.getSize()).isEqualTo(10);
 
-        assertThat(commentsWithPost1.get(0).getContent()).isEqualTo("title1");
-        assertThat(commentsWithPost2.get(0).getContent()).isEqualTo("title2");
+        assertThat(comments1.getTotalPages()).isEqualTo(5);
+        assertThat(comments2.getTotalPages()).isEqualTo(5);
+
+        assertThat(comments1.getTotalElements()).isEqualTo(49);
+        assertThat(comments2.getTotalElements()).isEqualTo(48);
+
+        assertThatThrownBy(() -> commentService.getCommentsByPost(null, PageRequest.of(0, 10, Sort.by(Sort.Direction.ASC, "createdDate"))))
+                .isInstanceOf(PostNotFoundException.class);
     }
 
     @Test
-    void getCommentsByPostWithPaging() {
+    void getCommentsByParentComment_parentCommentId가_null이_아니면_삭제된_댓글을_제외하고_모두_반환() {
         //given
-        UserCreateRequest request = new UserCreateRequest("user", "p", "e@naver.com", "nickname", UserRole.USER);
-        Long id = memberService.signUp(request);
+        Long memberId = memberService.signUp(new UserCreateRequest("user", "p", "e@naver.com", "nickname", UserRole.USER));
 
-        Member member = memberRepository.findById(id).orElseThrow();
+        Long postId = postService.write(memberId, new PostCreateRequest("title1", "content1"));
 
-        Long postId = postService.write(id, new PostCreateRequest("title1", "content1"));
-        Post post1 = postRepository.findById(postId).orElseThrow();
-        Long postId2 = postService.write(id, new PostCreateRequest("title2", "content2"));
-        Post post2 = postRepository.findById(postId2).orElseThrow();
+        Long commentId1 = commentService.write(postId, memberId, "comment1");
+        Long commentId2 = commentService.write(postId, memberId, "comment2");
+
 
         for (int i = 1; i <= 50; i++) {
-            if (i % 2 != 0)  commentService.write(post1.getId(), member.getId(), "content" + i);
-            else  commentService.write(post2.getId(), member.getId(), "content" + i);
-        }
-
-        PageRequest pageable1 = PageRequest.of(0, 5, Sort.by(Sort.Direction.ASC, "createdDate"));
-        PageRequest pageable2 = PageRequest.of(1, 5, Sort.by(Sort.Direction.ASC, "createdDate"));
-
-        //when
-        Page<CommentResponse> commentsWithPost1 = commentService.getCommentsByPost(post1, pageable1);
-        Page<CommentResponse> commentsWithPost2 = commentService.getCommentsByPost(post1, pageable2);
-        Page<CommentResponse> commentsWithPost3 = commentService.getCommentsByPost(post2, pageable1);
-        Page<CommentResponse> commentsWithPost4 = commentService.getCommentsByPost(post2, pageable2);
-
-        //then
-        assertThat(commentsWithPost1.getTotalPages()).isEqualTo(5);
-        assertThat(commentsWithPost3.getTotalPages()).isEqualTo(5);
-
-        assertThat(commentsWithPost1.getSize()).isEqualTo(5);
-        assertThat(commentsWithPost2.getSize()).isEqualTo(5);
-        assertThat(commentsWithPost3.getSize()).isEqualTo(5);
-        assertThat(commentsWithPost4.getSize()).isEqualTo(5);
-
-        assertThat(commentsWithPost1.getContent().get(0).getContent()).isEqualTo("content1");
-        assertThat(commentsWithPost2.getContent().get(0).getContent()).isEqualTo("content11");
-        assertThat(commentsWithPost3.getContent().get(0).getContent()).isEqualTo("content2");
-        assertThat(commentsWithPost4.getContent().get(0).getContent()).isEqualTo("content12");
-    }
-
-    @Test
-    void getCommentsByParentCommentWithoutPaging() {
-        //given
-        UserCreateRequest request = new UserCreateRequest("user", "p", "e@naver.com", "nickname", UserRole.USER);
-        Long id = memberService.signUp(request);
-
-        Member member = memberRepository.findById(id).orElseThrow();
-
-        Long postId = postService.write(id, new PostCreateRequest("title1", "content1"));
-        Post post = postRepository.findById(postId).orElseThrow();
-
-        Long commentId = commentService.write(postId, id, "content");
-        Comment comment1 = commentRepository.findById(commentId).orElseThrow();
-
-        Long commentId2 = commentService.write(postId, id, "content2");
-        Comment comment2 = commentRepository.findById(commentId2).orElseThrow();
-
-        for (int i = 1; i <= 50; i++) {
-            if (i % 2 != 0) commentService.writeReply(commentId, id, "content" + i);
-            else commentService.writeReply(commentId2, id, "content" + i);
+            Long replyId;
+            if (i % 2 != 0) replyId = commentService.writeReply(commentId1, memberId, "reply" + i);
+            else replyId = commentService.writeReply(commentId2, memberId, "reply" + i);
+            if (i == 50) commentService.getComment(replyId).remove();
         }
 
         //when
-        List<Comment> replies1 = commentService.getCommentsByParentComment(comment1);
-        List<Comment> replies2 = commentService.getCommentsByParentComment(comment2);
+        Page<CommentResponse> comments1 = commentService.getCommentsByParentComment(commentId1, PageRequest.of(0, 10, Sort.by(Sort.Direction.ASC, "createdDate")));
+        Page<CommentResponse> comments2 = commentService.getCommentsByParentComment(commentId2, PageRequest.of(0, 10, Sort.by(Sort.Direction.ASC, "createdDate")));
 
         //then
-        assertThat(replies1.size()).isEqualTo(25);
-        assertThat(replies2.size()).isEqualTo(25);
+        assertThat(comments1.getSize()).isEqualTo(10);
+        assertThat(comments2.getSize()).isEqualTo(10);
 
-        assertThat(replies1.get(0).getContent()).isEqualTo("content1");
-        assertThat(replies2.get(0).getContent()).isEqualTo("content2");
+        assertThat(comments1.getTotalPages()).isEqualTo(3);
+        assertThat(comments2.getTotalPages()).isEqualTo(3);
 
-        assertThat(replies1.get(0).getParentComment()).isEqualTo(comment1);
-        assertThat(replies2.get(0).getParentComment()).isEqualTo(comment2);
+        assertThat(comments1.getTotalElements()).isEqualTo(25);
+        assertThat(comments2.getTotalElements()).isEqualTo(24);
+
+        assertThatThrownBy(() -> commentService.getCommentsByParentComment(null, PageRequest.of(0, 10, Sort.by(Sort.Direction.ASC, "createdDate"))))
+                .isInstanceOf(CommentNotFoundException.class);
     }
 
     @Test
-    void getCommentsByParentCommentWithPaging() {
+    void delete_commentId가_null이_아니면_정상_수행() {
         //given
-        UserCreateRequest request = new UserCreateRequest("user", "p", "e@naver.com", "nickname", UserRole.USER);
-        Long id = memberService.signUp(request);
+        Long memberId = memberService.signUp(new UserCreateRequest("user", "p", "e@naver.com", "nickname", UserRole.USER));
 
-        Member member = memberRepository.findById(id).orElseThrow();
+        Long postId = postService.write(memberId, new PostCreateRequest("title1", "content1"));
 
-        Long postId = postService.write(id, new PostCreateRequest("title1", "content1"));
-
-        Long commentId1 = commentService.write(postId, id, "content");
-        Comment comment1 = commentRepository.findById(commentId1).orElseThrow();
-
-        Long commentId2 = commentService.write(postId, id, "content2");
-        Comment comment2 = commentRepository.findById(commentId2).orElseThrow();
-
-        for (int i = 1; i <= 50; i++) {
-            if (i % 2 != 0) commentService.writeReply(commentId1, id, "content" + i);
-            else commentService.writeReply(commentId2, id, "content" + i);
-        }
-
-        PageRequest pageable1 = PageRequest.of(0, 5, Sort.by(Sort.Direction.ASC, "createdDate"));
-        PageRequest pageable2 = PageRequest.of(1, 5, Sort.by(Sort.Direction.ASC, "createdDate"));
+        Long commentId = commentService.write(postId, memberId, "comment");
 
         //when
-        Page<CommentResponse> replies1 = commentService.getCommentsByParentComment(comment1, pageable1);
-        Page<CommentResponse> replies2 = commentService.getCommentsByParentComment(comment1, pageable2);
-        Page<CommentResponse> replies3 = commentService.getCommentsByParentComment(comment2, pageable1);
-        Page<CommentResponse> replies4 = commentService.getCommentsByParentComment(comment2, pageable2);
+        commentService.delete(commentId);
 
         //then
-        assertThat(replies1.getTotalPages()).isEqualTo(5);
-        assertThat(replies3.getTotalPages()).isEqualTo(5);
+        assertThatThrownBy(() -> commentService.getComment(commentId))
+                .isInstanceOf(CommentNotFoundException.class);
 
-        assertThat(replies1.getSize()).isEqualTo(5);
-        assertThat(replies2.getSize()).isEqualTo(5);
-        assertThat(replies3.getSize()).isEqualTo(5);
-        assertThat(replies4.getSize()).isEqualTo(5);
-
-        assertThat(replies1.getContent().get(0).getContent()).isEqualTo("content1");
-        assertThat(replies2.getContent().get(0).getContent()).isEqualTo("content11");
-        assertThat(replies3.getContent().get(0).getContent()).isEqualTo("content2");
-        assertThat(replies4.getContent().get(0).getContent()).isEqualTo("content12");
-
-        assertThat(replies1.getContent().get(0).getParentCommentId()).isEqualTo(comment1.getId());
-        assertThat(replies3.getContent().get(0).getParentCommentId()).isEqualTo(comment2.getId());
+        assertThatThrownBy(() -> commentService.delete(null))
+                .isInstanceOf(CommentNotFoundException.class);
     }
 
     @Test
-    void delete() {
+    void delete_부모_댓글을_삭제하면_대댓글도_삭제됨() {
         //given
-        UserCreateRequest request = new UserCreateRequest("user", "p", "e@naver.com", "nickname", UserRole.USER);
-        Long id = memberService.signUp(request);
+        Long memberId = memberService.signUp(new UserCreateRequest("user", "p", "e@naver.com", "nickname", UserRole.USER));
 
-        Member member = memberRepository.findById(id).orElseThrow();
+        Long postId = postService.write(memberId, new PostCreateRequest("title1", "content1"));
+        Post post = postService.getPost(postId);
 
-        Long postId = postService.write(id, new PostCreateRequest("title1", "content1"));
-        Post post1 = postRepository.findById(postId).orElseThrow();
+        Long commentId = commentService.write(postId, memberId, "comment");
+        Long replyId = commentService.writeReply(commentId, memberId, "reply");
 
-
-        Long commentId = commentService.write(postId, id, "content");
-        Long replyId = commentService.writeReply(commentId, id, "content2");
-
-        Comment comment = commentRepository.findById(commentId).orElseThrow();
-        Comment reply = commentRepository.findById(replyId).orElseThrow();
+        Comment comment = commentService.getComment(commentId);
+        Comment reply = commentService.getComment(replyId);
 
         //when
-        comment.remove();
-        reply.remove();
+        commentService.delete(commentId);
 
         //then
-        List<Comment> comments = commentService.getCommentsByPost(post1);
-        assertThat(comments).doesNotContain(comment);
-        assertThat(comments).doesNotContain(reply);
+        List<Comment> comments = commentRepository.findAllByPostAndIsRemovedFalse(post, PageRequest.of(0, 10, Sort.by(Sort.Direction.ASC, "createdDate"))).getContent();
+
+        assertThat(comments).doesNotContain(comment, reply);
     }
 }
