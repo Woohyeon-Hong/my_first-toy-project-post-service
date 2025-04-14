@@ -9,12 +9,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.Optional;
 
 /**
- *
- * ### 5. **댓글 기능 추가**
- *
- * - 게시물에 댓글 작성 및 대댓글 기능 구현.
- * - 댓글 삭제 시 논리적 삭제 처리(`is_removed`).
- *
  * 댓글 Repository API
  *
  * Create
