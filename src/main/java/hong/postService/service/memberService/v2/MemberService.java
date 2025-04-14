@@ -15,6 +15,18 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+
+/**
+ * MemberService는 회원에 대한 비즈니스 로직을 담당하는 서비스 계층입니다.
+ *
+ * 주요 기능:
+ *     회원 가입 (일반/관리자)
+ *     회원 정보 수정 (username, email, nickname)
+ *     비밀번호 변경
+ *     회원 탈퇴 (soft delete)
+ *     회원 중복 필드 검증
+ */
+
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -25,10 +37,29 @@ public class MemberService {
 //business 로직-------------------------------------------------------------
 
     /**
-     * 회원 가입 시 각 필드에 대해, DB 중복 검증 후에 도메인 생성 메서드를 호출한다.
-     * 이를 통해, DB 중복 검증 메서드에서는 null 체크 후 DB를 조회함으로써 안정성을 확보한다.
-     * 비록, Data JPA에서 null 값을 허용한다고, 해도 안정성 측면에서 null 체크는 필요하다.
-     * 또한, 도메인에서 null 체크를 한다고 해도 방어적 null 체크를 수행하는게 좋다.
+     * 회원 가입 시 다음과 같은 절차로 검증 및 생성을 수행한다:
+     *
+     * 1. 각 필드에 대해 DB 중복 검증을 수행한다.
+     *    - 이때, null 값이 들어가는 것을 방지하기 위해 중복 검증 메서드 내에서 null 체크도 함께 수행한다.
+     *
+     * 2. 중복 검증을 모두 통과한 후, 도메인 객체의 생성 메서드를 호출하여 Member를 생성한다.
+     *    - 도메인 계층에서도 null에 대한 유효성 검사를 다시 수행한다.
+     *
+     * ⚠️ 비록 Spring Data JPA에서는 null 값을 포함한 쿼리도 허용되지만,
+     *     안정성과 명확한 예외 처리를 위해 서비스 계층에서도 null 방어 로직을 적용한다.
+     *
+     * 이 과정을 통해 데이터 정합성과 예외 처리를 이중으로 보호할 수 있다.
+     */
+
+
+    /**
+     * 일반 회원 가입을 수행합니다.
+     *
+     * @param request 회원 가입 요청 DTO
+     * @return 생성된 회원의 ID
+     *
+     * @throws InvalidMemberFieldException null이거나 유효하지 않은 필드가 있을 경우
+     * @throws DuplicateMemberFieldException 중복된 username, email, nickname 등이 존재할 경우
      */
     @Transactional
     public Long signUp(UserCreateRequest request) {
@@ -50,6 +81,15 @@ public class MemberService {
         return saved.getId();
     }
 
+    /**
+     * 관리자 회원 가입을 수행합니다.
+     *
+     * @param request 관리자 회원 가입 요청 DTO
+     * @return 생성된 관리자 회원의 ID
+     *
+     * @throws InvalidMemberFieldException null이거나 유효하지 않은 필드가 있을 경우
+     * @throws DuplicateMemberFieldException 중복된 username, email, nickname 등이 존재할 경우
+     */
     @Transactional
     public Long signUpAdmin(UserCreateRequest request) {
 
@@ -70,12 +110,28 @@ public class MemberService {
         return saved.getId();
     }
 
+    /**
+     * 회원을 탈퇴 처리합니다. (Soft delete 방식)
+     *
+     * @param id 탈퇴할 회원의 ID
+     *
+     * @throws MemberNotFoundException 존재하지 않거나 이미 삭제된 회원인 경우
+     */
     @Transactional
     public void unregister(Long id) {
         Member findMember = findMember(id);
         memberRepository.delete(findMember);
     }
 
+    /**
+     * 회원 정보를 수정합니다.
+     *
+     * @param id 수정 대상 회원 ID
+     * @param updateParam username, email, nickname을 포함한 수정 DTO
+     *
+     * @throws InvalidMemberFieldException null 값이거나 형식이 잘못된 경우
+     * @throws DuplicateMemberFieldException 중복된 필드가 존재할 경우
+     */
     @Transactional
     public void updateInfo(Long id, MemberUpdateInfoRequest updateParam) {
         Member findMember = findMember(id);
@@ -105,6 +161,17 @@ public class MemberService {
      *       (효율성을 위해 현재 비밀번호와의 일치 여부를 먼저 확인한 후 DB를 조회한다)
      * 4. 모든 검증을 통과하면 실제 비밀번호를 변경한다.
      */
+
+    /**
+     * 비밀번호를 변경합니다.
+     *
+     * @param id 대상 회원 ID
+     * @param updateParam 비밀번호 변경 요청 DTO (현재 비밀번호 + 새 비밀번호)
+     *
+     * @throws PasswordMismatchException 현재 비밀번호가 일치하지 않는 경우
+     * @throws DuplicateMemberFieldException 새 비밀번호가 중복된 경우
+     * @throws InvalidMemberFieldException 새 비밀번호가 기존과 같은 경우
+     */
     @Transactional
     public void updatePassword(Long id, PasswordUpdateRequest updateParam) {
         Member findMember = findMember(id);
@@ -125,6 +192,14 @@ public class MemberService {
         changePassword(findMember, next);
     }
 
+    /**
+     * 회원 ID로 회원을 조회합니다.
+     *
+     * @param id 조회할 회원의 ID
+     * @return 조회된 Member 엔티티
+     *
+     * @throws MemberNotFoundException 존재하지 않거나 삭제된 회원일 경우
+     */
     public Member findMember(Long id) {
         return memberRepository.findByIdAndIsRemovedFalse(id)
                 .orElseThrow(() -> new MemberNotFoundException(id));
