@@ -71,7 +71,7 @@ public class MemberService {
 
         usernameDuplicateCheck(username);
         passwordDuplicateCheck(password);
-        emailDuplicateCheck(email);
+        if (email != null) emailDuplicateCheck(email);
         nicknameDuplicateCheck(nickname);
 
         Member member = Member.createNewMember(username, password, email, nickname);
