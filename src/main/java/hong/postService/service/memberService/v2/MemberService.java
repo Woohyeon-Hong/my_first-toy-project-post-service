@@ -10,6 +10,7 @@ import hong.postService.service.memberService.dto.MemberUpdateInfoRequest;
 import hong.postService.service.memberService.dto.PasswordUpdateRequest;
 import hong.postService.service.memberService.dto.UserCreateRequest;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,6 +34,7 @@ import java.util.List;
 public class MemberService {
 
     private final MemberRepository memberRepository;
+    private final BCryptPasswordEncoder encoder;
 
 //business 로직-------------------------------------------------------------
 
@@ -65,7 +67,7 @@ public class MemberService {
     public Long signUp(UserCreateRequest request) {
 
         String username = request.getUsername();
-        String password = request.getPassword();
+        String password = encoder.encode( request.getPassword());
         String email = request.getEmail();
         String nickname = request.getNickname();
 
