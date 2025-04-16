@@ -1,0 +1,91 @@
+package hong.postService.config;
+
+import hong.postService.web.jwt.JwtAuthenticationFilter;
+import hong.postService.web.jwt.JwtUtil;
+import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+
+@Configuration
+@EnableWebSecurity
+@RequiredArgsConstructor
+public class SecurityConfig {
+
+    private final AuthenticationConfiguration authenticationConfiguration;
+    private final JwtUtil jwtUtil;
+
+    @Bean
+    public BCryptPasswordEncoder encodePwd() {
+        return new BCryptPasswordEncoder();
+    }
+
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
+        return authenticationConfiguration.getAuthenticationManager();
+    }
+
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        //csrf 비활성화
+        http.csrf(c -> c.disable());
+
+        //form 로그인 비활성화
+        http.formLogin(form -> form.disable());
+
+        //http basic 인증 비활성화
+        http.httpBasic(basic -> basic.disable());
+
+
+        //경로 별 인가 매칭
+        http.authorizeHttpRequests(auth -> auth
+                // Swagger 관련 경로는 무조건 허용
+                .requestMatchers(
+                        "/v3/api-docs/**",
+                        "/swagger-ui/**",
+                        "/swagger-ui.html"
+                ).permitAll()
+
+                // 회원가입, 로그인
+                .requestMatchers(HttpMethod.POST, "/v2/users", "/v2/users/login").permitAll()
+
+                // 게시글/댓글 조회는 전체 허용
+                .requestMatchers(HttpMethod.GET, "/v2/posts/**", "/v2/comments/**").permitAll()
+
+                // 게시글/댓글 작성, 수정, 삭제는 인증 필요
+                .requestMatchers(HttpMethod.POST, "/v2/posts/**", "/v2/comments/**").authenticated()
+                .requestMatchers(HttpMethod.PATCH, "/v2/posts/**", "/v2/comments/**").authenticated()
+                .requestMatchers(HttpMethod.DELETE, "/v2/posts/**", "/v2/comments/**").authenticated()
+
+                // 회원 관련 조회 및 수정, 삭제는 인증 필요
+                .requestMatchers(HttpMethod.GET, "/v2/users/**").authenticated()
+                .requestMatchers(HttpMethod.POST, "/v2/users/**").authenticated()
+                .requestMatchers(HttpMethod.PATCH, "/v2/users/**").authenticated()
+                .requestMatchers(HttpMethod.DELETE, "/v2/users/**").authenticated()
+
+                // 어드민 전용 URI는 어드민 권한 필요
+                .requestMatchers("/v2/admin/**").hasRole("ADMIN")
+
+                // 그 외 모든 요청은 차단
+                .anyRequest().denyAll()
+        );
+
+        JwtAuthenticationFilter authenticationFilter = new JwtAuthenticationFilter(authenticationManager(authenticationConfiguration), jwtUtil);
+        authenticationFilter.setFilterProcessesUrl("/v2/users/login");
+        http.addFilterAt(authenticationFilter, UsernamePasswordAuthenticationFilter.class);
+
+        //Session stateless로 설정
+        http.sessionManagement((sc) -> sc
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+
+        return http.build();
+    }
+}
