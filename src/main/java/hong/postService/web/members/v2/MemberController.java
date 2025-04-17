@@ -1,6 +1,5 @@
 package hong.postService.web.members.v2;
 
-import hong.postService.domain.Member;
 import hong.postService.domain.UserRole;
 import hong.postService.exception.ErrorResponse;
 import hong.postService.service.memberService.dto.PasswordUpdateRequest;
