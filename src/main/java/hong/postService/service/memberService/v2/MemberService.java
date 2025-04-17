@@ -96,13 +96,13 @@ public class MemberService {
     public Long signUpAdmin(UserCreateRequest request) {
 
         String username = request.getUsername();
-        String password = request.getPassword();
+        String password = encoder.encode( request.getPassword());
         String email = request.getEmail();
         String nickname = request.getNickname();
 
         usernameDuplicateCheck(username);
         passwordDuplicateCheck(password);
-        emailDuplicateCheck(email);
+        if (email != null) emailDuplicateCheck(email);
         nicknameDuplicateCheck(nickname);
 
         Member member = Member.createNewAdmin(username, password, email, nickname);
