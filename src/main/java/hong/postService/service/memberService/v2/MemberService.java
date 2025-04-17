@@ -218,9 +218,9 @@ public class MemberService {
 
         if (newEmail == null) throw new InvalidMemberFieldException("emailDuplicateCheck: newEmail == null");
 
-        List<Member> members = memberRepository.findAllByEmailAndIsRemovedFalse(newEmail);
+        Optional<Member> member = memberRepository.findByEmailAndIsRemovedFalse(newEmail);
 
-        if (!members.isEmpty()) {
+        if (member.isPresent()) {
             throw new DuplicateMemberFieldException("해당 email이 이미 존재함.");
 
         }
@@ -230,9 +230,9 @@ public class MemberService {
 
         if (newNickname == null) throw new InvalidMemberFieldException("nicknameDuplicateCheck: newNickname == null");
 
-        List<Member> members = memberRepository.findAllByNicknameAndIsRemovedFalse(newNickname);
+        Optional<Member> member = memberRepository.findByNicknameAndIsRemovedFalse(newNickname);
 
-        if (!members.isEmpty()) {
+        if (member.isPresent()) {
             throw new DuplicateMemberFieldException("해당 nickname이 이미 존재함.");
         }
     }

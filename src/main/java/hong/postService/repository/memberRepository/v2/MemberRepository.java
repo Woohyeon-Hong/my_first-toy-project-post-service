@@ -29,7 +29,7 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
 
     Optional<Member> findByIdAndIsRemovedFalse(Long id);
     Optional<Member> findByUsernameAndIsRemovedFalse(String username);
-    List<Member> findAllByEmailAndIsRemovedFalse(String email);
-    List<Member> findAllByNicknameAndIsRemovedFalse(String nickname);
+    Optional<Member> findByEmailAndIsRemovedFalse(String email);
+    Optional<Member> findByNicknameAndIsRemovedFalse(String nickname);
 
 }
