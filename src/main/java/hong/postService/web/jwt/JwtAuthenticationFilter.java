@@ -87,6 +87,7 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
 
         String message;
 
+        //응답 message 초기화
         if (failed instanceof BadCredentialsException) {
             message = "아이디 또는 비밀번호가 일치하지 않습니다.";
         } else if (failed instanceof UsernameNotFoundException) {
