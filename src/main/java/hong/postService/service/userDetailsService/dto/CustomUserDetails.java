@@ -1,6 +1,7 @@
 package hong.postService.service.userDetailsService.dto;
 
 import hong.postService.domain.Member;
+import hong.postService.domain.UserRole;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -11,7 +12,10 @@ import java.util.Collection;
 @RequiredArgsConstructor
 public class CustomUserDetails implements UserDetails {
 
-    private final Member user;
+    private final String username;
+    private final String password;
+    private final UserRole role;
+
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
@@ -20,7 +24,7 @@ public class CustomUserDetails implements UserDetails {
         collection.add(new GrantedAuthority() {
             @Override
             public String getAuthority() {
-                return user.getRole().getRoleName();
+                return role.getRoleName();
             }
         });
 
@@ -29,12 +33,13 @@ public class CustomUserDetails implements UserDetails {
 
     @Override
     public String getPassword() {
-        return user.getPassword();
+        return password;
     }
+
 
     @Override
     public String getUsername() {
-        return user.getUsername();
+        return username;
     }
 
     @Override
