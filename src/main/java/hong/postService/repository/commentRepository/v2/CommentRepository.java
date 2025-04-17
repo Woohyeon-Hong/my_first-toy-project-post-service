@@ -5,6 +5,8 @@ import hong.postService.domain.Post;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.util.Optional;
 
@@ -28,7 +30,11 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
 
     Optional<Comment> findByIdAndIsRemovedFalse(Long id);
 
-    Page<Comment> findAllByPostAndIsRemovedFalse(Post post, Pageable pageable);
+    @Query(value = "select c from Comment c left join fetch c.writer where c.post = :post and c.isRemoved = false",
+            countQuery = "select count(c) from Comment c where c.post = :post and c.isRemoved = false")
+    Page<Comment> findAllByPostAndIsRemovedFalse(@Param("post") Post post, Pageable pageable);
 
-    Page<Comment> findAllByParentCommentAndIsRemovedFalse(Comment parentComment, Pageable pageable);
+    @Query(value = "select c from Comment c left join fetch c.writer where c.parentComment = :parent_comment and c.isRemoved = false",
+            countQuery = "select count(c) from Comment c where c.parentComment = :parentComment and c.isRemoved = false")
+    Page<Comment> findAllByParentCommentAndIsRemovedFalse(@Param("parent_comment") Comment parentComment, Pageable pageable);
 }

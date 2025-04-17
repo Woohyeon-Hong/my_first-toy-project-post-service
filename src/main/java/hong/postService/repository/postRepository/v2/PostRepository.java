@@ -5,6 +5,7 @@ import hong.postService.domain.Post;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
 import java.util.Optional;
@@ -35,7 +36,15 @@ public interface PostRepository extends JpaRepository<Post, Long>, PostRepositor
 
     Optional<Post> findByIdAndIsRemovedFalse(Long id);
 
+    @Query(
+            value = "select p from Post p left join fetch p.writer where p.writer = :writer and p.isRemoved = false",
+            countQuery = "select count(p) from Post p where p.writer = :writer and p.isRemoved = false"
+    )
     Page<Post> findAllByWriterAndIsRemovedFalse(Member writer, Pageable pageable);
 
+    @Query(
+            value = "select p from Post p left join fetch p.writer where p.isRemoved = false",
+            countQuery = "select count(p) from Post p where p.isRemoved = false"
+    )
     Page<Post> findAllByIsRemovedFalse(Pageable pageable);
 }
