@@ -26,7 +26,8 @@ public class CustomUserDetailsService implements UserDetailsService {
         Optional<Member> member = memberRepository.findByUsernameAndIsRemovedFalse(username);
 
         if (member.isPresent()) {
-            return new CustomUserDetails(member.get());
+            Member user = member.get();
+            return new CustomUserDetails(user.getUsername(), user.getPassword(), user.getRole());
         } else {
             throw new UsernameNotFoundException("존재하지 않는 사용자입니다: " + username);
         }
