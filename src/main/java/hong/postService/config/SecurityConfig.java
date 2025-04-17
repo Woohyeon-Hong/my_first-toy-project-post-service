@@ -1,7 +1,10 @@
 package hong.postService.config;
 
 import hong.postService.web.jwt.JwtAuthenticationFilter;
+import hong.postService.web.jwt.JwtFilter;
 import hong.postService.web.jwt.JwtUtil;
+import io.jsonwebtoken.Jwt;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -14,6 +17,10 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+
+import java.util.Collections;
 
 @Configuration
 @EnableWebSecurity
@@ -22,6 +29,7 @@ public class SecurityConfig {
 
     private final AuthenticationConfiguration authenticationConfiguration;
     private final JwtUtil jwtUtil;
+
 
     @Bean
     public BCryptPasswordEncoder encodePwd() {
@@ -43,6 +51,29 @@ public class SecurityConfig {
 
         //http basic 인증 비활성화
         http.httpBasic(basic -> basic.disable());
+
+        //SecurityFilterChain에 대한 CORS 설정
+        http.cors(cors -> cors.configurationSource(
+                new CorsConfigurationSource() {
+                    @Override
+                    public CorsConfiguration getCorsConfiguration(HttpServletRequest request) {
+                        CorsConfiguration configuration = new CorsConfiguration();
+
+                        //port 번호 - 프론 개발 서버는 주로 3000번 사용
+                        configuration.setAllowedOrigins(Collections.singletonList("http://localhost:3000"));
+                        //허용 메서드
+                        configuration.setAllowedMethods(Collections.singletonList("*"));
+
+                        configuration.setAllowCredentials(true);
+                        configuration.setAllowedHeaders(Collections.singletonList("*"));
+                        configuration.setMaxAge(3600L);
+
+                        configuration.setExposedHeaders(Collections.singletonList("Authorization"));
+
+                        return configuration;
+                    }
+                }
+        ));
 
 
         //경로 별 인가 매칭
@@ -81,6 +112,9 @@ public class SecurityConfig {
         JwtAuthenticationFilter authenticationFilter = new JwtAuthenticationFilter(authenticationManager(authenticationConfiguration), jwtUtil);
         authenticationFilter.setFilterProcessesUrl("/v2/users/login");
         http.addFilterAt(authenticationFilter, UsernamePasswordAuthenticationFilter.class);
+
+        //JwtFilter 등록
+        http.addFilterBefore(new JwtFilter(jwtUtil), JwtAuthenticationFilter.class);
 
         //Session stateless로 설정
         http.sessionManagement((sc) -> sc
