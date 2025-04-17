@@ -67,12 +67,15 @@ public class MemberService {
     public Long signUp(UserCreateRequest request) {
 
         String username = request.getUsername();
-        String password = encoder.encode( request.getPassword());
+
+        String rawPassword = request.getPassword();
+        if (rawPassword == null) throw new InvalidMemberFieldException("signUp: password가 null일 수 없음");
+        String password = encoder.encode(rawPassword);
+
         String email = request.getEmail();
         String nickname = request.getNickname();
 
         usernameDuplicateCheck(username);
-        passwordDuplicateCheck(password);
         if (email != null) emailDuplicateCheck(email);
         nicknameDuplicateCheck(nickname);
 
@@ -96,12 +99,15 @@ public class MemberService {
     public Long signUpAdmin(UserCreateRequest request) {
 
         String username = request.getUsername();
-        String password = encoder.encode( request.getPassword());
+
+        String rawPassword = request.getPassword();
+        if (rawPassword == null) throw new InvalidMemberFieldException("signUp: password가 null일 수 없음");
+        String password = encoder.encode(rawPassword);
+
         String email = request.getEmail();
         String nickname = request.getNickname();
 
         usernameDuplicateCheck(username);
-        passwordDuplicateCheck(password);
         if (email != null) emailDuplicateCheck(email);
         nicknameDuplicateCheck(nickname);
 
@@ -152,19 +158,6 @@ public class MemberService {
     }
 
     /**
-     * 비밀번호 변경 로직은 다음 순서로 수행된다:
-     *
-     * 1. null 여부 검증: newPassword, currentPassword는 컨트롤러에서 Bean Validation을 통해 null체크를 한다.
-     * 2. 현재 비밀번호 확인: 클라이언트가 입력한 현재 비밀번호가 실제 저장된 비밀번호와 일치하는지 검증한다.
-     *    - 이는 사용자의 인증을 다시 한 번 확인하는 보안 절차다.
-     * 3. 새로운 비밀번호 검증:
-     *    1) 현재 비밀번호와 동일한지 확인 → 동일할 경우 예외 발생 (보안 및 UX 측면에서 부적절)
-     *    2) DB 내에 동일한 비밀번호가 이미 존재하는지 중복 검증 → 있을 경우 예외 발생
-     *       (효율성을 위해 현재 비밀번호와의 일치 여부를 먼저 확인한 후 DB를 조회한다)
-     * 4. 모든 검증을 통과하면 실제 비밀번호를 변경한다.
-     */
-
-    /**
      * 비밀번호를 변경합니다.
      *
      * @param id 대상 회원 ID
@@ -178,20 +171,21 @@ public class MemberService {
     public void updatePassword(Long id, PasswordUpdateRequest updateParam) {
         Member findMember = findMember(id);
 
-        String current = updateParam.getCurrentPassword();
-        String next = updateParam.getNewPassword();
+        String current = updateParam.getCurrentPassword();  // raw String
+        String next = updateParam.getNewPassword(); //raw String
 
-        if (!findMember.getPassword().equals(current)) {
+        //기존 비번 검증
+        if (!encoder.matches(current, findMember.getPassword())) {  //raw data, encoded data 순으로
             throw new PasswordMismatchException();
         }
 
-        if (current.equals(next)) {
+        //바꿀 비번이 현재 비번과 동일하지 않은지 검증
+        if (encoder.matches(next, findMember.getPassword())) {
             throw new InvalidMemberFieldException("updatePassword: 기존 비밀번호와 동일한 비밀번호로는 변경할 수 없습니다.");
         }
 
-        passwordDuplicateCheck(next);
 
-        changePassword(findMember, next);
+        changePassword(findMember, encoder.encode(next));
     }
 
     /**
@@ -216,17 +210,6 @@ public class MemberService {
         List<Member> members = memberRepository.findAllByUsernameAndIsRemovedFalse(newUsername);
         if (!members.isEmpty()) {
             throw new DuplicateMemberFieldException("해당 username이 이미 존재함.");
-        }
-    }
-
-    public void passwordDuplicateCheck(String newPassword) {
-
-        if (newPassword == null) throw new InvalidMemberFieldException("passwordDuplicateCheck: newPassword == null");
-
-        List<Member> members = memberRepository.findAllByPasswordAndIsRemovedFalse(newPassword);
-
-        if (!members.isEmpty()) {
-            throw new DuplicateMemberFieldException("해당 password가 이미 존재함.");
         }
     }
 
@@ -285,8 +268,9 @@ public class MemberService {
         }
     }
 
-    private void changePassword(Member member, String newPassword) {
-        member.changePassword(newPassword);
+    // 이미 인코딩된 값을 받는 것이 더 안전
+    private void changePassword(Member member, String encodedPassword) {
+        member.changePassword(encodedPassword);
     }
 
 }

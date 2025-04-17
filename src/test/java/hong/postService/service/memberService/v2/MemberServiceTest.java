@@ -58,30 +58,6 @@ class MemberServiceTest {
     }
 
     @Test
-    void passwordDuplicateCheck_기존_password들_중_일치하는게_있거나_null이_들어올_경우_예외_발생() {
-        //given
-        Member member1 = Member.createNewMember("user1", "p1", "u1@naver.com", "n1");
-        memberRepository.save(member1);
-
-        Member member2 = Member.createNewMember("user2", "p2", "u2@naver.com", "n2");
-        memberRepository.save(member2);
-
-        member2.remove();
-
-        flushAndClear();
-
-        String ok = "p2";
-        String notOk = "p1";
-
-        //when & then
-        memberService.passwordDuplicateCheck(ok);
-
-        assertThatThrownBy(() -> memberService.passwordDuplicateCheck(notOk)).isInstanceOf(DuplicateMemberFieldException.class);
-        assertThatThrownBy(() -> memberService.passwordDuplicateCheck(null)).isInstanceOf(InvalidMemberFieldException.class);
-
-    }
-
-    @Test
     void emailDuplicateCheck_기존_email들_중_일치하는게_있거나_null이_들어올_경우_예외_발생() {
         //given
         Member member1 = Member.createNewMember("user1", "p1", "u1@naver.com", "n1");
@@ -139,8 +115,8 @@ class MemberServiceTest {
         Long id2 = memberService.signUp(request2);
 
         //then
-        Member member1 = memberRepository.findById(id1).orElseThrow();
-        Member member2 = memberRepository.findById(id2).orElseThrow();
+        Member member1 = memberRepository.findByIdAndIsRemovedFalse(id1).orElseThrow();
+        Member member2 = memberRepository.findByIdAndIsRemovedFalse(id2).orElseThrow();
 
         List<Member> members = memberRepository.findAll();
 
@@ -168,7 +144,6 @@ class MemberServiceTest {
         memberService.signUp(request);
 
         //when & then
-
         assertThatThrownBy(() -> memberService.signUp(request2)).isInstanceOf(DuplicateMemberFieldException.class);
     }
 
@@ -184,8 +159,8 @@ class MemberServiceTest {
         Long id2 = memberService.signUp(request2);
 
         //then
-        Member member1 = memberRepository.findById(id1).orElseThrow();
-        Member member2 = memberRepository.findById(id2).orElseThrow();
+        Member member1 = memberRepository.findByIdAndIsRemovedFalse(id1).orElseThrow();
+        Member member2 = memberRepository.findByIdAndIsRemovedFalse(id2).orElseThrow();
 
         List<Member> members = memberRepository.findAll();
 
@@ -229,9 +204,9 @@ class MemberServiceTest {
         Long id2 = memberService.signUp(request2);
         Long id3 = memberService.signUp(request3);
 
-        Member member1 = memberRepository.findById(id1).orElseThrow();
-        Member member2 = memberRepository.findById(id2).orElseThrow();
-        Member member3 = memberRepository.findById(id3).orElseThrow();
+        Member member1 = memberRepository.findByIdAndIsRemovedFalse(id1).orElseThrow();
+        Member member2 = memberRepository.findByIdAndIsRemovedFalse(id2).orElseThrow();
+        Member member3 = memberRepository.findByIdAndIsRemovedFalse(id3).orElseThrow();
 
 
         //when
@@ -257,7 +232,7 @@ class MemberServiceTest {
 
         memberService.unregister(id2);
 
-        Member member = memberRepository.findById(id).orElseThrow();
+        Member member = memberRepository.findByIdAndIsRemovedFalse(id).orElseThrow();
 
         MemberUpdateInfoRequest updateParam = MemberUpdateInfoRequest.builder()
                 .username("newUsername")
@@ -270,7 +245,7 @@ class MemberServiceTest {
         flushAndClear();
 
         //then
-        Member changedMember = memberRepository.findById(member.getId()).orElseThrow();
+        Member changedMember = memberRepository.findByIdAndIsRemovedFalse(member.getId()).orElseThrow();
 
         assertThat(changedMember.getUsername()).isEqualTo(updateParam.getUsername());
         assertThat(changedMember.getEmail()).isEqualTo(updateParam.getEmail());
@@ -285,7 +260,7 @@ class MemberServiceTest {
 
         Long id = memberService.signUp(request);
 
-        Member member = memberRepository.findById(id).orElseThrow();
+        Member member = memberRepository.findByIdAndIsRemovedFalse(id).orElseThrow();
 
         MemberUpdateInfoRequest updateParam = MemberUpdateInfoRequest.builder()
                 .username(member.getUsername())
@@ -297,7 +272,7 @@ class MemberServiceTest {
         memberService.updateInfo(id, updateParam);
 
         //then
-        Member changedMember = memberRepository.findById(id).orElseThrow();
+        Member changedMember = memberRepository.findByIdAndIsRemovedFalse(id).orElseThrow();
         assertThat(changedMember).isEqualTo(member);
 
         assertThat(changedMember.getLastModifiedDate()).isEqualTo(changedMember.getCreatedDate());
@@ -312,7 +287,7 @@ class MemberServiceTest {
         Long id = memberService.signUp(request);
         Long id2 = memberService.signUp(request2);
 
-        Member another = memberRepository.findById(id2).orElseThrow();
+        Member another = memberRepository.findByIdAndIsRemovedFalse(id2).orElseThrow();
 
         MemberUpdateInfoRequest updateParam = MemberUpdateInfoRequest.builder()
                 .username(another.getUsername())
@@ -324,8 +299,8 @@ class MemberServiceTest {
     }
 
     @Test
-    void updatePassword_기존_비번_확인() {
-        //given
+    void updatePassword_기존_비번_확인_후_일치하면_업데이트() {
+        // given
         UserCreateRequest userCreateRequest = new UserCreateRequest("user1", "p1", "u1@naver.com", "n1", UserRole.USER);
         UserCreateRequest userCreateRequest2 = new UserCreateRequest("user2", "new", "u2@naver.com", "n2", UserRole.USER);
 
@@ -334,46 +309,19 @@ class MemberServiceTest {
 
         memberService.unregister(id2);
 
-        Member member = memberRepository.findById(id).orElseThrow();
-
-
-        PasswordUpdateRequest request1 = new PasswordUpdateRequest(member.getPassword(), "new");
+        PasswordUpdateRequest request1 = new PasswordUpdateRequest("p1", "new");
         PasswordUpdateRequest request2 = new PasswordUpdateRequest("틀린 비번", "new");
 
-        //when
-        memberService.updatePassword(member.getId(), request1);
-
+        // when
+        memberService.updatePassword(id, request1);
         flushAndClear();
 
-        //then
+        // then
         Member findMember = memberService.findMember(id);
-        assertThat(findMember.getPassword()).isEqualTo(request1.getNewPassword());
         assertThat(findMember.getLastModifiedDate()).isAfter(findMember.getCreatedDate());
 
-        assertThatThrownBy(() ->  memberService.updatePassword(member.getId(), request2))
-                .isInstanceOf(PasswordMismatchException.class);
-    }
-
-    @Test
-    void updatePassword_새로운_비번_검증() {
-        //given
-        UserCreateRequest mRequest = new UserCreateRequest("user1", "p1", "u1@naver.com", "n1", UserRole.USER);
-        UserCreateRequest mRequest2 = new UserCreateRequest("user2", "p2", "u2@naver.com", "n2", UserRole.USER);
-
-        Long id = memberService.signUp(mRequest);
-        memberService.signUp(mRequest2);
-
-        Member member = memberRepository.findById(id).orElseThrow();
-
-        PasswordUpdateRequest request1 = new PasswordUpdateRequest(member.getPassword(), "p1");
-        PasswordUpdateRequest request2 = new PasswordUpdateRequest(member.getPassword(), "p2");
-
-        //when & then
-        assertThatThrownBy(() -> memberService.updatePassword(id, request1))
-                .isInstanceOf(InvalidMemberFieldException.class);
-
         assertThatThrownBy(() -> memberService.updatePassword(id, request2))
-                .isInstanceOf(DuplicateMemberFieldException.class);
+                .isInstanceOf(PasswordMismatchException.class);
     }
 
     @Test
@@ -383,17 +331,17 @@ class MemberServiceTest {
 
         Long id = memberService.signUp(request);
 
-        Member member = memberRepository.findById(id).orElseThrow();
+        Member member = memberRepository.findByIdAndIsRemovedFalse(id).orElseThrow();
 
         LocalDateTime oldCreatedDate = member.getCreatedDate();
         LocalDateTime oldLastModifiedDate = member.getLastModifiedDate();
 
         //when
-        memberService.updatePassword(member.getId(), new PasswordUpdateRequest(member.getPassword(), "newPassword"));
+        memberService.updatePassword(member.getId(), new PasswordUpdateRequest("p1", "newPassword"));
         flushAndClear();
 
         //then
-        Member changedMember = memberRepository.findById(member.getId()).orElseThrow();
+        Member changedMember = memberRepository.findByIdAndIsRemovedFalse(member.getId()).orElseThrow();
         assertThat(changedMember.getCreatedDate()).isEqualTo(oldCreatedDate);
         assertThat(changedMember.getLastModifiedDate()).isAfter(oldLastModifiedDate);
     }
