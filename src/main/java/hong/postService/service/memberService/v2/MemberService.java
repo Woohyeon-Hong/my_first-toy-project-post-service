@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
 
 /**
@@ -207,8 +208,8 @@ public class MemberService {
 
         if (newUsername == null) throw new InvalidMemberFieldException("usernameDuplicateCheck: newUsername == null");
 
-        List<Member> members = memberRepository.findAllByUsernameAndIsRemovedFalse(newUsername);
-        if (!members.isEmpty()) {
+        Optional<Member> member = memberRepository.findByUsernameAndIsRemovedFalse(newUsername);
+        if (member.isPresent()) {
             throw new DuplicateMemberFieldException("해당 username이 이미 존재함.");
         }
     }

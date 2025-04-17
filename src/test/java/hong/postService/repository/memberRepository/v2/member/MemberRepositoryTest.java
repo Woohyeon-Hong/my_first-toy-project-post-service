@@ -70,40 +70,6 @@ class MemberRepositoryTest {
     }
 
     @Test
-    void findAllByUsernameAndIsRemovedFalse_정상_반환() {
-        // given
-        Member m1 = Member.createNewMember("same", "pw", "a@a.com", "n1");
-        Member m2 = Member.createNewMember("same", "pw2", "b@b.com", "n2");
-
-        memberRepository.save(m1);
-        memberRepository.save(m2);
-
-        m2.remove();
-
-        // when
-        List<Member> members = memberRepository.findAllByUsernameAndIsRemovedFalse("same");
-
-        // then
-        assertThat(members).containsExactly(m1);
-    }
-
-    @Test
-    void findAllByUsernameAndIsRemovedFalse_빈_배열_반환() {
-        // given
-        Member m = Member.createNewMember("same", "pw", "a@a.com", "n1");
-
-        memberRepository.save(m);
-
-        m.remove();
-
-        // when
-        List<Member> members = memberRepository.findAllByUsernameAndIsRemovedFalse("same");
-
-        // then
-        assertThat(members).isEmpty();
-    }
-
-    @Test
     void findAllByEmailAndIsRemovedFalse_정상_반환() {
         // given
         Member m1 = Member.createNewMember("u1", "pw", "same@naver.com", "n1");
