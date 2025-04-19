@@ -9,6 +9,7 @@ import hong.postService.exception.member.MemberNotFoundException;
 import hong.postService.exception.post.PostNotFoundException;
 import hong.postService.repository.commentRepository.v2.CommentRepository;
 import hong.postService.repository.postRepository.v2.PostRepository;
+import hong.postService.service.commentService.dto.CommentCreateRequest;
 import hong.postService.service.commentService.dto.CommentResponse;
 import hong.postService.service.memberService.v2.MemberService;
 import hong.postService.service.postService.v2.PostService;
@@ -41,7 +42,7 @@ public class CommentService {
      *
      * @param postId 댓글을 작성할 게시글 ID
      * @param memberId 댓글을 작성할 회원 ID
-     * @param content 댓글을 달 내용
+     * @param request 댓글을 달 내용
      * @return 작성한 댓글 ID
      *
      * @throws MemberNotFoundException 존재하지 않거나 이미 삭제된 회원인 경우
@@ -49,13 +50,13 @@ public class CommentService {
      * @throws InvalidCommentFieldException null 값인 경우
      */
     @Transactional
-    public Long write(Long postId, Long memberId, String content) {
+    public Long write(Long postId, Long memberId, CommentCreateRequest request) {
 
         Member writer = memberService.findMember(memberId);
 
         Post post = postService.getPost(postId);
 
-        Comment comment = post.writeComment(content, writer);
+        Comment comment = post.writeComment(request.getContent(), writer);
 
         return commentRepository.save(comment).getId();
     }
@@ -73,13 +74,13 @@ public class CommentService {
      * @throws InvalidCommentFieldException null 값인 경우
      */
     @Transactional
-    public Long writeReply(Long commentId, Long memberId, String content) {
+    public Long writeReply(Long commentId, Long memberId, CommentCreateRequest request) {
 
         Member writer = memberService.findMember(memberId);
 
         Comment comment = getComment(commentId);
 
-        Comment reply = comment.writeReply(content, writer);
+        Comment reply = comment.writeReply(request.getContent(), writer);
 
         return commentRepository.save(reply).getId();
     }

@@ -10,6 +10,7 @@ import hong.postService.exception.post.PostNotFoundException;
 import hong.postService.repository.commentRepository.v2.CommentRepository;
 import hong.postService.repository.memberRepository.v2.MemberRepository;
 import hong.postService.repository.postRepository.v2.PostRepository;
+import hong.postService.service.commentService.dto.CommentCreateRequest;
 import hong.postService.service.commentService.dto.CommentResponse;
 import hong.postService.service.memberService.v2.MemberService;
 import hong.postService.service.postService.dto.PostCreateRequest;
@@ -51,15 +52,17 @@ class CommentServiceTest {
 
         Long postId = postService.write(memberId, new PostCreateRequest("title", "content"));
 
+        CommentCreateRequest commentCreateRequest = new CommentCreateRequest("comment");
+
         //when
-        Long commentId = commentService.write(postId, memberId, "comment");
+        Long commentId = commentService.write(postId, memberId, commentCreateRequest);
 
         //then
         Comment comment = commentService.getComment(commentId);
         assertThat(comment.getContent()).isEqualTo("comment");
 
-        assertThatThrownBy(() -> commentService.write(null, memberId, "comment")).isInstanceOf(PostNotFoundException.class);
-        assertThatThrownBy(() -> commentService.write(postId, null, "comment")).isInstanceOf(MemberNotFoundException.class);
+        assertThatThrownBy(() -> commentService.write(null, memberId, commentCreateRequest)).isInstanceOf(PostNotFoundException.class);
+        assertThatThrownBy(() -> commentService.write(postId, null, commentCreateRequest)).isInstanceOf(MemberNotFoundException.class);
     }
 
     @Test
@@ -69,17 +72,17 @@ class CommentServiceTest {
 
         Long postId = postService.write(memberId, new PostCreateRequest("title", "content"));
 
-        Long commentId = commentService.write(postId, memberId, "comment");
+        Long commentId = commentService.write(postId, memberId, new CommentCreateRequest("comment"));
 
         //when
-        Long replyId = commentService.writeReply(commentId, memberId, "reply");
+        Long replyId = commentService.writeReply(commentId, memberId, new CommentCreateRequest("reply"));
 
         //then
         Comment reply = commentService.getComment(replyId);
         assertThat(reply.getContent()).isEqualTo("reply");
 
-        assertThatThrownBy(() -> commentService.writeReply(null, memberId, "comment")).isInstanceOf(CommentNotFoundException.class);
-        assertThatThrownBy(() -> commentService.writeReply(commentId, null, "comment")).isInstanceOf(MemberNotFoundException.class);
+        assertThatThrownBy(() -> commentService.writeReply(null, memberId, new CommentCreateRequest("comment"))).isInstanceOf(CommentNotFoundException.class);
+        assertThatThrownBy(() -> commentService.writeReply(commentId, null, new CommentCreateRequest("comment"))).isInstanceOf(MemberNotFoundException.class);
     }
 
     @Test
@@ -92,9 +95,9 @@ class CommentServiceTest {
 
         for (int i = 1; i <= 50; i++) {
             Long commentId;
-            if (i % 2 != 0) commentId = commentService.write(postId1, memberId, "comment" + i);
-            else commentId = commentService.write(postId2, memberId, "comment" + i);
-            Long replyId = commentService.writeReply(commentId, memberId, "reply" + i);
+            if (i % 2 != 0) commentId = commentService.write(postId1, memberId, new CommentCreateRequest("comment" + i));
+            else commentId = commentService.write(postId2, memberId, new CommentCreateRequest("comment" + i));
+            Long replyId = commentService.writeReply(commentId, memberId, new CommentCreateRequest("reply" + i));
 
             if (i == 49) commentService.getComment(replyId).remove();
             if (i == 50) commentService.getComment(commentId).remove();
@@ -125,14 +128,14 @@ class CommentServiceTest {
 
         Long postId = postService.write(memberId, new PostCreateRequest("title1", "content1"));
 
-        Long commentId1 = commentService.write(postId, memberId, "comment1");
-        Long commentId2 = commentService.write(postId, memberId, "comment2");
+        Long commentId1 = commentService.write(postId, memberId, new CommentCreateRequest("comment1"));
+        Long commentId2 = commentService.write(postId, memberId, new CommentCreateRequest("comment2"));
 
 
         for (int i = 1; i <= 50; i++) {
             Long replyId;
-            if (i % 2 != 0) replyId = commentService.writeReply(commentId1, memberId, "reply" + i);
-            else replyId = commentService.writeReply(commentId2, memberId, "reply" + i);
+            if (i % 2 != 0) replyId = commentService.writeReply(commentId1, memberId, new CommentCreateRequest("reply" + i));
+            else replyId = commentService.writeReply(commentId2, memberId, new CommentCreateRequest("reply" + i));
             if (i == 50) commentService.getComment(replyId).remove();
         }
 
@@ -161,7 +164,7 @@ class CommentServiceTest {
 
         Long postId = postService.write(memberId, new PostCreateRequest("title1", "content1"));
 
-        Long commentId = commentService.write(postId, memberId, "comment");
+        Long commentId = commentService.write(postId, memberId, new CommentCreateRequest("comment"));
 
         //when
         commentService.delete(commentId);
@@ -182,8 +185,8 @@ class CommentServiceTest {
         Long postId = postService.write(memberId, new PostCreateRequest("title1", "content1"));
         Post post = postService.getPost(postId);
 
-        Long commentId = commentService.write(postId, memberId, "comment");
-        Long replyId = commentService.writeReply(commentId, memberId, "reply");
+        Long commentId = commentService.write(postId, memberId, new CommentCreateRequest("comment"));
+        Long replyId = commentService.writeReply(commentId, memberId, new CommentCreateRequest("reply"));
 
         Comment comment = commentService.getComment(commentId);
         Comment reply = commentService.getComment(replyId);

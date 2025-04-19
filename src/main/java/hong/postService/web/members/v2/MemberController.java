@@ -66,7 +66,7 @@ public class MemberController {
             }
     )
     @PostMapping
-    public ResponseEntity<MemberResponse> signUp(@Valid @RequestBody UserCreateRequest request) {
+    public ResponseEntity<Void> signUp(@Valid @RequestBody UserCreateRequest request) {
 
         UserRole role = request.getRole();
         Long userId;
