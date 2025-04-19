@@ -22,14 +22,16 @@ public class Post extends BaseTimeEntity {
     @Column(name = "post_id")
     private Long id;
 
+    @Column(nullable = false, length = 100)
     private String title;
+    @Column(nullable = false, columnDefinition = "TEXT")
     private String content;
 
-    @Column(name = "is_removed")
+    @Column(name = "is_removed", nullable = false)
     private boolean isRemoved;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "member_id")
+    @JoinColumn(name = "member_id", nullable = false)
     private Member writer;
 
     @Builder.Default
@@ -39,19 +41,23 @@ public class Post extends BaseTimeEntity {
 //비즈니스 로직---------------------------------------------------------------------------------------------------
 
     public void updateTitle(String newTitle) {
-        validatePost();
+        checkNotRemoved();
+
         if (newTitle == null) throw new InvalidPostFieldException("updateTitle: newTitle == null");
+
         this.title = newTitle;
     }
 
     public void updateContent(String newContent) {
-        validatePost();
+        checkNotRemoved();
+
         if (newContent == null) throw new InvalidPostFieldException("updateContent: newContent == null");
+
         this.content = newContent;
     }
 
     public void remove() {
-        validatePost();
+        checkNotRemoved();
 
         for (Comment comment : comments) {
             if (!comment.isRemoved()) {
@@ -65,7 +71,8 @@ public class Post extends BaseTimeEntity {
 //Comment 작성---------------------------------------------------------------------------------------------------
 
     public  Comment writeComment(String content, Member writer) {
-        validatePost();
+        checkNotRemoved();
+
         if (content == null) throw new InvalidCommentFieldException("writeComment: content == null");
         if (writer == null) throw new InvalidCommentFieldException("writeComment: writer == null");
 
@@ -83,7 +90,8 @@ public class Post extends BaseTimeEntity {
         return comment;
     }
 
-    private void validatePost() {
+//내부 로직---------------------------------------------------------------------------------------------------
+    private void checkNotRemoved() {
         if (this.isRemoved()) throw new PostNotFoundException(this.getId());
     }
 }
