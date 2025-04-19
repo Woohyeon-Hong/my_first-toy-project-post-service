@@ -66,7 +66,7 @@ public class CommentService {
      *
      * @param commentId 대댓글을 작성할 댓글 ID
      * @param memberId 댓글을 작성할 회원 ID
-     * @param content 대댓글을 달 내용
+     * @param request 대댓글을 달 내용
      * @return 작성한 대댓글 ID
      *
      * @throws MemberNotFoundException 존재하지 않거나 이미 삭제된 회원인 경우
