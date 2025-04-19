@@ -126,6 +126,15 @@ public class CommentService {
                 .map(CommentResponse::from);
     }
 
+    /**
+     * 댓글을 수정합니다.
+     *
+     * @param commentId 수정할 댓글 ID
+     * @param updateParam 수정할 내용을 담은 DTO
+     *
+     * @throws CommentNotFoundException 존재하지 않거나 이미 삭제된 댓글인 경우
+     * @throws InvalidCommentFieldException 수정할 내용이 null인 경우
+     */
     public void update(Long commentId, CommentUpdateRequest updateParam) {
         Comment comment = getComment(commentId);
 
