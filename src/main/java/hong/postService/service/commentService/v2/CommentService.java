@@ -6,11 +6,13 @@ import hong.postService.domain.Post;
 import hong.postService.exception.comment.CommentNotFoundException;
 import hong.postService.exception.comment.InvalidCommentFieldException;
 import hong.postService.exception.member.MemberNotFoundException;
+import hong.postService.exception.post.InvalidPostFieldException;
 import hong.postService.exception.post.PostNotFoundException;
 import hong.postService.repository.commentRepository.v2.CommentRepository;
 import hong.postService.repository.postRepository.v2.PostRepository;
 import hong.postService.service.commentService.dto.CommentCreateRequest;
 import hong.postService.service.commentService.dto.CommentResponse;
+import hong.postService.service.commentService.dto.CommentUpdateRequest;
 import hong.postService.service.memberService.v2.MemberService;
 import hong.postService.service.postService.v2.PostService;
 import lombok.RequiredArgsConstructor;
@@ -122,6 +124,16 @@ public class CommentService {
         return commentRepository
                 .findAllByParentCommentAndIsRemovedFalse(getComment(parentCommentId), pageable)
                 .map(CommentResponse::from);
+    }
+
+    public void update(Long commentId, CommentUpdateRequest updateParam) {
+        Comment comment = getComment(commentId);
+
+        String content = updateParam.getContent();
+
+        if (content == null) throw new InvalidCommentFieldException("update: content == null");
+
+        comment.updateContent(content);
     }
 
     /**

@@ -122,28 +122,28 @@ public class MemberService {
     /**
      * 회원을 탈퇴 처리합니다. (Soft delete 방식)
      *
-     * @param id 탈퇴할 회원의 ID
+     * @param memberId 탈퇴할 회원의 ID
      *
      * @throws MemberNotFoundException 존재하지 않거나 이미 삭제된 회원인 경우
      */
     @Transactional
-    public void unregister(Long id) {
-        Member findMember = findMember(id);
+    public void unregister(Long memberId) {
+        Member findMember = findMember(memberId);
         memberRepository.delete(findMember);
     }
 
     /**
      * 회원 정보를 수정합니다.
      *
-     * @param id 수정 대상 회원 ID
+     * @param memberId 수정 대상 회원 ID
      * @param updateParam username, email, nickname을 포함한 수정 DTO
      *
      * @throws InvalidMemberFieldException null 값이거나 형식이 잘못된 경우
      * @throws DuplicateMemberFieldException 중복된 필드가 존재할 경우
      */
     @Transactional
-    public void updateInfo(Long id, MemberUpdateInfoRequest updateParam) {
-        Member findMember = findMember(id);
+    public void updateInfo(Long memberId, MemberUpdateInfoRequest updateParam) {
+        Member findMember = findMember(memberId);
 
         if (updateParam.getUsername() != null) {
             changeUsername(findMember, updateParam.getUsername());
@@ -161,7 +161,7 @@ public class MemberService {
     /**
      * 비밀번호를 변경합니다.
      *
-     * @param id 대상 회원 ID
+     * @param memberId 대상 회원 ID
      * @param updateParam 비밀번호 변경 요청 DTO (현재 비밀번호 + 새 비밀번호)
      *
      * @throws PasswordMismatchException 현재 비밀번호가 일치하지 않는 경우
@@ -169,8 +169,8 @@ public class MemberService {
      * @throws InvalidMemberFieldException 새 비밀번호가 기존과 같은 경우
      */
     @Transactional
-    public void updatePassword(Long id, PasswordUpdateRequest updateParam) {
-        Member findMember = findMember(id);
+    public void updatePassword(Long memberId, PasswordUpdateRequest updateParam) {
+        Member findMember = findMember(memberId);
 
         String current = updateParam.getCurrentPassword();  // raw String
         String next = updateParam.getNewPassword(); //raw String
@@ -192,14 +192,14 @@ public class MemberService {
     /**
      * 회원 ID로 회원을 조회합니다.
      *
-     * @param id 조회할 회원의 ID
+     * @param memberId 조회할 회원의 ID
      * @return 조회된 Member 엔티티
      *
      * @throws MemberNotFoundException 존재하지 않거나 삭제된 회원일 경우
      */
-    public Member findMember(Long id) {
-        return memberRepository.findByIdAndIsRemovedFalse(id)
-                .orElseThrow(() -> new MemberNotFoundException(id));
+    public Member findMember(Long memberId) {
+        return memberRepository.findByIdAndIsRemovedFalse(memberId)
+                .orElseThrow(() -> new MemberNotFoundException(memberId));
     }
 
 

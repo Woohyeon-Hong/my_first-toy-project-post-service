@@ -12,6 +12,7 @@ import hong.postService.repository.memberRepository.v2.MemberRepository;
 import hong.postService.repository.postRepository.v2.PostRepository;
 import hong.postService.service.commentService.dto.CommentCreateRequest;
 import hong.postService.service.commentService.dto.CommentResponse;
+import hong.postService.service.commentService.dto.CommentUpdateRequest;
 import hong.postService.service.memberService.v2.MemberService;
 import hong.postService.service.postService.dto.PostCreateRequest;
 import hong.postService.service.postService.v2.PostService;
@@ -155,6 +156,28 @@ class CommentServiceTest {
 
         assertThatThrownBy(() -> commentService.getCommentsByParentComment(null, PageRequest.of(0, 10, Sort.by(Sort.Direction.ASC, "createdDate"))))
                 .isInstanceOf(CommentNotFoundException.class);
+    }
+
+    @Test
+    void update_commentId가_null이_아니고_updateParam_이_null이_아니면_정상_수행() {
+        //given
+        Long memberId = memberService.signUp(new UserCreateRequest("user", "p", "e@naver.com", "nickname", UserRole.USER));
+
+        Long postId = postService.write(memberId, new PostCreateRequest("title1", "content1"));
+
+        Long commentId = commentService.write(postId, memberId, new CommentCreateRequest("comment"));
+
+        CommentUpdateRequest request = new CommentUpdateRequest("newComment");
+
+        //when
+        commentService.update(commentId, request);
+
+        //then
+        Comment findComment = commentService.getComment(commentId);
+
+        assertThat(findComment.getId()).isEqualTo(commentId);
+        assertThat(findComment.getContent()).isEqualTo(request.getContent());
+
     }
 
     @Test

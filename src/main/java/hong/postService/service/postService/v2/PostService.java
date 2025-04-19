@@ -136,19 +136,20 @@ public class PostService {
     /**
      * 게시글을 수정합니다.
      *
-     * @param id 수정할 게시글 ID
+     * @param postId 수정할 게시글 ID
      * @param updateParam title, content를 포함한 수정 DTO
      *
      *@throws PostNotFoundException 존재하지 않거나 이미 삭제된 게시글의 경우
      * @throws InvalidPostFieldException null 값이 경우
      */
     @Transactional
-    public void update(Long id, PostUpdateRequest updateParam) {
-        Post post = postRepository.findByIdAndIsRemovedFalse(id).orElseThrow(()
-                -> new PostNotFoundException(id));
+    public void update(Long postId, PostUpdateRequest updateParam) {
+        Post post = postRepository.findByIdAndIsRemovedFalse(postId).orElseThrow(()
+                -> new PostNotFoundException(postId));
 
         String title = updateParam.getTitle();
         String content = updateParam.getContent();
+
         if (title != null) post.updateTitle(title);
         if (content != null) post.updateContent(content);
     }
