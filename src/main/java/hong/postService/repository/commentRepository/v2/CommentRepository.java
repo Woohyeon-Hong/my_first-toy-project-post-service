@@ -34,7 +34,7 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
             countQuery = "select count(c) from Comment c where c.post = :post and c.isRemoved = false")
     Page<Comment> findAllByPostAndIsRemovedFalse(@Param("post") Post post, Pageable pageable);
 
-    @Query(value = "select c from Comment c left join fetch c.writer where c.parentComment = :parent_comment and c.isRemoved = false",
+    @Query(value = "select c from Comment c left join fetch c.writer where c.parentComment = :parentComment and c.isRemoved = false",
             countQuery = "select count(c) from Comment c where c.parentComment = :parentComment and c.isRemoved = false")
-    Page<Comment> findAllByParentCommentAndIsRemovedFalse(@Param("parent_comment") Comment parentComment, Pageable pageable);
+    Page<Comment> findAllByParentCommentAndIsRemovedFalse(@Param("parentComment") Comment parentComment, Pageable pageable);
 }

@@ -20,17 +20,18 @@ public class Comment extends BaseTimeEntity {
     @Column(name = "comment_id")
     private Long id;
 
+    @Column(nullable = false, columnDefinition = "TEXT")
     private String content;
 
-    @Column(name = "is_removed")
+    @Column(name = "is_removed", nullable = false)
     private boolean isRemoved;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "member_id")
+    @JoinColumn(name = "member_id", nullable = false)
     private Member writer;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "post_id")
+    @JoinColumn(name = "post_id", nullable = false)
     private Post post;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -80,6 +81,8 @@ public class Comment extends BaseTimeEntity {
 
         this.isRemoved = true;
     }
+
+//검증---------------------------------------------------------------------------------------------------
 
     private void validateComment() {
         if (this.isRemoved()) throw new CommentNotFoundException(this.getId());

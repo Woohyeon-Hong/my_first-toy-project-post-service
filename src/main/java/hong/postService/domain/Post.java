@@ -24,6 +24,7 @@ public class Post extends BaseTimeEntity {
 
     @Column(nullable = false, length = 100)
     private String title;
+    //긴글이라고 해도 수 MB 단위이기 때문에 @Lob 필요 x - @Lob은 주로 파일과 같은 큰 오브젝트에 사용해야 함
     @Column(nullable = false, columnDefinition = "TEXT")
     private String content;
 
