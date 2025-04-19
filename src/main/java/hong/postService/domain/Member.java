@@ -31,7 +31,7 @@ public class Member extends BaseTimeEntity {
     @Column(name = "member_id")
     private Long id;
 
-    @Column(nullable = false, length = 30, unique = true)
+    @Column(nullable = false, length = 30)
     private String username;
     //BCrypto 기준 암호 길이 60자 + a
     @Column(nullable = false, length = 100)
@@ -39,7 +39,7 @@ public class Member extends BaseTimeEntity {
 
     @Column(length = 320) // 이메일 RFC 최대 길이 기준
     private String email;
-    @Column(nullable = false, length = 30, unique = true)
+    @Column(nullable = false, length = 30)
     private String nickname;
 
     @Enumerated(EnumType.STRING)
