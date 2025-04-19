@@ -2,15 +2,12 @@ package hong.postService.repository.memberRepository.v2.member;
 
 import hong.postService.domain.Member;
 import hong.postService.repository.memberRepository.v2.MemberRepository;
-import hong.postService.service.memberService.dto.MemberUpdateInfoRequest;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -37,7 +34,7 @@ class MemberRepositoryTest {
 
         m2.remove();
 
-        em();
+        flushAndClear();
 
         // when
         Optional<Member> result1 = memberRepository.findByIdAndIsRemovedFalse(m1.getId());
@@ -56,7 +53,7 @@ class MemberRepositoryTest {
 
         m2.remove();
 
-        em();
+        flushAndClear();
 
         // when
         Optional<Member> result1 = memberRepository.findByUsernameAndIsRemovedFalse("user");
@@ -77,7 +74,7 @@ class MemberRepositoryTest {
 
         m2.remove();
 
-        em();
+        flushAndClear();
 
         // when
         Optional<Member> result1 = memberRepository.findByEmailAndIsRemovedFalse("e@e.com");
@@ -98,7 +95,7 @@ class MemberRepositoryTest {
 
         m2.remove();
 
-        em();
+        flushAndClear();
 
         // when
         Optional<Member> result1 = memberRepository.findByNicknameAndIsRemovedFalse("nick");
@@ -111,7 +108,7 @@ class MemberRepositoryTest {
         assertThat(result1.get().getId()).isEqualTo(m1.getId());
     }
 
-    private void em() {
+    private void flushAndClear() {
         em.flush();
         em.clear();
     }

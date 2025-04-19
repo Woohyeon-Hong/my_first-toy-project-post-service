@@ -32,4 +32,6 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
     Optional<Member> findByEmailAndIsRemovedFalse(String email);
     Optional<Member> findByNicknameAndIsRemovedFalse(String nickname);
 
+    List<Member> findAllByIsRemovedFalse();
+
 }
