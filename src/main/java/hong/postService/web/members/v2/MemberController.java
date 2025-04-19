@@ -82,6 +82,9 @@ public class MemberController {
         return ResponseEntity.created(location).build();
     }
 
+    /**
+     * SecurityContext에 담겨있는 UserDetails를 사용하여 user 식별 및 인증
+     */
 
     @Operation(summary = "회원 게시글 목록 조회 (실용적 버젼)",
             description = "회원이 작성한 전체 게시글 목록을 조회한다. 삭제된 게시글은 제외된다."
@@ -261,8 +264,9 @@ public class MemberController {
 
         Long postId = postService.write(userDetails.getUserId(), request);
 
-        URI location = ServletUriComponentsBuilder.fromCurrentRequest()
-                .path("/{postId}")
+        URI location = ServletUriComponentsBuilder
+                .fromCurrentContextPath()
+                .path("/v2/posts/{postId}")
                 .buildAndExpand(postId)
                 .toUri();
 

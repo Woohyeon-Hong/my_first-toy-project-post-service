@@ -11,6 +11,10 @@ import java.util.Collection;
 @RequiredArgsConstructor
 public class CustomUserDetails implements UserDetails {
 
+    /*
+        - userid가 담겨 있어야, 회원정보를 수정해도 로그인 지속 가능
+        - 만약 이 필드가 없다면, username으로 회원을 조회해야하는데, username을 수정하면 user 식별 불가능
+     */
     private final Long userId;
     private final String username;
     private final String password;
