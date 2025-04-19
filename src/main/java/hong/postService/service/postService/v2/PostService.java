@@ -23,13 +23,13 @@ import org.springframework.transaction.annotation.Transactional;
  *
  * 주요 기능:
  *      게시글 작성
- *      게시글 삭제 (soft delete)
  *      게시글 조회
  *      게시글 상세 조회
  *      전체 게시글 목록 조회 (Paging)
  *      게시글 검색 (writer, title)
  *      회원이 작성한 전체 게시글 목록 조회 (Paging)
  *      게시글 수정 (title, content)
+ *      게시글 삭제 (soft delete)
  */
 @Service
 @RequiredArgsConstructor
@@ -54,25 +54,11 @@ public class PostService {
 
         Member member = memberService.findMember(memberId);
 
+        if (request.getTitle() == null) throw new InvalidPostFieldException("write: title == null");
+        if (request.getContent() == null) throw new InvalidPostFieldException("write: content == null");
+
         Post post = member.writeNewPost(request.getTitle(), request.getContent());
-        Post saved = postRepository.save(post);
-
-        return saved.getId();
-    }
-
-    /**
-     * 게시글을 삭제합니다.
-     *
-     * @param postId 삭제할 게시글의 ID
-     *
-     * @throws PostNotFoundException 존재하지 않거나 이미 삭제된 게시글의 경우
-     */
-    @Transactional
-    public void delete(Long postId) {
-        Post post = postRepository.findByIdAndIsRemovedFalse(postId).orElseThrow(() ->
-                new PostNotFoundException(postId));
-
-        post.remove();
+        return postRepository.save(post).getId();
     }
 
     /**
@@ -84,7 +70,8 @@ public class PostService {
      * @throws PostNotFoundException 존재하지 않거나 이미 삭제된 게시글의 경우
      */
     public Post getPost(Long postId) {
-        return postRepository.findByIdAndIsRemovedFalse(postId).orElseThrow(() -> new PostNotFoundException(postId));
+        return postRepository.findByIdAndIsRemovedFalse(postId)
+                .orElseThrow(() -> new PostNotFoundException(postId));
     }
 
     /**
@@ -105,7 +92,8 @@ public class PostService {
      * @return 삭제되지 않은 게시글들의 페이징 결과 (요약 응답 DTO로 매핑됨)
      */
     public Page<PostSummaryResponse> getPosts(Pageable pageable) {
-        return postRepository.findAllByIsRemovedFalse(pageable).map(PostSummaryResponse::from);
+        return postRepository.findAllByIsRemovedFalse(pageable)
+                .map(PostSummaryResponse::from);
     }
 
     /**
@@ -116,7 +104,8 @@ public class PostService {
      * @return 조건에 부합하는 게시글들의 페이징 결과 (요약 응답 DTO로 매핑됨)
      */
     public Page<PostSummaryResponse> search(SearchCond cond, Pageable pageable) {
-        return postRepository.searchPosts(cond, pageable).map(PostSummaryResponse::from);
+        return postRepository.searchPosts(cond, pageable)
+                .map(PostSummaryResponse::from);
     }
 
     /**
@@ -130,7 +119,9 @@ public class PostService {
      */
     public Page<PostSummaryResponse> getMemberPosts(Long memberId, Pageable pageable) {
         Member member = memberService.findMember(memberId);
-        return postRepository.findAllByWriterAndIsRemovedFalse(member, pageable).map(PostSummaryResponse::from);
+
+        return postRepository.findAllByWriterAndIsRemovedFalse(member, pageable)
+                .map(PostSummaryResponse::from);
     }
 
     /**
@@ -153,4 +144,20 @@ public class PostService {
         if (title != null) post.updateTitle(title);
         if (content != null) post.updateContent(content);
     }
+
+    /**
+     * 게시글을 삭제합니다.
+     *
+     * @param postId 삭제할 게시글의 ID
+     *
+     * @throws PostNotFoundException 존재하지 않거나 이미 삭제된 게시글의 경우
+     */
+    @Transactional
+    public void delete(Long postId) {
+
+        Post post = getPost(postId);
+
+        post.remove();
+    }
+
 }

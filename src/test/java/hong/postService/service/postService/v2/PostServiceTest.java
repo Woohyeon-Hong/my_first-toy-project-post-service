@@ -3,6 +3,7 @@ package hong.postService.service.postService.v2;
 import hong.postService.domain.Member;
 import hong.postService.domain.Post;
 import hong.postService.domain.UserRole;
+import hong.postService.exception.member.MemberNotFoundException;
 import hong.postService.exception.post.InvalidPostFieldException;
 import hong.postService.exception.post.PostNotFoundException;
 import hong.postService.repository.memberRepository.v2.MemberRepository;
@@ -40,7 +41,7 @@ class PostServiceTest {
     EntityManager em;
 
     @Test
-    void write_회원조회_후_회원이_있으면_정상_수행() {
+    void write_회원조회_후_회원이_있고_request가_null이_아니면_정상_수행() {
         //given
         Long memberId1 = memberService.signUp(new UserCreateRequest("user", "p", "e@naver.com", "nickname", UserRole.USER));
         Long memberId2 = memberService.signUp(new UserCreateRequest("user2", "p2", "e2@naver.com", "nickname2", UserRole.USER));
@@ -57,9 +58,12 @@ class PostServiceTest {
         assertThat(findPost.getContent()).isEqualTo("content1");
         assertThat(findPost.getWriter().getId()).isEqualTo(memberId1);
 
-        assertThatThrownBy(() -> postService.write(memberId2, new PostCreateRequest("title2", "content2")));
-    }
+        assertThatThrownBy(() -> postService.write(memberId2, new PostCreateRequest("title2", "content2")))
+                .isInstanceOf(MemberNotFoundException.class);
 
+        assertThatThrownBy(() -> postService.write(memberId1, new PostCreateRequest(null, null)))
+                .isInstanceOf(InvalidPostFieldException.class);
+    }
     @Test
     void deletePost_postId가_존재하면_정상_삭제() {
         //given
@@ -74,9 +78,10 @@ class PostServiceTest {
 
         //then
         Page<Post> posts = postRepository.findAllByIsRemovedFalse(PageRequest.of(0, 5, Sort.by(Sort.Direction.ASC, "createdDate")));
-
         assertThat(posts).doesNotContain(post);
-        assertThatThrownBy(() -> postService.delete(10000L)).isInstanceOf(PostNotFoundException.class);
+
+        assertThatThrownBy(() -> postService.delete(10000L))
+                .isInstanceOf(PostNotFoundException.class);
     }
 
     @Test
