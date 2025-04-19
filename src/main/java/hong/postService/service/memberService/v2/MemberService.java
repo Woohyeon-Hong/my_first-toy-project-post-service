@@ -14,7 +14,6 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
 import java.util.Optional;
 
 
@@ -23,8 +22,9 @@ import java.util.Optional;
  *
  * 주요 기능:
  *     회원 가입 (일반/관리자)
+ *     회원 조회 (id로)
  *     회원 정보 수정 (username, email, nickname)
- *     비밀번호 변경
+ *     회원 비밀번호 변경
  *     회원 탈퇴 (soft delete)
  *     회원 중복 필드 검증
  */
@@ -82,9 +82,8 @@ public class MemberService {
 
         Member member = Member.createNewMember(username, password, email, nickname);
 
-        Member saved = memberRepository.save(member);
+        return  memberRepository.save(member).getId();
 
-        return saved.getId();
     }
 
     /**
@@ -114,22 +113,20 @@ public class MemberService {
 
         Member member = Member.createNewAdmin(username, password, email, nickname);
 
-        Member saved = memberRepository.save(member);
-
-        return saved.getId();
+        return  memberRepository.save(member).getId();
     }
 
     /**
-     * 회원을 탈퇴 처리합니다. (Soft delete 방식)
+     * 회원 ID로 회원을 조회합니다.
      *
-     * @param memberId 탈퇴할 회원의 ID
+     * @param memberId 조회할 회원의 ID
+     * @return 조회된 Member 엔티티
      *
-     * @throws MemberNotFoundException 존재하지 않거나 이미 삭제된 회원인 경우
+     * @throws MemberNotFoundException 존재하지 않거나 삭제된 회원일 경우
      */
-    @Transactional
-    public void unregister(Long memberId) {
-        Member findMember = findMember(memberId);
-        memberRepository.delete(findMember);
+    public Member findMember(Long memberId) {
+        return memberRepository.findByIdAndIsRemovedFalse(memberId)
+                .orElseThrow(() -> new MemberNotFoundException(memberId));
     }
 
     /**
@@ -189,17 +186,18 @@ public class MemberService {
         changePassword(findMember, encoder.encode(next));
     }
 
+
     /**
-     * 회원 ID로 회원을 조회합니다.
+     * 회원을 탈퇴 처리합니다. (Soft delete 방식)
      *
-     * @param memberId 조회할 회원의 ID
-     * @return 조회된 Member 엔티티
+     * @param memberId 탈퇴할 회원의 ID
      *
-     * @throws MemberNotFoundException 존재하지 않거나 삭제된 회원일 경우
+     * @throws MemberNotFoundException 존재하지 않거나 이미 삭제된 회원인 경우
      */
-    public Member findMember(Long memberId) {
-        return memberRepository.findByIdAndIsRemovedFalse(memberId)
-                .orElseThrow(() -> new MemberNotFoundException(memberId));
+    @Transactional
+    public void unregister(Long memberId) {
+        Member findMember = findMember(memberId);
+        findMember.remove();
     }
 
 

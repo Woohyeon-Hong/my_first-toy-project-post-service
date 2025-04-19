@@ -53,8 +53,11 @@ class MemberServiceTest {
         //when & then
         memberService.usernameDuplicateCheck(ok);
 
-        assertThatThrownBy(() -> memberService.usernameDuplicateCheck(notOk)).isInstanceOf(DuplicateMemberFieldException.class);
-        assertThatThrownBy(() -> memberService.usernameDuplicateCheck(null)).isInstanceOf(InvalidMemberFieldException.class);
+        assertThatThrownBy(() -> memberService.usernameDuplicateCheck(notOk))
+                .isInstanceOf(DuplicateMemberFieldException.class);
+
+        assertThatThrownBy(() -> memberService.usernameDuplicateCheck(null))
+                .isInstanceOf(InvalidMemberFieldException.class);
     }
 
     @Test
@@ -76,8 +79,11 @@ class MemberServiceTest {
         //when & then
         memberService.emailDuplicateCheck(ok);
 
-        assertThatThrownBy(() -> memberService.emailDuplicateCheck(notOk)).isInstanceOf(DuplicateMemberFieldException.class);
-        assertThatThrownBy(() -> memberService.emailDuplicateCheck(null)).isInstanceOf(InvalidMemberFieldException.class);
+        assertThatThrownBy(() -> memberService.emailDuplicateCheck(notOk))
+                .isInstanceOf(DuplicateMemberFieldException.class);
+
+        assertThatThrownBy(() -> memberService.emailDuplicateCheck(null))
+                .isInstanceOf(InvalidMemberFieldException.class);
 
     }
 
@@ -100,8 +106,11 @@ class MemberServiceTest {
         //when & then
         memberService.nicknameDuplicateCheck(ok);
 
-        assertThatThrownBy(() -> memberService.nicknameDuplicateCheck(notOk)).isInstanceOf(DuplicateMemberFieldException.class);
-        assertThatThrownBy(() -> memberService.nicknameDuplicateCheck(null)).isInstanceOf(InvalidMemberFieldException.class);
+        assertThatThrownBy(() -> memberService.nicknameDuplicateCheck(notOk))
+                .isInstanceOf(DuplicateMemberFieldException.class);
+
+        assertThatThrownBy(() -> memberService.nicknameDuplicateCheck(null))
+                .isInstanceOf(InvalidMemberFieldException.class);
     }
 
     @Test
@@ -115,10 +124,10 @@ class MemberServiceTest {
         Long id2 = memberService.signUp(request2);
 
         //then
-        Member member1 = memberRepository.findByIdAndIsRemovedFalse(id1).orElseThrow();
-        Member member2 = memberRepository.findByIdAndIsRemovedFalse(id2).orElseThrow();
+        Member member1 = memberService.findMember(id1);
+        Member member2 = memberService.findMember(id2);
 
-        List<Member> members = memberRepository.findAll();
+        List<Member> members = memberRepository.findAllByIsRemovedFalse();
 
         assertThat(member1.getRole()).isEqualTo(UserRole.USER);
         assertThat(member2.getRole()).isEqualTo(UserRole.USER);
@@ -132,40 +141,41 @@ class MemberServiceTest {
         UserCreateRequest request = new UserCreateRequest(null, null, null, null, UserRole.USER);
 
         //when & then
-        assertThatThrownBy(() -> memberService.signUp(request)).isInstanceOf(InvalidMemberFieldException.class);
+        assertThatThrownBy(() -> memberService.signUp(request))
+                .isInstanceOf(InvalidMemberFieldException.class);
     }
 
     @Test
     void signUpMember_중복된_필드() {
         //given
         UserCreateRequest request = new UserCreateRequest("user2", "p2", "u2@naver.com", "n2", UserRole.USER);
-        UserCreateRequest request2 = new UserCreateRequest("user2", "p2", "u2@naver.com", "n2", UserRole.USER);
 
         memberService.signUp(request);
 
         //when & then
-        assertThatThrownBy(() -> memberService.signUp(request2)).isInstanceOf(DuplicateMemberFieldException.class);
+        assertThatThrownBy(() -> memberService.signUp(request))
+                .isInstanceOf(DuplicateMemberFieldException.class);
     }
 
 
     @Test
     void signUpAdmin_정상_가입() {
         //given
-        UserCreateRequest request = new UserCreateRequest("user1", "p1", "u1@naver.com", "n1", UserRole.USER);
-        UserCreateRequest request2 = new UserCreateRequest("user2", "p2", "u2@naver.com", "n2", UserRole.USER);
+        UserCreateRequest request = new UserCreateRequest("user1", "p1", "u1@naver.com", "n1", UserRole.ADMIN);
+        UserCreateRequest request2 = new UserCreateRequest("user2", "p2", "u2@naver.com", "n2", UserRole.ADMIN);
 
         //when
-        Long id1 = memberService.signUp(request);
-        Long id2 = memberService.signUp(request2);
+        Long id1 = memberService.signUpAdmin(request);
+        Long id2 = memberService.signUpAdmin(request2);
 
         //then
-        Member member1 = memberRepository.findByIdAndIsRemovedFalse(id1).orElseThrow();
-        Member member2 = memberRepository.findByIdAndIsRemovedFalse(id2).orElseThrow();
+        Member member1 = memberService.findMember(id1);
+        Member member2 =  memberService.findMember(id2);
 
-        List<Member> members = memberRepository.findAll();
+        List<Member> members = memberRepository.findAllByIsRemovedFalse();
 
-        assertThat(member1.getRole()).isEqualTo(UserRole.USER);
-        assertThat(member2.getRole()).isEqualTo(UserRole.USER);
+        assertThat(member1.getRole()).isEqualTo(UserRole.ADMIN);
+        assertThat(member2.getRole()).isEqualTo(UserRole.ADMIN);
 
         assertThat(members).containsExactly(member1, member2);
     }
@@ -173,40 +183,40 @@ class MemberServiceTest {
     @Test
     void signUpAdmin_null인_필드() {
         //given
-        UserCreateRequest request = new UserCreateRequest(null, null, null, null, UserRole.USER);
+        UserCreateRequest request = new UserCreateRequest(null, null, null, null, UserRole.ADMIN);
 
         //when & then
-        assertThatThrownBy(() -> memberService.signUp(request)).isInstanceOf(InvalidMemberFieldException.class);
+        assertThatThrownBy(() -> memberService.signUpAdmin(request))
+                .isInstanceOf(InvalidMemberFieldException.class);
     }
 
     @Test
     void signUpAdmin_중복된_필드() {
         //given
-        UserCreateRequest request = new UserCreateRequest("user2", "p2", "u2@naver.com", "n2", UserRole.USER);
-        UserCreateRequest request2 = new UserCreateRequest("user2", "p2", "u2@naver.com", "n2", UserRole.USER);
+        UserCreateRequest request = new UserCreateRequest("user2", "p2", "u2@naver.com", "n2", UserRole.ADMIN);
 
-        memberService.signUp(request);
+        memberService.signUpAdmin(request);
 
         //when & then
-
-        assertThatThrownBy(() -> memberService.signUp(request2)).isInstanceOf(DuplicateMemberFieldException.class);
+        assertThatThrownBy(() -> memberService.signUpAdmin(request))
+                .isInstanceOf(DuplicateMemberFieldException.class);
     }
 
 
     @Test
-    void unregister_회원ID가_없으면_예외_발생하고_아니면_정상_수행() {
+    void unregister_회원ID가_존재하면_정상_수행() {
         //given
-        UserCreateRequest request1 = new UserCreateRequest("user1", "p1", "u1@naver.com", "n1", UserRole.USER);
-        UserCreateRequest request2 = new UserCreateRequest("user2", "p2", "u2@naver.com", "n2", UserRole.USER);
-        UserCreateRequest request3 = new UserCreateRequest("user3", "p3", "u3@naver.com", "n3", UserRole.USER);
+        UserCreateRequest request1 = new UserCreateRequest("user1", "p1", "u1@naver.com", "n1", UserRole.ADMIN);
+        UserCreateRequest request2 = new UserCreateRequest("user2", "p2", "u2@naver.com", "n2", UserRole.ADMIN);
+        UserCreateRequest request3 = new UserCreateRequest("user3", "p3", "u3@naver.com", "n3", UserRole.ADMIN);
 
-        Long id1 = memberService.signUp(request1);
-        Long id2 = memberService.signUp(request2);
-        Long id3 = memberService.signUp(request3);
+        Long id1 = memberService.signUpAdmin(request1);
+        Long id2 = memberService.signUpAdmin(request2);
+        Long id3 = memberService.signUpAdmin(request3);
 
-        Member member1 = memberRepository.findByIdAndIsRemovedFalse(id1).orElseThrow();
-        Member member2 = memberRepository.findByIdAndIsRemovedFalse(id2).orElseThrow();
-        Member member3 = memberRepository.findByIdAndIsRemovedFalse(id3).orElseThrow();
+        Member member1 = memberService.findMember(id1);
+        Member member2 = memberService.findMember(id2);
+        Member member3 = memberService.findMember(id3);
 
 
         //when
@@ -214,7 +224,7 @@ class MemberServiceTest {
         memberService.unregister(member2.getId());
 
         //then
-        List<Member> members = memberRepository.findAll();
+        List<Member> members = memberRepository.findAllByIsRemovedFalse();
         assertThat(members).containsExactly(member3);
 
         assertThatThrownBy(() -> memberService.unregister(member1.getId() + 1000))
@@ -222,30 +232,27 @@ class MemberServiceTest {
     }
 
     @Test
-    void updateInfo_필드에_null_또는_새로운_값이_들어오면_정상_업데이트() {
+    void updateInfo_필드에_null이_아닌_새로운_값이_들어오면_정상_업데이트() {
         //given
         UserCreateRequest request = new UserCreateRequest("user1", "p1", "u1@naver.com", "n1", UserRole.USER);
         UserCreateRequest request2 = new UserCreateRequest("newUsername", "p2", "new@naver.com", "newNickname", UserRole.USER);
 
-        Long id = memberService.signUp(request);
+        Long id1 = memberService.signUp(request);
         Long id2 = memberService.signUp(request2);
 
         memberService.unregister(id2);
 
-        Member member = memberRepository.findByIdAndIsRemovedFalse(id).orElseThrow();
-
         MemberUpdateInfoRequest updateParam = MemberUpdateInfoRequest.builder()
-                .username("newUsername")
-                .email("new@naver.com")
+                .username(request2.getUsername())
+                .email(request2.getEmail())
                 .build();
 
         //when
-        memberService.updateInfo(member.getId(), updateParam);
-
+        memberService.updateInfo(id1, updateParam);
         flushAndClear();
 
         //then
-        Member changedMember = memberRepository.findByIdAndIsRemovedFalse(member.getId()).orElseThrow();
+        Member changedMember = memberService.findMember(id1);
 
         assertThat(changedMember.getUsername()).isEqualTo(updateParam.getUsername());
         assertThat(changedMember.getEmail()).isEqualTo(updateParam.getEmail());
@@ -260,20 +267,24 @@ class MemberServiceTest {
 
         Long id = memberService.signUp(request);
 
-        Member member = memberRepository.findByIdAndIsRemovedFalse(id).orElseThrow();
+        Member member = memberService.findMember(id);
 
         MemberUpdateInfoRequest updateParam = MemberUpdateInfoRequest.builder()
-                .username(member.getUsername())
-                .email(member.getEmail())
-                .nickname(member.getNickname())
+                .username(request.getUsername())
+                .email(request.getEmail())
+                .nickname(request.getNickname())
                 .build();
 
         //when
         memberService.updateInfo(id, updateParam);
+        flushAndClear();
 
         //then
-        Member changedMember = memberRepository.findByIdAndIsRemovedFalse(id).orElseThrow();
-        assertThat(changedMember).isEqualTo(member);
+        Member changedMember = memberService.findMember(id);
+
+        assertThat(changedMember.getUsername()).isEqualTo(member.getUsername());
+        assertThat(changedMember.getEmail()).isEqualTo(member.getEmail());
+        assertThat(changedMember.getNickname()).isEqualTo(member.getNickname());
 
         assertThat(changedMember.getLastModifiedDate()).isEqualTo(changedMember.getCreatedDate());
     }
@@ -284,18 +295,17 @@ class MemberServiceTest {
         UserCreateRequest request = new UserCreateRequest("user1", "p1", "u1@naver.com", "n1", UserRole.USER);
         UserCreateRequest request2 = new UserCreateRequest("user2", "p2", "u2@naver.com", "n2", UserRole.USER);
 
-        Long id = memberService.signUp(request);
-        Long id2 = memberService.signUp(request2);
-
-        Member another = memberRepository.findByIdAndIsRemovedFalse(id2).orElseThrow();
+        Long id1 = memberService.signUp(request);
+        memberService.signUp(request2);
 
         MemberUpdateInfoRequest updateParam = MemberUpdateInfoRequest.builder()
-                .username(another.getUsername())
-                .email(another.getEmail())
+                .username(request2.getUsername())
+                .email(request2.getEmail())
                 .build();
 
         //when & then
-        assertThatThrownBy(() -> memberService.updateInfo(id, updateParam)).isInstanceOf(DuplicateMemberFieldException.class);
+        assertThatThrownBy(() -> memberService.updateInfo(id1, updateParam))
+                .isInstanceOf(DuplicateMemberFieldException.class);
     }
 
     @Test
@@ -318,6 +328,7 @@ class MemberServiceTest {
 
         // then
         Member findMember = memberService.findMember(id);
+
         assertThat(findMember.getLastModifiedDate()).isAfter(findMember.getCreatedDate());
 
         assertThatThrownBy(() -> memberService.updatePassword(id, request2))
@@ -331,7 +342,7 @@ class MemberServiceTest {
 
         Long id = memberService.signUp(request);
 
-        Member member = memberRepository.findByIdAndIsRemovedFalse(id).orElseThrow();
+        Member member = memberService.findMember(id);
 
         LocalDateTime oldCreatedDate = member.getCreatedDate();
         LocalDateTime oldLastModifiedDate = member.getLastModifiedDate();
