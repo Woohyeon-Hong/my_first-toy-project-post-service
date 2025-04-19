@@ -33,13 +33,17 @@ public class PostController {
 
     @GetMapping
     public ResponseEntity<Page<PostSummaryResponse>> getPosts(Pageable pageable) {
+
         Page<PostSummaryResponse> posts = postService.getPosts(pageable);
+
         return ResponseEntity.ok(posts);
     }
 
     @GetMapping("/{postId}")
     public ResponseEntity<PostDetailResponse> getPost(@PathVariable("postId") Long postId) {
+
         PostDetailResponse post = postService.getPostDetailResponse(postId);
+
         return ResponseEntity.ok(post);
     }
 
@@ -47,25 +51,31 @@ public class PostController {
     public ResponseEntity<Page<PostSummaryResponse>> search(
             @RequestParam SearchCond cond,
             Pageable pageable) {
+
         Page<PostSummaryResponse> posts = postService.search(cond, pageable);
+
         return ResponseEntity.ok(posts);
     }
 
 
     @PatchMapping("/{postId}")
-    public ResponseEntity<PostDetailResponse> editPost(
+    public ResponseEntity<Void> editPost(
             @PathVariable("postId") Long postId,
             @Valid @RequestBody PostUpdateRequest request
             ) {
+
         postService.update(postId, request);
+
         return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping("/{postId}")
-    public ResponseEntity<PostDetailResponse> deletePost(
+    public ResponseEntity<Void> deletePost(
             @PathVariable("postId") Long postId
     ) {
+
         postService.delete(postId);
+
         return ResponseEntity.noContent().build();
     }
 
