@@ -66,12 +66,13 @@ public class JwtFilter extends OncePerRequestFilter {
         }
 
         // 4. JWT 토큰에서 사용자 정보 추출
+        Long userId = jwtUtil.getUserId(token);
         String username = jwtUtil.getUsername(token);
         String roleStr = jwtUtil.getRole(token);
         UserRole role = roleStr.equals("ROLE_ADMIN") ? UserRole.ADMIN : UserRole.USER;
 
         // 5. 인증 객체 생성 및 설정
-        CustomUserDetails userDetails = new CustomUserDetails(username, null, role);
+        CustomUserDetails userDetails = new CustomUserDetails(userId, username, null, role);
         Authentication authToken = new UsernamePasswordAuthenticationToken(
                 userDetails, null, userDetails.getAuthorities());
 

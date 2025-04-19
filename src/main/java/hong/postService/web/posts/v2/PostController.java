@@ -24,16 +24,16 @@ public class PostController {
     private final PostService postService;
     private final CommentService commentService;
 
-    @GetMapping("/{postId}")
-    public ResponseEntity<PostDetailResponse> getPost(@PathVariable("postId") Long postId) {
-        PostDetailResponse post = postService.getPostDetailResponse(postId);
-        return ResponseEntity.ok(post);
-    }
-
     @GetMapping
     public ResponseEntity<Page<PostSummaryResponse>> getPosts(Pageable pageable) {
         Page<PostSummaryResponse> posts = postService.getPosts(pageable);
         return ResponseEntity.ok(posts);
+    }
+
+    @GetMapping("/{postId}")
+    public ResponseEntity<PostDetailResponse> getPost(@PathVariable("postId") Long postId) {
+        PostDetailResponse post = postService.getPostDetailResponse(postId);
+        return ResponseEntity.ok(post);
     }
 
     @GetMapping("/search")

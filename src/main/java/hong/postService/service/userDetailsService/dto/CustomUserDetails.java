@@ -1,6 +1,5 @@
 package hong.postService.service.userDetailsService.dto;
 
-import hong.postService.domain.Member;
 import hong.postService.domain.UserRole;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
@@ -12,6 +11,7 @@ import java.util.Collection;
 @RequiredArgsConstructor
 public class CustomUserDetails implements UserDetails {
 
+    private final Long userId;
     private final String username;
     private final String password;
     private final UserRole role;
@@ -30,6 +30,8 @@ public class CustomUserDetails implements UserDetails {
 
         return collection;
     }
+
+    public Long getUserId() {return userId;}
 
     @Override
     public String getPassword() {

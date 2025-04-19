@@ -27,7 +27,7 @@ public class CustomUserDetailsService implements UserDetailsService {
 
         if (member.isPresent()) {
             Member user = member.get();
-            return new CustomUserDetails(user.getUsername(), user.getPassword(), user.getRole());
+            return new CustomUserDetails(user.getId(), user.getUsername(), user.getPassword(), user.getRole());
         } else {
             throw new UsernameNotFoundException("존재하지 않는 사용자입니다: " + username);
         }

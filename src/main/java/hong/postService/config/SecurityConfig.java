@@ -97,10 +97,7 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.DELETE, "/v2/posts/**", "/v2/comments/**").authenticated()
 
                 // 회원 관련 조회 및 수정, 삭제는 인증 필요
-                .requestMatchers(HttpMethod.GET, "/v2/users/**").authenticated()
-                .requestMatchers(HttpMethod.POST, "/v2/users/**").authenticated()
-                .requestMatchers(HttpMethod.PATCH, "/v2/users/**").authenticated()
-                .requestMatchers(HttpMethod.DELETE, "/v2/users/**").authenticated()
+                .requestMatchers("/v2/users/me/**").authenticated()
 
                 // 어드민 전용 URI는 어드민 권한 필요
                 .requestMatchers("/v2/admin/**").hasRole("ADMIN")

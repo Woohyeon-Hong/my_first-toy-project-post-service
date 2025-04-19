@@ -19,8 +19,9 @@ public class JwtUtil {
     }
 
     //JWT 생성 메서드
-    public String createJwt(String username, String role, Long expiredMs) {
+    public String createJwt(Long userId, String username, String role, Long expiredMs) {
         return Jwts.builder()
+                .claim("userId", userId)
                 .claim("username", username)
                 .claim("role", role)
                 .issuedAt(new Date(System.currentTimeMillis()))
@@ -29,7 +30,16 @@ public class JwtUtil {
                 .compact();
     }
 
+
     //JWT 검증용 메서드
+
+    public Long getUserId(String token) {
+        return Jwts.parser().verifyWith(secretKey).build()
+                .parseSignedClaims(token)
+                .getPayload()
+                .get("userId", Long.class);
+    }
+
     public String getUsername(String token) {
         return Jwts.parser().verifyWith(secretKey).build()
                 .parseSignedClaims(token)

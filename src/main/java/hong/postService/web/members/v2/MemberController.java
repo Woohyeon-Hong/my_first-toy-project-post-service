@@ -10,6 +10,7 @@ import hong.postService.service.postService.dto.PostCreateRequest;
 import hong.postService.service.postService.dto.PostDetailResponse;
 import hong.postService.service.postService.dto.PostSummaryResponse;
 import hong.postService.service.postService.v2.PostService;
+import hong.postService.service.userDetailsService.dto.CustomUserDetails;
 import hong.postService.web.members.dto.MemberResponse;
 import hong.postService.web.posts.v2.PostController;
 import io.swagger.v3.oas.annotations.Operation;
@@ -26,6 +27,7 @@ import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
@@ -93,15 +95,16 @@ public class MemberController {
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
             }
     )
-    @GetMapping("/{userId}/posts-simple")
-    public ResponseEntity<Page<PostSummaryResponse>> getMemberPostsSimple(
-            @PathVariable Long userId,
+    @GetMapping("/me/posts-simple")
+    public ResponseEntity<Page<PostSummaryResponse>> getMyPostsSimple(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
             Pageable pageable
     ) {
-        Page<PostSummaryResponse> posts = postService.getMemberPosts(userId, pageable);
+
+        Page<PostSummaryResponse> posts = postService.getMemberPosts(userDetails.getUserId(), pageable);
+
         return ResponseEntity.ok(posts);
     }
-
 
 
     @Operation(
@@ -115,13 +118,14 @@ public class MemberController {
             @ApiResponse(responseCode = "500", description = "서버 내부 오류",
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
-    @GetMapping("/{userId}/posts-standard")
-    public ResponseEntity<PagedModel<EntityModel<PostSummaryResponse>>> getMemberPostsStandard(
-            @PathVariable("userId") Long userId,
+    @GetMapping("/me/posts-standard")
+    public ResponseEntity<PagedModel<EntityModel<PostSummaryResponse>>> getMyPostsStandard(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
             Pageable pageable,
             PagedResourcesAssembler<PostSummaryResponse> assembler
     ) {
-        Page<PostSummaryResponse> memberPosts = postService.getMemberPosts(userId, pageable);
+
+        Page<PostSummaryResponse> memberPosts = postService.getMemberPosts(userDetails.getUserId(), pageable);
 
         PagedModel<EntityModel<PostSummaryResponse>> pagedModel = assembler.toModel(
                 memberPosts,
@@ -132,7 +136,6 @@ public class MemberController {
 
         return ResponseEntity.ok(pagedModel);
     }
-
 
 
     /**
@@ -157,12 +160,13 @@ public class MemberController {
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
             }
     )
-    @PatchMapping("/{userId}")
-    public ResponseEntity<Void> updateInfo(
-            @PathVariable("userId") Long userId,
+    @PatchMapping("/me")
+    public ResponseEntity<Void> updateMyInfo(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
             @Valid @RequestBody MemberUpdateInfoRequest updateParam
     ) {
-        memberService.updateInfo(userId, updateParam);
+
+        memberService.updateInfo(userDetails.getUserId(), updateParam);
 
         return ResponseEntity.noContent().build();
     }
@@ -194,12 +198,13 @@ public class MemberController {
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
             }
     )
-    @PatchMapping("/{userId}/password")
-    public ResponseEntity<Void> updatePassword(
-            @PathVariable("userId") Long userId,
+    @PatchMapping("/me/password")
+    public ResponseEntity<Void> updateMyPassword(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
             @Valid @RequestBody PasswordUpdateRequest request
     ) {
-        memberService.updatePassword(userId, request);
+
+        memberService.updatePassword(userDetails.getUserId(), request);
 
         return ResponseEntity.noContent().build();
     }
@@ -218,13 +223,15 @@ public class MemberController {
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
             }
     )
-    @DeleteMapping("/{userId}")
-    public  ResponseEntity<Void> unregister(@PathVariable("userId") Long userId) {
-        memberService.unregister(userId);
+    @DeleteMapping("/me")
+    public ResponseEntity<Void> unregister(
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+
+        memberService.unregister(userDetails.getUserId());
+
         return ResponseEntity.noContent().build();
     }
-
-
 
     /**
      *PostCreateRequest
@@ -246,14 +253,16 @@ public class MemberController {
                              content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
              }
     )
-    @PostMapping("/{userId}/posts")
+    @PostMapping("/me/posts")
     public ResponseEntity<PostDetailResponse> writePost(
-            @PathVariable("userId") Long userId,
-            @Valid @RequestBody PostCreateRequest request) {
-        Long postId = postService.write(userId, request);
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @Valid @RequestBody PostCreateRequest request
+    ) {
+
+        Long postId = postService.write(userDetails.getUserId(), request);
 
         URI location = ServletUriComponentsBuilder.fromCurrentRequest()
-                .path("{postId}")
+                .path("/{postId}")
                 .buildAndExpand(postId)
                 .toUri();
 

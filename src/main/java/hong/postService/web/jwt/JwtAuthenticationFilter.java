@@ -62,6 +62,9 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
 
         CustomUserDetails customUserDetails = (CustomUserDetails) authentication.getPrincipal();
 
+        //UserDetails에서 userId 추출
+        Long userId = customUserDetails.getUserId();
+
         //UserDetails에서 username 추출
         String username = customUserDetails.getUsername();
 
@@ -72,7 +75,7 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         String role = auth.getAuthority();
 
         //jwt 생성
-        String token = jwtUtil.createJwt(username, role, 60*60*10000L);
+        String token = jwtUtil.createJwt(userId, username, role, 60*60*10000L);
 
         //응답 authorization 헤더에 추록
         response.addHeader("Authorization", "Bearer " + token);
