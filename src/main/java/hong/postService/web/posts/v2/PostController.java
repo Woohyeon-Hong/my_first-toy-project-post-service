@@ -168,7 +168,7 @@ public class PostController {
     }
 
     @Operation(summary = "게시글 전체 댓글 목록 조회",
-    description = "게시글에 달린 전체 댓글들을 조회한다.")
+    description = "게시글에 달린 전체 댓글 및 대댓글들을 조회한다.")
     @ApiResponses(
             value = {
                     @ApiResponse(responseCode = "200", description = "게시글 전체 댓글 목록 조회 성공"),

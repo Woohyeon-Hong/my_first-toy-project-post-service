@@ -1,9 +1,15 @@
 package hong.postService.web.comment.v2;
 
+import hong.postService.exception.ErrorResponse;
 import hong.postService.service.commentService.dto.CommentCreateRequest;
 import hong.postService.service.commentService.dto.CommentUpdateRequest;
 import hong.postService.service.commentService.v2.CommentService;
 import hong.postService.service.userDetailsService.dto.CustomUserDetails;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -20,6 +26,19 @@ public class CommentController {
 
     private final CommentService commentService;
 
+    @Operation(summary = "대댓글 작성",
+    description = "대댓글을 작성한다.")
+    @ApiResponses(
+            value = {
+                    @ApiResponse(responseCode = "201", description = "대댓글 작성 성공"),
+                    @ApiResponse(responseCode = "404", description = "존재하지 않거나 이미 삭제된 회원 또는 댓글 ID",
+                            content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+                    @ApiResponse(responseCode = "400", description = "대댓글 필드가 null",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+                    @ApiResponse(responseCode = "500", description = "서버 내부 오류",
+                            content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+            }
+    )
     @PostMapping("/{commentId}/replies")
     public ResponseEntity<Void> writeReply(
             @AuthenticationPrincipal CustomUserDetails userDetails,
@@ -37,6 +56,19 @@ public class CommentController {
         return ResponseEntity.created(location).build();
     }
 
+    @Operation(summary = "댓글 수정",
+    description = "댓글 또는 대댓글을 수정한다.")
+    @ApiResponses(
+            value = {
+                    @ApiResponse(responseCode = "204", description = "댓글 수정 성공"),
+                    @ApiResponse(responseCode = "404", description = "존재하지 않거나 이미 삭제된 댓글 ID",
+                            content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+                    @ApiResponse(responseCode = "400", description = "댓글 필드가 null",
+                            content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+                    @ApiResponse(responseCode = "500", description = "서버 내부 오류",
+                            content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+            }
+    )
     @PatchMapping("/{commentId}")
     public ResponseEntity<Void> editComment(
             @PathVariable("commentId") Long commentId,
@@ -48,6 +80,17 @@ public class CommentController {
         return ResponseEntity.noContent().build();
     }
 
+    @Operation(summary = "댓글 삭제",
+    description = "댓글 또는 대댓글을 삭제한다.")
+    @ApiResponses(
+            value = {
+                    @ApiResponse(responseCode = "204", description = "댓글 삭제 성공"),
+                    @ApiResponse(responseCode = "404", description = "존재하지 않거나 이미 삭제된 댓글 ID",
+                            content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+                    @ApiResponse(responseCode = "500", description = "서버 내부 오류",
+                            content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+            }
+    )
     @DeleteMapping("/{commentId}")
     public ResponseEntity<Void> deletePost (
             @PathVariable("commentId") Long commentId
