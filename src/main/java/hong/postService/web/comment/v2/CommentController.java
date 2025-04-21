@@ -1,7 +1,6 @@
 package hong.postService.web.comment.v2;
 
 import hong.postService.service.commentService.dto.CommentCreateRequest;
-import hong.postService.service.commentService.dto.CommentResponse;
 import hong.postService.service.commentService.dto.CommentUpdateRequest;
 import hong.postService.service.commentService.v2.CommentService;
 import hong.postService.service.userDetailsService.dto.CustomUserDetails;
@@ -24,7 +23,7 @@ public class CommentController {
     @PostMapping("/{commentId}/replies")
     public ResponseEntity<Void> writeReply(
             @AuthenticationPrincipal CustomUserDetails userDetails,
-            @PathVariable("commentid") Long commentId,
+            @PathVariable("commentId") Long commentId,
             @Valid @RequestBody CommentCreateRequest request
             ) {
 
@@ -38,12 +37,24 @@ public class CommentController {
         return ResponseEntity.created(location).build();
     }
 
-//    @PatchMapping("/{commentId}")
-//    public ResponseEntity<CommentResponse> editComment(
-//            @AuthenticationPrincipal CustomUserDetails userDetails,
-//            @PathVariable("commentId") Long commentId,
-//            @Valid @RequestBody CommentUpdateRequest request
-//    ) {
-//
-//    }
+    @PatchMapping("/{commentId}")
+    public ResponseEntity<Void> editComment(
+            @PathVariable("commentId") Long commentId,
+            @Valid @RequestBody CommentUpdateRequest request
+    ) {
+
+        commentService.update(commentId, request);
+
+        return ResponseEntity.noContent().build();
+    }
+
+    @DeleteMapping("/{commentId}")
+    public ResponseEntity<Void> deletePost (
+            @PathVariable("commentId") Long commentId
+    ) {
+
+        commentService.delete(commentId);
+
+        return ResponseEntity.noContent().build();
+    }
 }

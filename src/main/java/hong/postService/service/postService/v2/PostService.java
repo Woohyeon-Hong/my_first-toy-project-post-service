@@ -135,8 +135,7 @@ public class PostService {
      */
     @Transactional
     public void update(Long postId, PostUpdateRequest updateParam) {
-        Post post = postRepository.findByIdAndIsRemovedFalse(postId).orElseThrow(()
-                -> new PostNotFoundException(postId));
+        Post post = getPost(postId);
 
         String title = updateParam.getTitle();
         String content = updateParam.getContent();
