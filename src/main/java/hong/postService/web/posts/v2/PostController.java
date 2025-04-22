@@ -38,6 +38,9 @@ public class PostController {
     private final PostService postService;
     private final CommentService commentService;
 
+    /**
+     * 로그인 안 해도 확인 가능하게
+     */
     @Operation(summary = "전체 게시글 조회",
     description = "전체 게시글을 조회한다. 삭제된 게시글은 제외한다.")
     @ApiResponses(
@@ -84,7 +87,7 @@ public class PostController {
     )
     @GetMapping("/search")
     public ResponseEntity<Page<PostSummaryResponse>> search(
-            @RequestParam SearchCond cond,
+            @ModelAttribute SearchCond cond,
             Pageable pageable) {
 
         Page<PostSummaryResponse> posts = postService.search(cond, pageable);
@@ -116,7 +119,7 @@ public class PostController {
     }
 
     @Operation(summary = "게시글 삭제",
-    description = "게시글을 삭제한다. ")
+    description = "게시글을 삭제한다.")
     @ApiResponses(
             value = {
                     @ApiResponse(responseCode = "204", description = "게시글 삭제 성공"),

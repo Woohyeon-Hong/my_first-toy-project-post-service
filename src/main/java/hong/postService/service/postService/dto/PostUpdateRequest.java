@@ -11,9 +11,6 @@ import lombok.Getter;
 @AllArgsConstructor
 public class PostUpdateRequest {
 
-    @NotBlank(message = "title은 필수입니다.")
     private String title;
-
-    @NotNull
     private String content;
 }
