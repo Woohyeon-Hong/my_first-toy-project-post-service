@@ -26,6 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
  *
  * 주요 기능:
  *      댓글 작성 (일반/대댓글)
+ *      댓글 조회 (Comment/CommentResponse 반환)
  *      게시글에 달린 전체 댓글 목록 조회 (Paging)
  *      댓글에 달린 전체 대댓글 목록 조회 (Paging)
  *      댓글 삭제 (soft delete)
@@ -98,6 +99,20 @@ public class CommentService {
     public Comment getComment(Long commentId) {
         return commentRepository.findByIdAndIsRemovedFalse(commentId)
                 .orElseThrow(() -> new CommentNotFoundException(commentId));
+    }
+
+    /**
+     * 댓글을 조회하고, CommentResponse를 반환합니다.
+     *
+     * @param commentId 조회할 댓글 ID
+     * @return 조회된 댓글의 CommentResponse
+     *
+     * @throws CommentNotFoundException 존재하지 않거나 이미 삭제된 댓글인 경우
+     */
+    public CommentResponse getCommentResponse(Long commentId) {
+        Comment comment = getComment(commentId);
+
+        return CommentResponse.from(comment);
     }
 
     /**
