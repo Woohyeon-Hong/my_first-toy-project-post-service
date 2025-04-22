@@ -25,36 +25,27 @@ public class JwtFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
 
-    //화이트 리스트 경로 (jwt 검사 제외)
-    private final List<String> WHITE_LIST = List.of(
-            "/v2/users",                   // 회원가입
-            "/v2/users/login",            // 로그인
-            "/swagger-ui/**",             // Swagger UI
-            "/v3/api-docs/**",            // Swagger API docs
-            "/swagger-ui.html"            // Swagger entry
-    );
-
-    private final AntPathMatcher pathMatcher = new AntPathMatcher();
+    /**
+     * JWT 검증 요청 필터링 로직에 대한 고민
+     *      기본적으로는 모든 요청에 대해 JWT 검증 요구
+     *      또한 인가에 대해서는 SecurityFilterChain에서 처리
+     *      따라서, jWT가가 유효한지 검사만 하면 됨.
+     */
     @Override
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
 
         String requestURI = request.getRequestURI();
+        String authorization = request.getHeader("Authorization");
 
-        // 1. 화이트리스트 경로는 필터 통과 - 모든 요청에 대해 jwtFilter가 적용되기 때문
-        if (isWhitelisted(requestURI)) {
+
+        // JWT가 없으면 비로그인 사용자 요청으로 간주
+        if (authorization == null || !authorization.startsWith("Bearer ")) {
             filterChain.doFilter(request, response);
             return;
         }
 
-        String authorization = request.getHeader("Authorization");
-
-        // 2. Authorization 헤더가 없거나 잘못된 경우
-        if (authorization == null || !authorization.startsWith("Bearer ")) {
-            handleJwtError(response, 401, "JWT_MISSING", "Authorization 헤더가 없거나 올바르지 않습니다.");
-            return;
-        }
 
         String token = authorization.split(" ")[1];
 
@@ -78,10 +69,6 @@ public class JwtFilter extends OncePerRequestFilter {
 
         SecurityContextHolder.getContext().setAuthentication(authToken);
         filterChain.doFilter(request, response);
-    }
-
-    private boolean isWhitelisted(String path) {
-        return WHITE_LIST.stream().anyMatch(whitelistPattern -> pathMatcher.match(whitelistPattern, path));
     }
 
     private void handleJwtError(HttpServletResponse response,
