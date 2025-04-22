@@ -1,7 +1,9 @@
 package hong.postService.web.comment.v2;
 
+import hong.postService.domain.Comment;
 import hong.postService.exception.ErrorResponse;
 import hong.postService.service.commentService.dto.CommentCreateRequest;
+import hong.postService.service.commentService.dto.CommentResponse;
 import hong.postService.service.commentService.dto.CommentUpdateRequest;
 import hong.postService.service.commentService.v2.CommentService;
 import hong.postService.service.userDetailsService.dto.CustomUserDetails;
@@ -28,6 +30,9 @@ public class CommentController {
 
     private final CommentService commentService;
 
+    /**
+     * 응답 Location 수정
+     */
     @Operation(summary = "대댓글 작성",
     description = "대댓글을 작성한다.")
     @ApiResponses(
@@ -50,12 +55,30 @@ public class CommentController {
 
         Long replyId = commentService.writeReply(commentId, userDetails.getUserId(), request);
 
-        URI location = ServletUriComponentsBuilder.fromCurrentRequest()
-                .path("/{replyId}")
+        URI location = ServletUriComponentsBuilder.fromCurrentContextPath()
+                .path("/v2/comments/{replyId}")
                 .buildAndExpand(replyId)
                 .toUri();
 
         return ResponseEntity.created(location).build();
+    }
+
+    @Operation(summary = "댓글 상세 조회",
+    description = "댓글을 상세 조회한다.")
+    @ApiResponses(
+            value = {
+                    @ApiResponse(responseCode = "200", description = "댓글 조회 성공"),
+                    @ApiResponse(responseCode = "404", description = "존재하지 않거나 이미 삭제된 댓글 ID"
+                            ,content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+                    @ApiResponse(responseCode = "500", description = "서버 내부 오류",
+                            content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+            }
+    )
+    @GetMapping("/{commentId}")
+    public ResponseEntity<CommentResponse> getComment(@PathVariable("commentId") Long commentId) {
+        CommentResponse commentResponse = commentService.getCommentResponse(commentId);
+
+        return ResponseEntity.ok(commentResponse);
     }
 
     @Operation(summary = "댓글 수정",
@@ -94,7 +117,7 @@ public class CommentController {
             }
     )
     @DeleteMapping("/{commentId}")
-    public ResponseEntity<Void> deletePost (
+    public ResponseEntity<Void> deleteComment (
             @PathVariable("commentId") Long commentId
     ) {
 
