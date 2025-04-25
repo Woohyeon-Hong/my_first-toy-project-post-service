@@ -1,5 +1,6 @@
 package hong.postService.domain;
 
+import hong.postService.exception.member.IllegalEmailFormatException;
 import hong.postService.exception.member.InvalidMemberFieldException;
 import hong.postService.exception.member.MemberNotFoundException;
 import hong.postService.exception.post.InvalidPostFieldException;
@@ -27,6 +28,7 @@ class MemberTest {
         assertThat(member.getNickname()).isEqualTo(nickname);
         assertThat(member.getRole()).isEqualTo(UserRole.USER);
         assertThat(member.isRemoved()).isFalse();
+        assertThat(member.isOAuthMember()).isFalse();
 
         assertThatThrownBy(() -> Member.createNewMember(null, password, email, nickname))
                 .isInstanceOf(InvalidMemberFieldException.class);
@@ -51,7 +53,12 @@ class MemberTest {
 
         // then
         assertThat(admin.getUsername()).isEqualTo(username);
+        assertThat(admin.getPassword()).isEqualTo(password);
+        assertThat(admin.getEmail()).isEqualTo(email);
+        assertThat(admin.getNickname()).isEqualTo(nickname);
         assertThat(admin.getRole()).isEqualTo(UserRole.ADMIN);
+        assertThat(admin.isRemoved()).isFalse();
+        assertThat(admin.isOAuthMember()).isFalse();
 
         assertThatThrownBy(() -> Member.createNewAdmin(null, password, email, nickname))
                 .isInstanceOf(InvalidMemberFieldException.class);
@@ -61,6 +68,31 @@ class MemberTest {
 
         assertThatThrownBy(() -> Member.createNewAdmin(username, password, email, null))
                 .isInstanceOf(InvalidMemberFieldException.class);
+    }
+
+    @Test
+    void createNewOAuthMember_정상적으로_생성되고_유효하지않으면_예외발생() {
+        //given
+        String username = "username";
+        String password = "password";
+        String email = "email@naver.com";
+
+        //when
+        Member member = Member.createNewOAuthMember(username, password, email, null);
+
+        //then
+        assertThat(member.getUsername()).isEqualTo(username);
+        assertThat(member.getPassword()).isEqualTo(password);
+        assertThat(member.getEmail()).isEqualTo(email);
+        assertThat(member.getRole()).isEqualTo(UserRole.USER);
+        assertThat(member.isRemoved()).isFalse();
+        assertThat(member.isOAuthMember()).isTrue();
+
+        assertThatThrownBy(() -> Member.createNewOAuthMember(null, null, email, null))
+                .isInstanceOf(InvalidMemberFieldException.class);
+
+        assertThatThrownBy(() -> Member.createNewOAuthMember(username, password, "wrongEmail", null))
+                .isInstanceOf(IllegalEmailFormatException.class);
     }
 
     @Test
@@ -116,6 +148,15 @@ class MemberTest {
     }
 
     @Test
+    void changeUsername_OAuthMember() {
+        //given
+        Member member = Member.createNewOAuthMember("username", "password", "email@naver.com", "nickname");
+
+        //when & then
+        assertThatThrownBy(() -> member.changeUsername("new")).isInstanceOf(InvalidMemberFieldException.class);
+    }
+
+    @Test
     void changePassword_정상수행() {
         //given
         Member member = Member.createNewMember("user", "pw", null, "nick");
@@ -149,6 +190,16 @@ class MemberTest {
         assertThatThrownBy(() -> member.changePassword("new"))
                 .isInstanceOf(MemberNotFoundException.class);
     }
+
+    @Test
+    void changePassword_OAuthMember() {
+        //given
+        Member member = Member.createNewOAuthMember("username", "password", "email@naver.com", "nickname");
+
+        //when & then
+        assertThatThrownBy(() -> member.changePassword("new")).isInstanceOf(InvalidMemberFieldException.class);
+    }
+
 
     @Test
     void changeEmail_정상수행() {
@@ -274,6 +325,7 @@ class MemberTest {
 
         //then
         assertThat(member.isRemoved()).isTrue();
+        assertThat(member.getPassword()).isEqualTo("");
     }
 
     @Test
