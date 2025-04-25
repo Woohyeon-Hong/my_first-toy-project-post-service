@@ -10,6 +10,7 @@ import lombok.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.regex.Pattern;
 
 @Getter
@@ -48,6 +49,9 @@ public class Member extends BaseTimeEntity {
     @Column(name = "is_removed", nullable = false)
     private boolean isRemoved;
 
+    @Column(name = "is_oauth_member", nullable = false, updatable = false)
+    private boolean isOAuthMember;
+
     /*
      - @Builder 사용 시 List에 @Builder.Default 필수
      - @Builder가 리스트 초기화를 무시하기 때문
@@ -72,6 +76,7 @@ public class Member extends BaseTimeEntity {
                 .nickname(nickname)
                 .role(UserRole.USER)
                 .isRemoved(false)
+                .isOAuthMember(false)
                 .build();
     }
 
@@ -85,7 +90,36 @@ public class Member extends BaseTimeEntity {
                 .nickname(nickname)
                 .role(UserRole.ADMIN)
                 .isRemoved(false)
+                .isOAuthMember(false)
                 .build();
+    }
+
+    /**
+     * username으로 서비스에서 회원을 조회하기 때문에 username은 필수
+     * password는 oauth에서는 의미 없는 값이나 도메인에서는 인코딩이 불가하기 떄문에 서비스에서 임의값을 생성하고 인코딩하여 인자로 넘김
+     * nickname은 oath 회원 가입 시에는 디폴트 값을 할당하는게 전략이기 때문에, 전달받는 인자에 Null을 명시하고 도메인에서 임의값 할당
+     */
+    public static Member createNewOAuthMember(String username, String password, String email, String nickname) {
+        validateOAuthFields(username, password, email);
+
+        nickname = createDefaultNickname(nickname);
+
+        return Member.builder()
+                .username(username)
+                .password(password)
+                .email(email)
+                .nickname(nickname)
+                .role(UserRole.USER)
+                .isRemoved(false)
+                .isOAuthMember(true)
+                .build();
+    }
+
+    private static String createDefaultNickname(String nickname) {
+        if (nickname == null) {
+            nickname = "user_" + UUID.randomUUID().toString().substring(0, 8);
+        }
+        return nickname;
     }
 
 //검증---------------------------------------------------------------------------------------------------
@@ -95,6 +129,12 @@ public class Member extends BaseTimeEntity {
         if (password == null) throw new InvalidMemberFieldException("createNewMember: password == null");
         if (nickname == null) throw new InvalidMemberFieldException("createNewMember: nickname == null");
         if (!validateEmailFormat(email)) throw new IllegalEmailFormatException("createNewMember: email 형식이 잘못됨");
+    }
+
+    private static void validateOAuthFields(String username, String password, String email) {
+        if (username == null) throw new InvalidMemberFieldException("createOAuthMember: username == null");
+        if (password == null) throw new InvalidMemberFieldException("createOAuthMember: password == null");
+        if (!validateEmailFormat(email)) throw new IllegalEmailFormatException("createOAuthMember: email 형식이 잘못됨");
     }
 
     public static boolean validateEmailFormat(String email) {
@@ -107,6 +147,8 @@ public class Member extends BaseTimeEntity {
 
 
     public void changeUsername(String username) {
+        checkIsOAuthMember();
+
         checkNotRemoved();
 
         if (username == null) throw new InvalidMemberFieldException("changeUsername: username == null");
@@ -115,6 +157,8 @@ public class Member extends BaseTimeEntity {
     }
 
     public void changePassword(String password) {
+        checkIsOAuthMember();
+
         checkNotRemoved();
 
         if (password == null) throw new InvalidMemberFieldException("changePassword: password == null");
@@ -142,6 +186,8 @@ public class Member extends BaseTimeEntity {
 
     public void remove() {
         checkNotRemoved();
+
+        this.password = "";
         this.isRemoved = true;
     }
 
@@ -166,7 +212,13 @@ public class Member extends BaseTimeEntity {
         return post;
     }
 
+//내부 메소드---------------------------------------------------------------------------------------------------
+
     private void checkNotRemoved() {
         if (this.isRemoved()) throw new MemberNotFoundException(this.getId());
+    }
+
+    private void checkIsOAuthMember() {
+        if (this.isOAuthMember()) throw new InvalidMemberFieldException("changeUsername: isAOuthMember == true");
     }
 }
