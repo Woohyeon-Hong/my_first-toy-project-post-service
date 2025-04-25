@@ -24,7 +24,6 @@ bin/
 *.ipr
 out/
 !**/src/main/**/out/
-!**/src/test/**/out/
 
 ### NetBeans ###
 /nbproject/private/
@@ -35,3 +34,6 @@ out/
 
 ### VS Code ###
 .vscode/
+
+### application.yml ###
+/src/main/resources/application.yml
