@@ -3,6 +3,7 @@ package hong.postService.config;
 import hong.postService.web.jwt.JwtAuthenticationFilter;
 import hong.postService.web.jwt.JwtFilter;
 import hong.postService.web.jwt.JwtUtil;
+import hong.postService.web.oauth2.CustomAuthenticationEntryPoint;
 import io.jsonwebtoken.Jwt;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -28,6 +29,8 @@ public class SecurityConfig {
 
     private final AuthenticationConfiguration authenticationConfiguration;
     private final JwtUtil jwtUtil;
+
+    private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
 
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
@@ -110,6 +113,9 @@ public class SecurityConfig {
         //Session stateless로 설정
         http.sessionManagement((sc) -> sc
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+
+        //JWT 검증 실패 시, OAuth 로그인 redirect 방지
+        http.exceptionHandling(e -> e.authenticationEntryPoint(customAuthenticationEntryPoint));
 
         return http.build();
     }
