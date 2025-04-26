@@ -1,6 +1,5 @@
 package hong.postService.web.comment.v2;
 
-import hong.postService.domain.Comment;
 import hong.postService.exception.ErrorResponse;
 import hong.postService.service.commentService.dto.CommentCreateRequest;
 import hong.postService.service.commentService.dto.CommentResponse;
@@ -30,18 +29,16 @@ public class CommentController {
 
     private final CommentService commentService;
 
-    /**
-     * 응답 Location 수정
-     */
+
     @Operation(summary = "대댓글 작성",
-    description = "대댓글을 작성한다.")
+            description = "대댓글을 작성한다.")
     @ApiResponses(
             value = {
                     @ApiResponse(responseCode = "201", description = "대댓글 작성 성공"),
                     @ApiResponse(responseCode = "404", description = "존재하지 않거나 이미 삭제된 회원 또는 댓글 ID",
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
                     @ApiResponse(responseCode = "400", description = "대댓글 필드가 null",
-                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+                            content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
                     @ApiResponse(responseCode = "500", description = "서버 내부 오류",
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
             }
@@ -51,7 +48,7 @@ public class CommentController {
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @PathVariable("commentId") Long commentId,
             @Valid @RequestBody CommentCreateRequest request
-            ) {
+    ) {
 
         Long replyId = commentService.writeReply(commentId, userDetails.getUserId(), request);
 
@@ -64,7 +61,7 @@ public class CommentController {
     }
 
     @Operation(summary = "댓글 상세 조회",
-    description = "댓글을 상세 조회한다.")
+            description = "댓글을 상세 조회한다.")
     @ApiResponses(
             value = {
                     @ApiResponse(responseCode = "200", description = "댓글 조회 성공"),
@@ -82,7 +79,7 @@ public class CommentController {
     }
 
     @Operation(summary = "댓글 수정",
-    description = "댓글 또는 대댓글을 수정한다.")
+            description = "댓글 또는 대댓글을 수정한다.")
     @ApiResponses(
             value = {
                     @ApiResponse(responseCode = "204", description = "댓글 수정 성공"),
@@ -106,7 +103,7 @@ public class CommentController {
     }
 
     @Operation(summary = "댓글 삭제",
-    description = "댓글 또는 대댓글을 삭제한다.")
+            description = "댓글 또는 대댓글을 삭제한다.")
     @ApiResponses(
             value = {
                     @ApiResponse(responseCode = "204", description = "댓글 삭제 성공"),
