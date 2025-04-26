@@ -1,11 +1,14 @@
 package hong.postService.repository.memberRepository.v2.member;
 
+import hong.postService.TestSecurityConfig;
+import hong.postService.config.SecurityConfig;
 import hong.postService.domain.Member;
 import hong.postService.repository.memberRepository.v2.MemberRepository;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
@@ -14,6 +17,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @SpringBootTest
+@Import(TestSecurityConfig.class)
 @Transactional
 class MemberRepositoryTest {
 
