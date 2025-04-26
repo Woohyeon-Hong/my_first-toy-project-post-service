@@ -42,7 +42,7 @@ public class Comment extends BaseTimeEntity {
     @OneToMany(mappedBy = "parentComment")
     private List<Comment> childComments = new ArrayList<>();
 
-//생성---------------------------------------------------------------------------------------------------
+    //생성---------------------------------------------------------------------------------------------------
     public Comment writeReply(String content, Member writer) {
         validateComment();
         if (content == null) throw new InvalidCommentFieldException("writeReply: content == null");
@@ -79,6 +79,7 @@ public class Comment extends BaseTimeEntity {
             }
         }
 
+        this.content = "";
         this.isRemoved = true;
     }
 
