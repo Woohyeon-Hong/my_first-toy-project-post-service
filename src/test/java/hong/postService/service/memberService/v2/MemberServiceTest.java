@@ -1,5 +1,6 @@
 package hong.postService.service.memberService.v2;
 
+import hong.postService.TestSecurityConfig;
 import hong.postService.domain.Member;
 import hong.postService.domain.UserRole;
 import hong.postService.exception.member.DuplicateMemberFieldException;
@@ -15,6 +16,7 @@ import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
@@ -25,6 +27,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 
 @SpringBootTest
+@Import(TestSecurityConfig.class)
 @Transactional
 class MemberServiceTest {
 
