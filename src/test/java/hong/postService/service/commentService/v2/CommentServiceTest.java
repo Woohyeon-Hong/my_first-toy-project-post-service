@@ -1,5 +1,6 @@
 package hong.postService.service.commentService.v2;
 
+import hong.postService.TestSecurityConfig;
 import hong.postService.domain.Comment;
 import hong.postService.domain.Member;
 import hong.postService.domain.Post;
@@ -21,6 +22,7 @@ import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -31,6 +33,7 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.*;
 
 @SpringBootTest
+@Import(TestSecurityConfig.class)
 @Transactional
 class CommentServiceTest {
     @Autowired
