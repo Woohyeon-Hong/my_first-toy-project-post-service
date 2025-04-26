@@ -1,10 +1,11 @@
 package hong.postService.config;
 
+import hong.postService.service.userDetailsService.CustomOAuth2UserService;
 import hong.postService.web.jwt.JwtAuthenticationFilter;
 import hong.postService.web.jwt.JwtFilter;
 import hong.postService.web.jwt.JwtUtil;
 import hong.postService.web.oauth2.CustomAuthenticationEntryPoint;
-import io.jsonwebtoken.Jwt;
+import hong.postService.web.oauth2.CustomSuccessHandler;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -30,6 +31,8 @@ public class SecurityConfig {
     private final AuthenticationConfiguration authenticationConfiguration;
     private final JwtUtil jwtUtil;
 
+    private final CustomOAuth2UserService customOAuth2UserService;
+    private final CustomSuccessHandler customSuccessHandler;
     private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
 
     @Bean
@@ -103,6 +106,7 @@ public class SecurityConfig {
                 .anyRequest().denyAll()
         );
 
+        //JwtAuthenticationFilter 등록
         JwtAuthenticationFilter authenticationFilter = new JwtAuthenticationFilter(authenticationManager(authenticationConfiguration), jwtUtil);
         authenticationFilter.setFilterProcessesUrl("/v2/users/login");
         http.addFilterAt(authenticationFilter, UsernamePasswordAuthenticationFilter.class);
@@ -112,10 +116,18 @@ public class SecurityConfig {
 
         //Session stateless로 설정
         http.sessionManagement((sc) -> sc
-                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+                .sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+
+        //OAuth2.0 로그인 설정
+        http.oauth2Login(oauth2 -> oauth2
+                .userInfoEndpoint(userinfo ->
+                        userinfo.userService(customOAuth2UserService))  //CustomOAuth2UserService 등록
+                .successHandler(customSuccessHandler)   //CustomSucessHandler 등록 (JWT 발급 담당)
+        );
 
         //JWT 검증 실패 시, OAuth 로그인 redirect 방지
         http.exceptionHandling(e -> e.authenticationEntryPoint(customAuthenticationEntryPoint));
+
 
         return http.build();
     }
