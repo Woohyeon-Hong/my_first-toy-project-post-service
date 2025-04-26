@@ -8,6 +8,7 @@ import hong.postService.service.userDetailsService.dto.CustomUserDetails;
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -36,19 +37,15 @@ public class JwtFilter extends OncePerRequestFilter {
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
 
-        String requestURI = request.getRequestURI();
-        String authorization = request.getHeader("Authorization");
+        // Authorization 헤더 또는 쿠키에서 JWT 추출
+        String token = extractTokenFromHeaderOrCookie(request);
 
-
-        // JWT가 없으면 비로그인 사용자 요청으로 간주
-        if (authorization == null || !authorization.startsWith("Bearer ")) {
+        if (token == null) {
             filterChain.doFilter(request, response);
             return;
         }
 
-
-        String token = authorization.split(" ")[1];
-
+        // jwt 만료 검증
         try {
             jwtUtil.isExpired(token);
         } catch (ExpiredJwtException e) {
@@ -56,13 +53,13 @@ public class JwtFilter extends OncePerRequestFilter {
             return;
         }
 
-        // 4. JWT 토큰에서 사용자 정보 추출
+        // JWT 토큰에서 사용자 정보 추출
         Long userId = jwtUtil.getUserId(token);
         String username = jwtUtil.getUsername(token);
         String roleStr = jwtUtil.getRole(token);
         UserRole role = roleStr.equals("ROLE_ADMIN") ? UserRole.ADMIN : UserRole.USER;
 
-        // 5. 인증 객체 생성 및 설정
+        // 인증 객체 생성 및 설정
         CustomUserDetails userDetails = new CustomUserDetails(userId, username, null, role);
         Authentication authToken = new UsernamePasswordAuthenticationToken(
                 userDetails, null, userDetails.getAuthorities());
@@ -71,8 +68,29 @@ public class JwtFilter extends OncePerRequestFilter {
         filterChain.doFilter(request, response);
     }
 
+    private String extractTokenFromHeaderOrCookie(HttpServletRequest request) {
+        // 1. 헤더
+        String authorization = request.getHeader("Authorization");
+        if (authorization != null && authorization.startsWith("Bearer ")) {
+            return authorization.split(" ")[1];
+        }
+
+        // 2. 쿠키
+        if (request.getCookies() != null) {
+            for (Cookie cookie : request.getCookies()) {
+                if ("Authorization".equals(cookie.getName())) {
+                    return cookie.getValue();
+                }
+            }
+        }
+
+        return null;
+    }
+
+
     private void handleJwtError(HttpServletResponse response,
                                 int status, String code, String message) throws IOException {
+
         ErrorResponse errorResponse = new ErrorResponse(status, code, message);
 
         response.setStatus(status);
