@@ -86,6 +86,9 @@ class PostTest {
 
         // then
         assertThat(post.isRemoved()).isTrue();
+        assertThat(post.getTitle()).isEqualTo("");
+        assertThat(post.getContent()).isEqualTo("");
+
         assertThat(c1.isRemoved()).isTrue();
         assertThat(c2.isRemoved()).isTrue();
         assertThat(r1.isRemoved()).isTrue();
