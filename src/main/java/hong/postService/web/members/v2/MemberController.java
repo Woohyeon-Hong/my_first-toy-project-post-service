@@ -11,7 +11,6 @@ import hong.postService.service.postService.dto.PostDetailResponse;
 import hong.postService.service.postService.dto.PostSummaryResponse;
 import hong.postService.service.postService.v2.PostService;
 import hong.postService.service.userDetailsService.dto.CustomUserDetails;
-import hong.postService.web.members.dto.MemberResponse;
 import hong.postService.web.posts.v2.PostController;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -93,7 +92,7 @@ public class MemberController {
             value = {
                     @ApiResponse(responseCode = "200", description = "회원 게시글 목록 조회 성공"),
                     @ApiResponse(responseCode = "404", description = "존재하지 않거나 이미 삭제된 회원 ID",
-                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+                            content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
                     @ApiResponse(responseCode = "500", description = "서버 내부 오류",
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
             }
@@ -156,7 +155,7 @@ public class MemberController {
                     @ApiResponse(responseCode = "404", description = "존재하지 않거나 이미 삭제된 회원 ID",
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
                     @ApiResponse(responseCode = "400", description = "회원의 필드가 Null",
-                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+                            content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
                     @ApiResponse(responseCode = "409", description = "회원의 필드가 중복됨",
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
                     @ApiResponse(responseCode = "500", description = "서버 내부 오류",
@@ -169,7 +168,7 @@ public class MemberController {
             @Valid @RequestBody MemberUpdateInfoRequest updateParam
     ) {
 
-        memberService.updateInfo(userDetails.getUserId(), updateParam);
+        memberService.updateInfoOfNotOAuthMember(userDetails.getUserId(), updateParam);
 
         return ResponseEntity.noContent().build();
     }
@@ -194,7 +193,7 @@ public class MemberController {
                     @ApiResponse(responseCode = "400", description = "회원의 필드가 Null",
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
                     @ApiResponse(responseCode = "403", description = "현재 비밀번호가 일치하지 않음",
-                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+                            content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
                     @ApiResponse(responseCode = "409", description = "회원의 필드가 중복됨",
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
                     @ApiResponse(responseCode = "500", description = "서버 내부 오류",
@@ -207,7 +206,7 @@ public class MemberController {
             @Valid @RequestBody PasswordUpdateRequest request
     ) {
 
-        memberService.updatePassword(userDetails.getUserId(), request);
+        memberService.updatePasswordOfNotOAuthMember(userDetails.getUserId(), request);
 
         return ResponseEntity.noContent().build();
     }
@@ -246,15 +245,15 @@ public class MemberController {
             description = "회원이 게시글을 작성한다."
     )
     @ApiResponses(
-             value = {
-                     @ApiResponse(responseCode = "201", description = "게시긒 작성 성공"),
-                     @ApiResponse(responseCode = "404", description = "존재하지 않거나 이미 삭제된 회원 ID",
-                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
-                     @ApiResponse(responseCode = "400", description = "게시글 필드가 Null",
-                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
-                     @ApiResponse(responseCode = "500", description = "서버 내부 오류",
-                             content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
-             }
+            value = {
+                    @ApiResponse(responseCode = "201", description = "게시긒 작성 성공"),
+                    @ApiResponse(responseCode = "404", description = "존재하지 않거나 이미 삭제된 회원 ID",
+                            content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+                    @ApiResponse(responseCode = "400", description = "게시글 필드가 Null",
+                            content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+                    @ApiResponse(responseCode = "500", description = "서버 내부 오류",
+                            content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+            }
     )
     @PostMapping("/me/posts")
     public ResponseEntity<PostDetailResponse> writePost(

@@ -7,6 +7,7 @@ import hong.postService.exception.member.MemberNotFoundException;
 import hong.postService.exception.member.PasswordMismatchException;
 import hong.postService.repository.memberRepository.v2.MemberRepository;
 import hong.postService.service.memberService.dto.MemberUpdateInfoRequest;
+import hong.postService.service.memberService.dto.OAuthCreateRequest;
 import hong.postService.service.memberService.dto.PasswordUpdateRequest;
 import hong.postService.service.memberService.dto.UserCreateRequest;
 import lombok.RequiredArgsConstructor;
@@ -15,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
+import java.util.UUID;
 
 
 /**
@@ -116,6 +118,24 @@ public class MemberService {
         return  memberRepository.save(member).getId();
     }
 
+    @Transactional
+    public Long signUpWithOAuth(OAuthCreateRequest request) {
+        String username = request.getUsername();
+        String email = request.getEmail();
+
+        //임의 할당
+        String password = encoder.encode(UUID.randomUUID().toString());
+        String defaultNickname = "user_" + UUID.randomUUID().toString().substring(0, 8);
+
+        usernameDuplicateCheck(username);
+        if (email != null) emailDuplicateCheck(email);
+        nicknameDuplicateCheck(defaultNickname);
+
+        Member member = Member.createNewOAuthMember(username, password, email, defaultNickname);
+
+        return memberRepository.save(member).getId();
+    }
+
     /**
      * 회원 ID로 회원을 조회합니다.
      *
@@ -135,12 +155,15 @@ public class MemberService {
      * @param memberId 수정 대상 회원 ID
      * @param updateParam username, email, nickname을 포함한 수정 DTO
      *
-     * @throws InvalidMemberFieldException null 값이거나 형식이 잘못된 경우
+     * @throws MemberNotFoundException 존재하지 않거나 삭제된 회원일 경우
+     * @throws InvalidMemberFieldException null 값이거나, 형식이 잘못되거나, OAuth 회원인 경우
      * @throws DuplicateMemberFieldException 중복된 필드가 존재할 경우
      */
     @Transactional
-    public void updateInfo(Long memberId, MemberUpdateInfoRequest updateParam) {
+    public void updateInfoOfNotOAuthMember(Long memberId, MemberUpdateInfoRequest updateParam) {
         Member findMember = findMember(memberId);
+
+        checkIsOAUthMember(findMember);
 
         if (updateParam.getUsername() != null) {
             changeUsername(findMember, updateParam.getUsername());
@@ -156,6 +179,21 @@ public class MemberService {
     }
 
     /**
+     * 회원 nickname을 수정합니다.
+     *
+     * @param memberId 수정 대상 회원 ID
+     * @param newNickname 바꿀 nickname
+     *
+     * @throws MemberNotFoundException 존재하지 않거나 삭제된 회원일 경우
+     */
+    @Transactional
+    public void updateNickname(Long memberId, String newNickname) {
+        Member findMember = findMember(memberId);
+
+        if (newNickname != null) changeNickname(findMember, newNickname);
+    }
+
+    /**
      * 비밀번호를 변경합니다.
      *
      * @param memberId 대상 회원 ID
@@ -166,8 +204,10 @@ public class MemberService {
      * @throws InvalidMemberFieldException 새 비밀번호가 기존과 같은 경우
      */
     @Transactional
-    public void updatePassword(Long memberId, PasswordUpdateRequest updateParam) {
+    public void updatePasswordOfNotOAuthMember(Long memberId, PasswordUpdateRequest updateParam) {
         Member findMember = findMember(memberId);
+
+        checkIsOAUthMember(findMember);
 
         String current = updateParam.getCurrentPassword();  // raw String
         String next = updateParam.getNewPassword(); //raw String
@@ -272,4 +312,7 @@ public class MemberService {
         member.changePassword(encodedPassword);
     }
 
+    private static void checkIsOAUthMember(Member findMember) {
+        if (findMember.isOAuthMember()) throw new InvalidMemberFieldException("updateInfo: isOAuthMember == true");
+    }
 }
