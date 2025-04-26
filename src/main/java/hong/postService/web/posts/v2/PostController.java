@@ -42,7 +42,7 @@ public class PostController {
      * 로그인 안 해도 확인 가능하게
      */
     @Operation(summary = "전체 게시글 조회",
-    description = "전체 게시글을 조회한다. 삭제된 게시글은 제외한다.")
+            description = "전체 게시글을 조회한다. 삭제된 게시글은 제외한다.")
     @ApiResponses(
             value = {
                     @ApiResponse(responseCode = "200", description = "전체 게시글 조회 성공"),
@@ -59,7 +59,7 @@ public class PostController {
     }
 
     @Operation(summary = "게시글 상세 조회",
-    description = "게시글 하나를 상세 조회한다.")
+            description = "게시글 하나를 상세 조회한다.")
     @ApiResponses(
             value = {
                     @ApiResponse(responseCode = "200", description = "게시글 상세 조회 성공"),
@@ -67,7 +67,7 @@ public class PostController {
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
                     @ApiResponse(responseCode = "500", description = "서버 내부 오류",
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
-    })
+            })
     @GetMapping("/{postId}")
     public ResponseEntity<PostDetailResponse> getPost(@PathVariable("postId") Long postId) {
 
@@ -77,7 +77,7 @@ public class PostController {
     }
 
     @Operation(summary = "게시글 검색",
-    description = "회원 닉네임이나 게시글 제목을 입력받아 게시글을 조회한다.")
+            description = "회원 닉네임이나 게시글 제목을 입력받아 게시글을 조회한다.")
     @ApiResponses(
             value = {
                     @ApiResponse(responseCode = "200", description = "게시글 검색 성공"),
@@ -97,7 +97,7 @@ public class PostController {
 
 
     @Operation(summary = "게시글 수정",
-    description = "게시글의 제목이나 본문을 수정한다.")
+            description = "게시글의 제목이나 본문을 수정한다.")
     @ApiResponses(
             value = {
                     @ApiResponse(responseCode = "204", description = "게시글 수정 성공"),
@@ -111,7 +111,7 @@ public class PostController {
     public ResponseEntity<Void> editPost(
             @PathVariable("postId") Long postId,
             @Valid @RequestBody PostUpdateRequest request
-            ) {
+    ) {
 
         postService.update(postId, request);
 
@@ -119,7 +119,7 @@ public class PostController {
     }
 
     @Operation(summary = "게시글 삭제",
-    description = "게시글을 삭제한다.")
+            description = "게시글을 삭제한다.")
     @ApiResponses(
             value = {
                     @ApiResponse(responseCode = "204", description = "게시글 삭제 성공"),
@@ -140,7 +140,7 @@ public class PostController {
     }
 
     @Operation(summary = "댓글 작성",
-    description = "댓글을 작성한다.")
+            description = "댓글을 작성한다.")
     @ApiResponses(
             value = {
                     @ApiResponse(responseCode = "201", description = "댓글 작성 성공"),
@@ -158,7 +158,7 @@ public class PostController {
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @PathVariable("postId") Long postId,
             @Valid @RequestBody CommentCreateRequest request
-            ) {
+    ) {
 
         Long commentId = commentService.write(postId, userDetails.getUserId(), request);
 
@@ -171,7 +171,7 @@ public class PostController {
     }
 
     @Operation(summary = "게시글 전체 댓글 목록 조회",
-    description = "게시글에 달린 전체 댓글 및 대댓글들을 조회한다.")
+            description = "게시글에 달린 전체 댓글 및 대댓글들을 조회한다.")
     @ApiResponses(
             value = {
                     @ApiResponse(responseCode = "200", description = "게시글 전체 댓글 목록 조회 성공"),
