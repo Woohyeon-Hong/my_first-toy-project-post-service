@@ -8,6 +8,7 @@ import hong.postService.exception.member.MemberNotFoundException;
 import hong.postService.exception.member.PasswordMismatchException;
 import hong.postService.repository.memberRepository.v2.MemberRepository;
 import hong.postService.service.memberService.dto.MemberUpdateInfoRequest;
+import hong.postService.service.memberService.dto.OAuthCreateRequest;
 import hong.postService.service.memberService.dto.PasswordUpdateRequest;
 import hong.postService.service.memberService.dto.UserCreateRequest;
 import jakarta.persistence.EntityManager;
@@ -202,6 +203,46 @@ class MemberServiceTest {
                 .isInstanceOf(DuplicateMemberFieldException.class);
     }
 
+    @Test
+    void signUpWithOAuth_username이_null이_아니면_정상_가입() {
+        //given
+        OAuthCreateRequest request1 = new OAuthCreateRequest("username1", "email1@gmail.com");
+        OAuthCreateRequest request2 = new OAuthCreateRequest("username2", null);
+
+        //when
+        Long id1 = memberService.signUpWithOAuth(request1);
+        Long id2 = memberService.signUpWithOAuth(request2);
+
+        //then
+        Member findMember1 = memberService.findMember(id1);
+        Member findMember2 = memberService.findMember(id2);
+
+        List<Member> members = memberRepository.findAllByIsRemovedFalse();
+
+        assertThat(members).containsExactly(findMember1, findMember2);
+
+        assertThatThrownBy(() -> memberService.signUpWithOAuth(new OAuthCreateRequest(null, null)))
+                .isInstanceOf(InvalidMemberFieldException.class);
+    }
+
+    @Test
+    void signUpWithOAuth_필드가_중복되면_예외_발생() {
+        //given
+        OAuthCreateRequest request1 = new OAuthCreateRequest("username", "email1@gmail.com");
+        OAuthCreateRequest request2 = new OAuthCreateRequest("username", null);
+        OAuthCreateRequest request3 = new OAuthCreateRequest("username2", "email1@gmail.com");
+
+        memberService.signUpWithOAuth(request1);
+
+        //when & then
+        assertThatThrownBy(() -> memberService.signUpWithOAuth(request2))
+                .isInstanceOf(DuplicateMemberFieldException.class);
+
+        assertThatThrownBy(() -> memberService.signUpWithOAuth(request3))
+                .isInstanceOf(DuplicateMemberFieldException.class);
+
+    }
+
 
     @Test
     void unregister_회원ID가_존재하면_정상_수행() {
@@ -232,7 +273,7 @@ class MemberServiceTest {
     }
 
     @Test
-    void updateInfo_필드에_null이_아닌_새로운_값이_들어오면_정상_업데이트() {
+    void updateInfoOfNotOAuthMember_필드에_null이_아닌_새로운_값이_들어오면_정상_업데이트() {
         //given
         UserCreateRequest request = new UserCreateRequest("user1", "p1", "u1@naver.com", "n1", UserRole.USER);
         UserCreateRequest request2 = new UserCreateRequest("newUsername", "p2", "new@naver.com", "newNickname", UserRole.USER);
@@ -248,7 +289,7 @@ class MemberServiceTest {
                 .build();
 
         //when
-        memberService.updateInfo(id1, updateParam);
+        memberService.updateInfoOfNotOAuthMember(id1, updateParam);
         flushAndClear();
 
         //then
@@ -261,7 +302,7 @@ class MemberServiceTest {
     }
 
     @Test
-    void updateInfo_기존_필드와_일치할_경우_아무런_작업_수행x() {
+    void updateInfoOfNotOAuthMember_기존_필드와_일치할_경우_아무런_작업_수행x() {
         //given
         UserCreateRequest request = new UserCreateRequest("user1", "p1", "u1@naver.com", "n1", UserRole.USER);
 
@@ -276,7 +317,7 @@ class MemberServiceTest {
                 .build();
 
         //when
-        memberService.updateInfo(id, updateParam);
+        memberService.updateInfoOfNotOAuthMember(id, updateParam);
         flushAndClear();
 
         //then
@@ -290,7 +331,7 @@ class MemberServiceTest {
     }
 
     @Test
-    void updateInfo_필드가_중복되면_예외_발생() {
+    void updateInfoOfNotOAuthMember_필드가_중복되면_예외_발생() {
         //given
         UserCreateRequest request = new UserCreateRequest("user1", "p1", "u1@naver.com", "n1", UserRole.USER);
         UserCreateRequest request2 = new UserCreateRequest("user2", "p2", "u2@naver.com", "n2", UserRole.USER);
@@ -304,12 +345,40 @@ class MemberServiceTest {
                 .build();
 
         //when & then
-        assertThatThrownBy(() -> memberService.updateInfo(id1, updateParam))
+        assertThatThrownBy(() -> memberService.updateInfoOfNotOAuthMember(id1, updateParam))
                 .isInstanceOf(DuplicateMemberFieldException.class);
     }
 
     @Test
-    void updatePassword_기존_비번_확인_후_일치하면_업데이트() {
+    void updateInfoOfNotOAuthMember_OAuth회원이면_예외_발생() {
+        //given
+        Long userId = memberService.signUpWithOAuth(new OAuthCreateRequest("username", "email@naver.com"));
+
+        MemberUpdateInfoRequest request = new MemberUpdateInfoRequest("newUsername", "new@naver.com", "newNickname");
+
+        //when & then
+        assertThatThrownBy(() -> memberService.updateInfoOfNotOAuthMember(userId, request))
+                .isInstanceOf(InvalidMemberFieldException.class);
+    }
+
+    @Test
+    void updateNickname_회원이_존재하면_정상_업데이트() {
+        //given
+        Long userId = memberService.signUpWithOAuth(new OAuthCreateRequest("username", "email@naver.com"));
+        String newNickname = "newNick";
+
+        //when
+        memberService.updateNickname(userId, newNickname);
+
+        //then
+        flushAndClear();
+        Member findMember = memberService.findMember(userId);
+
+        assertThat(findMember.getNickname()).isEqualTo(newNickname);
+    }
+
+    @Test
+    void updatePasswordOfNotOAuthMember_기존_비번_확인_후_일치하면_업데이트() {
         // given
         UserCreateRequest userCreateRequest = new UserCreateRequest("user1", "p1", "u1@naver.com", "n1", UserRole.USER);
         UserCreateRequest userCreateRequest2 = new UserCreateRequest("user2", "new", "u2@naver.com", "n2", UserRole.USER);
@@ -323,7 +392,7 @@ class MemberServiceTest {
         PasswordUpdateRequest request2 = new PasswordUpdateRequest("틀린 비번", "new");
 
         // when
-        memberService.updatePassword(id, request1);
+        memberService.updatePasswordOfNotOAuthMember(id, request1);
         flushAndClear();
 
         // then
@@ -331,8 +400,21 @@ class MemberServiceTest {
 
         assertThat(findMember.getLastModifiedDate()).isAfter(findMember.getCreatedDate());
 
-        assertThatThrownBy(() -> memberService.updatePassword(id, request2))
+        assertThatThrownBy(() -> memberService.updatePasswordOfNotOAuthMember(id, request2))
                 .isInstanceOf(PasswordMismatchException.class);
+    }
+
+    @Test
+    void updatePasswordoOfNotOAuthMember_OAuth회원이면_예외_발생() {
+        //given
+        Long userId = memberService.signUpWithOAuth(new OAuthCreateRequest("username", "email@naver.com"));
+        Member member = memberService.findMember(userId);
+
+        PasswordUpdateRequest request = new PasswordUpdateRequest(member.getPassword(), "newPassword");
+
+        //when & then
+        assertThatThrownBy(() -> memberService.updatePasswordOfNotOAuthMember(userId, request))
+                .isInstanceOf(InvalidMemberFieldException.class);
     }
 
     @Test
@@ -348,7 +430,7 @@ class MemberServiceTest {
         LocalDateTime oldLastModifiedDate = member.getLastModifiedDate();
 
         //when
-        memberService.updatePassword(member.getId(), new PasswordUpdateRequest("p1", "newPassword"));
+        memberService.updatePasswordOfNotOAuthMember(member.getId(), new PasswordUpdateRequest("p1", "newPassword"));
         flushAndClear();
 
         //then
