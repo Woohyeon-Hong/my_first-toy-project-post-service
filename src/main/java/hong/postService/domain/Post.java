@@ -66,6 +66,8 @@ public class Post extends BaseTimeEntity {
             }
         }
 
+        this.title = "";
+        this.content = "";
         this.isRemoved = true;
     }
 
@@ -91,7 +93,7 @@ public class Post extends BaseTimeEntity {
         return comment;
     }
 
-//내부 로직---------------------------------------------------------------------------------------------------
+    //내부 로직---------------------------------------------------------------------------------------------------
     private void checkNotRemoved() {
         if (this.isRemoved()) throw new PostNotFoundException(this.getId());
     }
