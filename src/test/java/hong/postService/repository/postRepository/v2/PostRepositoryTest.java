@@ -1,5 +1,6 @@
 package hong.postService.repository.postRepository.v2;
 
+import hong.postService.TestSecurityConfig;
 import hong.postService.domain.Member;
 import hong.postService.domain.Post;
 import hong.postService.repository.memberRepository.v2.MemberRepository;
@@ -7,6 +8,7 @@ import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -20,6 +22,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @SpringBootTest
+@Import(TestSecurityConfig.class)
 @Transactional
 class PostRepositoryTest {
 
