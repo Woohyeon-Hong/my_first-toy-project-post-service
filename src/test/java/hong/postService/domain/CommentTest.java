@@ -89,8 +89,13 @@ class CommentTest {
 
         // then
         assertThat(c1.isRemoved()).isTrue();
+        assertThat(c1.getContent()).isEqualTo("");
+
         assertThat(c2.isRemoved()).isTrue();
+        assertThat(c2.getContent()).isEqualTo("");
+
         assertThat(c3.isRemoved()).isTrue();
+        assertThat(c3.getContent()).isEqualTo("");
     }
 
     @Test
