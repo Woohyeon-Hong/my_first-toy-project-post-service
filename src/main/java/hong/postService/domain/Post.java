@@ -43,28 +43,19 @@ public class Post extends BaseTimeEntity {
 
     public void updateTitle(String newTitle) {
         checkNotRemoved();
-
         if (newTitle == null) throw new InvalidPostFieldException("updateTitle: newTitle == null");
-
         this.title = newTitle;
     }
 
     public void updateContent(String newContent) {
         checkNotRemoved();
-
         if (newContent == null) throw new InvalidPostFieldException("updateContent: newContent == null");
-
         this.content = newContent;
     }
 
     public void remove() {
         checkNotRemoved();
-
-        for (Comment comment : comments) {
-            if (!comment.isRemoved()) {
-                comment.remove();
-            }
-        }
+        removeComments();
 
         this.title = "";
         this.content = "";
@@ -96,5 +87,13 @@ public class Post extends BaseTimeEntity {
     //내부 로직---------------------------------------------------------------------------------------------------
     private void checkNotRemoved() {
         if (this.isRemoved()) throw new PostNotFoundException(this.getId());
+    }
+
+    private void removeComments() {
+        for (Comment comment : comments) {
+            if (!comment.isRemoved()) {
+                comment.remove();
+            }
+        }
     }
 }
