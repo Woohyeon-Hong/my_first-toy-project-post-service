@@ -29,7 +29,6 @@ public class Comment extends BaseTimeEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id", nullable = false)
     private Member writer;
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "post_id", nullable = false)
     private Post post;
@@ -37,7 +36,6 @@ public class Comment extends BaseTimeEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "parent_comment_id")
     private Comment parentComment;
-
     @Builder.Default
     @OneToMany(mappedBy = "parentComment")
     private List<Comment> childComments = new ArrayList<>();
@@ -72,17 +70,19 @@ public class Comment extends BaseTimeEntity {
 
     public void remove() {
         validateComment();
-
-        for (Comment child : childComments) {
-            if (!child.isRemoved()) {
-                child.remove();
-            }
-        }
+        removeChildComments();
 
         this.content = "";
         this.isRemoved = true;
     }
 
+    private void removeChildComments() {
+        for (Comment child : childComments) {
+            if (!child.isRemoved()) {
+                child.remove();
+            }
+        }
+    }
 //검증---------------------------------------------------------------------------------------------------
 
     private void validateComment() {

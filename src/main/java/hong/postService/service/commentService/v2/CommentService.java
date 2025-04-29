@@ -54,13 +54,10 @@ public class CommentService {
      */
     @Transactional
     public Long write(Long postId, Long memberId, CommentCreateRequest request) {
-
         Member writer = memberService.findMember(memberId);
-
         Post post = postService.getPost(postId);
 
         Comment comment = post.writeComment(request.getContent(), writer);
-
         return commentRepository.save(comment).getId();
     }
 
@@ -78,13 +75,10 @@ public class CommentService {
      */
     @Transactional
     public Long writeReply(Long commentId, Long memberId, CommentCreateRequest request) {
-
         Member writer = memberService.findMember(memberId);
-
         Comment comment = getComment(commentId);
 
         Comment reply = comment.writeReply(request.getContent(), writer);
-
         return commentRepository.save(reply).getId();
     }
 
@@ -111,7 +105,6 @@ public class CommentService {
      */
     public CommentResponse getCommentResponse(Long commentId) {
         Comment comment = getComment(commentId);
-
         return CommentResponse.from(comment);
     }
 
@@ -154,9 +147,7 @@ public class CommentService {
         Comment comment = getComment(commentId);
 
         String content = updateParam.getContent();
-
         if (content == null) throw new InvalidCommentFieldException("update: content == null");
-
         comment.updateContent(content);
     }
 
