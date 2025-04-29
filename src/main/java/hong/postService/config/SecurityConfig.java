@@ -86,7 +86,7 @@ public class SecurityConfig {
                 ).permitAll()
 
                 // 회원가입, 로그인
-                .requestMatchers(HttpMethod.POST, "/v2/users", "/v2/users/login").permitAll()
+                .requestMatchers(HttpMethod.POST, "/v2/users", "/v2/users/admin","/v2/users/login").permitAll()
 
                 // 게시글/댓글 조회는 전체 허용
                 .requestMatchers(HttpMethod.GET, "/v2/posts/**", "/v2/comments/**").permitAll()
