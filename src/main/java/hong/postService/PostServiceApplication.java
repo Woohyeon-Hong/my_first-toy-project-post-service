@@ -15,9 +15,4 @@ public class PostServiceApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(PostServiceApplication.class, args);
 	}
-
-	@Bean
-	public JPAQueryFactory jpaQueryFactory(EntityManager em) {
-		return new JPAQueryFactory(em);
-	}
 	}
