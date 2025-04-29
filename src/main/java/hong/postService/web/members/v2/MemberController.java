@@ -51,7 +51,7 @@ public class MemberController {
      */
 
     @Operation(summary = "회원 가입",
-            description = "일반 회원 또는 어드민 회원을 생성한다."
+            description = "일반 회원을 생성한다."
     )
     @ApiResponses(
             value = {
@@ -67,11 +67,38 @@ public class MemberController {
     @PostMapping
     public ResponseEntity<Void> signUp(@Valid @RequestBody UserCreateRequest request) {
 
-        UserRole role = request.getRole();
-        Long userId;
+        request.setRole(UserRole.USER);
 
-        if (role == UserRole.ADMIN) userId = memberService.signUpAdmin(request);
-        else userId = memberService.signUp(request);
+        Long userId = memberService.signUp(request);
+
+        URI location = ServletUriComponentsBuilder.fromCurrentRequest()
+                .path("/{userId}")
+                .buildAndExpand(userId)
+                .toUri();
+
+        return ResponseEntity.created(location).build();
+    }
+
+    @Operation(summary = "어드민 회원 가입",
+            description = "어드민 회원을 생성한다."
+    )
+    @ApiResponses(
+            value = {
+                    @ApiResponse(responseCode = "201", description = "회원 생성 성공"),
+                    @ApiResponse(responseCode = "400", description = "입력값이 유효하지 않음",
+                            content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+                    @ApiResponse(responseCode = "409", description = "중복된 필드 존재 (username/email 등)",
+                            content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+                    @ApiResponse(responseCode = "500", description = "서버 내부 오류",
+                            content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+            }
+    )
+    @PostMapping("/admin")
+    public ResponseEntity<Void> signUpAdmin(@Valid @RequestBody UserCreateRequest request) {
+
+        request.setRole(UserRole.ADMIN);
+
+        Long userId = memberService.signUpAdmin(request);
 
         URI location = ServletUriComponentsBuilder.fromCurrentRequest()
                 .path("/{userId}")
