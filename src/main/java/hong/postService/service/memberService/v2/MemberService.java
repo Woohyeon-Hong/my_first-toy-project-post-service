@@ -70,25 +70,18 @@ public class MemberService {
     @Transactional
     public Long signUp(UserCreateRequest request) {
 
-        if (request.getRole() == UserRole.ADMIN) throw new InvalidMemberFieldException("signUp: role == ADMIN");
+        checkIsUser(request);
 
         String username = request.getUsername();
-
-        String rawPassword = request.getPassword();
-        if (rawPassword == null) throw new InvalidMemberFieldException("signUp: password가 null일 수 없음");
-        String password = encoder.encode(rawPassword);
-
+        String password = createPassword(request);
         String email = request.getEmail();
         String nickname = request.getNickname();
 
-        usernameDuplicateCheck(username);
-        if (email != null) emailDuplicateCheck(email);
-        nicknameDuplicateCheck(nickname);
+        validateFields(username, email, nickname);
 
         Member member = Member.createNewMember(username, password, email, nickname);
 
         return  memberRepository.save(member).getId();
-
     }
 
     /**
@@ -103,21 +96,14 @@ public class MemberService {
     @Transactional
     public Long signUpAdmin(UserCreateRequest request) {
 
-        if (request.getRole() == UserRole.USER) throw new InvalidMemberFieldException("signUpAdmin: role == USER");
-
+        checkIsAdmin(request);
 
         String username = request.getUsername();
-
-        String rawPassword = request.getPassword();
-        if (rawPassword == null) throw new InvalidMemberFieldException("signUp: password가 null일 수 없음");
-        String password = encoder.encode(rawPassword);
-
+        String password = createPassword(request);
         String email = request.getEmail();
         String nickname = request.getNickname();
 
-        usernameDuplicateCheck(username);
-        if (email != null) emailDuplicateCheck(email);
-        nicknameDuplicateCheck(nickname);
+        validateFields(username, email, nickname);
 
         Member member = Member.createNewAdmin(username, password, email, nickname);
 
@@ -133,9 +119,7 @@ public class MemberService {
         String password = encoder.encode(UUID.randomUUID().toString());
         String defaultNickname = "user_" + UUID.randomUUID().toString().substring(0, 8);
 
-        usernameDuplicateCheck(username);
-        if (email != null) emailDuplicateCheck(email);
-        nicknameDuplicateCheck(defaultNickname);
+        validateFields(username, email, defaultNickname);
 
         Member member = Member.createNewOAuthMember(username, password, email, defaultNickname);
 
@@ -168,20 +152,8 @@ public class MemberService {
     @Transactional
     public void updateInfoOfNotOAuthMember(Long memberId, MemberUpdateInfoRequest updateParam) {
         Member findMember = findMember(memberId);
-
         checkIsOAUthMember(findMember);
-
-        if (updateParam.getUsername() != null) {
-            changeUsername(findMember, updateParam.getUsername());
-        }
-
-        if (updateParam.getEmail() != null) {
-            changeEmail(findMember, updateParam.getEmail());
-        }
-
-        if (updateParam.getNickname() != null) {
-            changeNickname(findMember, updateParam.getNickname());
-        }
+        updateFields(updateParam, findMember);
     }
 
     /**
@@ -195,7 +167,6 @@ public class MemberService {
     @Transactional
     public void updateNickname(Long memberId, String newNickname) {
         Member findMember = findMember(memberId);
-
         if (newNickname != null) changeNickname(findMember, newNickname);
     }
 
@@ -212,26 +183,10 @@ public class MemberService {
     @Transactional
     public void updatePasswordOfNotOAuthMember(Long memberId, PasswordUpdateRequest updateParam) {
         Member findMember = findMember(memberId);
-
         checkIsOAUthMember(findMember);
-
-        String current = updateParam.getCurrentPassword();  // raw String
-        String next = updateParam.getNewPassword(); //raw String
-
-        //기존 비번 검증
-        if (!encoder.matches(current, findMember.getPassword())) {  //raw data, encoded data 순으로
-            throw new PasswordMismatchException();
-        }
-
-        //바꿀 비번이 현재 비번과 동일하지 않은지 검증
-        if (encoder.matches(next, findMember.getPassword())) {
-            throw new InvalidMemberFieldException("updatePassword: 기존 비밀번호와 동일한 비밀번호로는 변경할 수 없습니다.");
-        }
-
-
+        String next = validatePasswordUpdateRequest(updateParam, findMember);
         changePassword(findMember, encoder.encode(next));
     }
-
 
     /**
      * 회원을 탈퇴 처리합니다. (Soft delete 방식)
@@ -282,6 +237,59 @@ public class MemberService {
     }
 
 //내부 로직-------------------------------------------------------------------------
+    private static void checkIsUser(UserCreateRequest request) {
+        if (request.getRole() == UserRole.ADMIN) throw new InvalidMemberFieldException("signUp: role == ADMIN");
+    }
+
+    private static void checkIsAdmin(UserCreateRequest request) {
+        if (request.getRole() == UserRole.USER) throw new InvalidMemberFieldException("signUpAdmin: role == USER");
+    }
+
+    private String createPassword(UserCreateRequest request) {
+        String rawPassword = request.getPassword();
+        if (rawPassword == null) throw new InvalidMemberFieldException("signUp: password가 null일 수 없음");
+        String password = encoder.encode(rawPassword);
+        return password;
+    }
+
+    private void validateFields(String username, String email, String nickname) {
+        usernameDuplicateCheck(username);
+        if (email != null) emailDuplicateCheck(email);
+        nicknameDuplicateCheck(nickname);
+    }
+
+    private void updateFields(MemberUpdateInfoRequest updateParam, Member findMember) {
+        if (updateParam.getUsername() != null) {
+            changeUsername(findMember, updateParam.getUsername());
+        }
+
+        if (updateParam.getEmail() != null) {
+            changeEmail(findMember, updateParam.getEmail());
+        }
+
+        if (updateParam.getNickname() != null) {
+            changeNickname(findMember, updateParam.getNickname());
+        }
+    }
+
+    private String validatePasswordUpdateRequest(PasswordUpdateRequest updateParam, Member findMember) {
+        String current = updateParam.getCurrentPassword();  // raw String
+        String next = updateParam.getNewPassword(); //raw String
+
+        //기존 비번 검증
+        if (!encoder.matches(current, findMember.getPassword())) {  //raw data, encoded data 순으로
+            throw new PasswordMismatchException();
+        }
+
+        //바꿀 비번이 현재 비번과 동일하지 않은지 검증
+        if (encoder.matches(next, findMember.getPassword())) {
+            throw new InvalidMemberFieldException("updatePassword: 기존 비밀번호와 동일한 비밀번호로는 변경할 수 없습니다.");
+        }
+        return next;
+    }
+
+
+
     /**
      * 새로운 username에 대해 다음 순서로 검증 및 업데이트를 수행한다:
      *
