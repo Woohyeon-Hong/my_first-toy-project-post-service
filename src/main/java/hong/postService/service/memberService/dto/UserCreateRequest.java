@@ -8,8 +8,9 @@ import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+가import lombok.Setter;
 
-@Getter
+@Getter @Setter
 @Builder
 @AllArgsConstructor
 public class UserCreateRequest {
@@ -27,6 +28,5 @@ public class UserCreateRequest {
     @NotBlank(message = "nickname은 필수입니다.")
     private  String nickname;
 
-    @NotNull
     private UserRole role;
 }
