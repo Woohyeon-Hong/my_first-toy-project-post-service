@@ -161,6 +161,16 @@ class MemberServiceTest {
                 .isInstanceOf(DuplicateMemberFieldException.class);
     }
 
+    @Test
+    void signUpMember_ADMIN으로_가입_시도() {
+        //given
+        UserCreateRequest request = new UserCreateRequest("user2", "p2", "u2@naver.com", "n2", UserRole.ADMIN);
+
+        //when & then
+        assertThatThrownBy(() -> memberService.signUp(request))
+                .isInstanceOf(InvalidMemberFieldException.class);
+    }
+
 
     @Test
     void signUpAdmin_정상_가입() {
@@ -204,6 +214,16 @@ class MemberServiceTest {
         //when & then
         assertThatThrownBy(() -> memberService.signUpAdmin(request))
                 .isInstanceOf(DuplicateMemberFieldException.class);
+    }
+
+    @Test
+    void signUpAdmin_USER로_가입_시도() {
+        //given
+        UserCreateRequest request = new UserCreateRequest("user2", "p2", "u2@naver.com", "n2", UserRole.USER);
+
+        //when & then
+        assertThatThrownBy(() -> memberService.signUpAdmin(request))
+                .isInstanceOf(InvalidMemberFieldException.class);
     }
 
     @Test

@@ -1,6 +1,7 @@
 package hong.postService.service.memberService.v2;
 
 import hong.postService.domain.Member;
+import hong.postService.domain.UserRole;
 import hong.postService.exception.member.DuplicateMemberFieldException;
 import hong.postService.exception.member.InvalidMemberFieldException;
 import hong.postService.exception.member.MemberNotFoundException;
@@ -69,6 +70,8 @@ public class MemberService {
     @Transactional
     public Long signUp(UserCreateRequest request) {
 
+        if (request.getRole() == UserRole.ADMIN) throw new InvalidMemberFieldException("signUp: role == ADMIN");
+
         String username = request.getUsername();
 
         String rawPassword = request.getPassword();
@@ -99,6 +102,9 @@ public class MemberService {
      */
     @Transactional
     public Long signUpAdmin(UserCreateRequest request) {
+
+        if (request.getRole() == UserRole.USER) throw new InvalidMemberFieldException("signUpAdmin: role == USER");
+
 
         String username = request.getUsername();
 
