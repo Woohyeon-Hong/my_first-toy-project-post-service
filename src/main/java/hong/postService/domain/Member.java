@@ -115,13 +115,6 @@ public class Member extends BaseTimeEntity {
                 .build();
     }
 
-    private static String createDefaultNickname(String nickname) {
-        if (nickname == null) {
-            nickname = "user_" + UUID.randomUUID().toString().substring(0, 8);
-        }
-        return nickname;
-    }
-
 //검증---------------------------------------------------------------------------------------------------
 
     private static void validateMemberFields(String username, String password, String email, String nickname) {
@@ -213,6 +206,13 @@ public class Member extends BaseTimeEntity {
     }
 
 //내부 메소드---------------------------------------------------------------------------------------------------
+
+    private static String createDefaultNickname(String nickname) {
+        if (nickname == null) {
+            nickname = "user_" + UUID.randomUUID().toString().substring(0, 8);
+        }
+        return nickname;
+    }
 
     private void checkNotRemoved() {
         if (this.isRemoved()) throw new MemberNotFoundException(this.getId());
