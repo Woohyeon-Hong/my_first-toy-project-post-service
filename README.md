@@ -156,28 +156,32 @@ src
 ## 📡 API 엔드포인트 요약
 
 ---
-| 번호 | 기능           | 메서드    | URI                                     | 설명                      |
-|----|--------------|--------|-----------------------------------------|-------------------------|
-| 1  | 일반 회원가입      | POST   | `v2/users`                              | 일반 사용자 회원가입             |
-| 2  | 어드민 회원가입     | POST   | `v2/users/admin`                        | 어드민 사용자 회원가입            |
-| 3  | 일반 로그인       | POST   | `v2/users/login`                        | 일반 로그인                  |
-| 4  | 소셜 로그인       | POST   | `oauth2/authorization/google`           | 구글 소셜 로그인               |
-| 5  | 회원 게시글 목록 조회 | GET    | `v2/users/me/posts-standard`            | 자신이 작성한 게시글 목록 조회       |
-| 6  | 회원 정보 업데이트   | PATCH  | `v2/users/me`                           | 자신의 사용자 정보 수정           |
-| 7  | 회원 비밀번호 업데이트 | PATCH  | `v2/users/me/password`                  | 자신의 비밀번호 수정             |
-| 8  | 회원 탈퇴        | DELETE | `v2/users/me`                           | 사용자 계정 탈퇴 처리            |
-| 9  | 게시글 작성       | POST   | `v2/users/me/posts`                     | 새로운 게시글 등록              |
-| 10 | 전체 게시글 조회    | GET    | `v2/posts`                              | 전체 게시글 목록 조회            |
-| 11 | 게시글 상세 조회    | GET    | `v2/posts/{postId}`                     | 게시글 상세 조회               |
-| 12 | 게시글 검색       | GET    | `v2/posts/search`                       | 원하는 게시글 검색              |
-| 13 | 게시글 수정       | PATCH  | `v2/posts/{postId}`                     | 직접 작성한 게시글 수정           |
-| 14 | 게시글 삭제       | DELETE | `v2/posts/{postId}`                     | 직접 작성한 게시글 삭제           |
-| 15 | 댓글 작성        | POST   | `v2/posts/{postId}/comments`            | 게시글에 댓글 작성              |
-| 16 | 게시글 댓글 조회    | GET    | `v2/posts/{postId}/comments`            | 게시글에 작성된 전체 댓글 및 대댓글 조회 |
-| 17 | 대댓글 작성       | POST   | `v2/comments/{parentCommentId}/replies` | 특정 댓글에 대한 대댓글 작성        |
-| 18 | 댓글 상세 조회     | GET    | `v2/comments/{commentId}`               | 특정 댓글(또는 대댓글)의 상세 내용 조회 |
-| 19 | 댓글 변경        | PATCH  | `v2/comments/{commentId}`               | 직접 작성한 댓글 내용 수정         |
-| 20 | 댓글 삭제        | DELETE | `v2/comments/{commentId}`               | 댓글 또는 대댓글 삭제            |
+## 📡 API 엔드포인트 요약
+
+---
+| 기능                     | Method | Endpoint                               | 인증     | 권한 조건      |
+|------------------------|--------|----------------------------------------|--------|------------|
+| 일반 회원가입                | POST   | /v2/users                              | 🔓 불필요 | 누구나 호출 가능  |
+| 어드민 회원가입               | POST   | /v2/users/admin                        | 🔓 불필요 | 누구나 호출 가능  |
+| 일반 로그인                 | POST   | /v2/users/login                        | 🔓 불필요 | 누구나 호출 가능  |
+| 소셜 로그인(Google)         | GET    | /oauth2/authorization/google           | 🔓 불필요 | 누구나 호출 가능  |
+| 회원 게시글 목록 조회 (Simple)  | GET    | /v2/users/me/posts-simple              | 🔒 필요  | 로그인한 사용자   |
+| 회원 게시글 목록 조회 (HATEOAS) | GET    | /v2/users/me/posts-standard            | 🔒 필요  | 로그인한 사용자   |
+| 회원 정보 수정               | PATCH  | /v2/users/me                           | 🔒 필요  | 로그인한 사용자   |
+| 비밀번호 수정                | PATCH  | /v2/users/me/password                  | 🔒 필요  | 로그인한 사용자   |
+| 회원 탈퇴                  | DELETE | /v2/users/me                           | 🔒 필요  | 로그인한 사용자   |
+| 게시글 작성                 | POST   | /v2/users/me/posts                     | 🔒 필요  | 로그인한 사용자   |
+| 전체 게시글 조회              | GET    | /v2/posts                              | 🔓 불필요 | 누구나 호출 가능  |
+| 게시글 상세 조회              | GET    | /v2/posts/{postId}                     | 🔓 불필요 | 누구나 호출 가능  |
+| 게시글 검색                 | GET    | /v2/posts/search                       | 🔓 불필요 | 누구나 호출 가능  |
+| 게시글 수정                 | PATCH  | /v2/posts/{postId}                     | 🔒 필요  | 작성자만 호출 가능 |
+| 게시글 삭제                 | DELETE | /v2/posts/{postId}                     | 🔒 필요  | 작성자만 호출 가능 |
+| 댓글 작성                  | POST   | /v2/posts/{postId}/comments            | 🔒 필요  | 로그인한 사용자   |
+| 댓글 목록 조회               | GET    | /v2/posts/{postId}/comments            | 🔓 불필요 | 누구나 호출 가능  |
+| 대댓글 작성                 | POST   | /v2/comments/{parentCommentId}/replies | 🔒 필요  | 로그인한 사용자   |
+| 댓글 상세 조회               | GET    | /v2/comments/{commentId}               | 🔓 불필요 | 누구나 호출 가능  |
+| 댓글 수정                  | PATCH  | /v2/comments/{commentId}               | 🔒 필요  | 작성자만 호출 가능 |
+| 댓글 삭제                  | DELETE | /v2/comments/{commentId}               | 🔒 필요  | 작성자만 호출 가능 |
 
 
 ## 📬 API 사용 방법
