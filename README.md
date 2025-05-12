@@ -180,10 +180,11 @@ src
 | 20 | 댓글 삭제        | DELETE | `v2/comments/{commentId}`               | 댓글 또는 대댓글 삭제            |
 
 
-## 📬 API 사용 방법 (with Postman)
+## 📬 API 사용 방법
 
 ---
-각 API는 Postman을 통해 호출할 수 있으며, JWT 인증이 필요한 경우 `Authorization` 헤더에 토큰을 담아야 합니다.
+ - JWT 인증이 필요한 경우 `Authorization` 헤더에 토큰을 담아야 합니다.
+ - 아래의 예시는 Postman으로 설명하고 있습니다.
 
 ### 🧍 일반 회원가입 API
 
