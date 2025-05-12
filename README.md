@@ -599,7 +599,7 @@ src
 ```
 
 #### 📸 Postman 예시 화면
-![📝 댓글 수정 API](./images/댓글_수정.png)
+![📝 댓글 수정 API](./images/댓글_변경.png)
 
 #### 📤 성공 응답
 - `204 No Content`: 댓글 수정 성공
