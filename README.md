@@ -11,20 +11,31 @@
 ## 🔄 버전 이력 및 개선 방향
 
 ---
+
 해당 프로젝트는 동일한 게시판 서비스를 **두 가지 방식(v1, v2)** 으로 구현하며, 기술 선택과 설계의 차이를 비교하고 학습하는 데 목적이 있었습니다.
 
 - **v1**
-  - 2024.07 ~ 2024.08 진행 (약 1개월)
-  - `Thymeleaf` 뷰 기반 서버 사이드 렌더링
-  - `MyBatis`를 이용한 SQL 매핑
-  - `Session` 기반의 인증/인가 방식
+  - 개발 기간: 2024.07 ~ 2024.08 (약 1개월)
+  - `Thymeleaf` 기반 서버 사이드 렌더링
+  - `MyBatis`를 활용한 SQL 매핑 방식
+  - `Session` 기반의 인증/인가 처리
 
 - **v2**
-  - 2025.02 ~ 2025.04 (약 2개월)
-  - **RESTful API 구조**로 재설계
-  - `Spring Data JPA + QueryDSL`을 활용한 ORM 기반 개발
-  - `Spring Security`, `JWT`, `OAuth 2.0`을 활용한 **토큰 기반 인증/인가** 구현
-
+  - 개발 기간: 2025.02 ~ 2025.04 (약 2개월)
+  - **RESTful API 아키텍처**로 변경  
+    - REST Maturity Model 3단계 준수  
+      - 리소스 기반 URI 설계  
+      - HTTP Method 구분 명확화  
+      - URI 버전 관리 적용 (`/v2/**`)  
+      - HATEOAS 일부 적용
+    - **SpringDoc + Swagger UI를 통한 API 문서 자동화
+  - `Spring Data JPA` + `QueryDSL` 기반의 ORM 방식 도입
+  - **Soft Delete 전략** 적용으로 데이터 복원 및 무결성 강화
+  - `Spring Security`, `JWT`, `OAuth 2.0` 기반의 **토큰 기반 인증/인가 시스템** 구현
+  - **도메인 구조 리팩토링 및 댓글 기능 추가**
+    - 공통 Auditing 필드(`createdDate`, `lastModifiedDate`) 적용
+    - `Member`, `Post` 도메인 구조 정비 및 책임 분리
+    - 자기 참조 구조를 이용한 **대댓글 지원 기능** 구현
 
 ## 🧱 주요 기술 스택 (v2 기준)
 
