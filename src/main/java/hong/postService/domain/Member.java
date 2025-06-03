@@ -105,8 +105,6 @@ public class Member extends BaseTimeEntity {
     public static Member createNewOAuthMember(String username, String password, String email, String nickname) {
         validateOAuthFields(username, password, email);
 
-        nickname = createDefaultNickname(nickname);
-
         return Member.builder()
                 .username(username)
                 .password(password)
@@ -203,12 +201,6 @@ public class Member extends BaseTimeEntity {
 
 //내부 메소드---------------------------------------------------------------------------------------------------
 
-    private static String createDefaultNickname(String nickname) {
-        if (nickname == null) {
-            nickname = "user_" + UUID.randomUUID().toString().substring(0, 8);
-        }
-        return nickname;
-    }
 
     private void checkNotRemoved() {
         if (this.isRemoved()) throw new MemberNotFoundException(this.getId());
