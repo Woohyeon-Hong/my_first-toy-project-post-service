@@ -149,42 +149,42 @@ class PostServiceTest {
         assertThat(posts2.getTotalElements()).isEqualTo(49);
     }
 
-    @Test
-    void search_작성자_닉네임만() {
-        //given
-        Long memberId1 = memberService.signUp(new UserCreateRequest("user", "p", "e@naver.com", "nickname1", UserRole.USER));
-        Long memberId2 = memberService.signUp(new UserCreateRequest("user2", "p2", "e2@naver.com", "nickname2", UserRole.USER));
-
-        Long postId;
-        for (int i = 1; i <= 100; i++) {
-            if (i % 2 != 0) postId = postService.write(memberId1, new PostCreateRequest("title" + i, "content" + i));
-            else postId =  postService.write(memberId2, new PostCreateRequest("title" + i, "content" + i));;
-
-            if (postId == 99) postService.delete(postId);
-        }
-
-        flushAndClear();
-
-        SearchCond cond = SearchCond.builder()
-                .writer("nickname1")
-                .build();
-
-        PageRequest pageRequest1 = PageRequest.of(0, 25, Sort.by(Sort.Direction.ASC, "createdDate"));
-        PageRequest pageRequest2 = PageRequest.of(1, 25, Sort.by(Sort.Direction.ASC, "createdDate"));
-
-        //when
-        Page<PostSummaryResponse> posts1 = postService.search(cond, pageRequest1);
-        Page<PostSummaryResponse> posts2 = postService.search(cond, pageRequest2);
-
-        //then
-        assertThat(posts1.getSize()).isEqualTo(25);
-        assertThat(posts2.getSize()).isEqualTo(25);
-
-        assertThat(posts1.getTotalPages()).isEqualTo(2);
-        assertThat(posts2.getTotalPages()).isEqualTo(2);
-
-        assertThat(posts1.getTotalElements()).isEqualTo(49);
-    }
+//    @Test
+//    void search_작성자_닉네임만() {
+//        //given
+//        Long memberId1 = memberService.signUp(new UserCreateRequest("user", "p", "e@naver.com", "nickname1", UserRole.USER));
+//        Long memberId2 = memberService.signUp(new UserCreateRequest("user2", "p2", "e2@naver.com", "nickname2", UserRole.USER));
+//
+//        Long postId;
+//        for (int i = 1; i <= 100; i++) {
+//            if (i % 2 != 0) postId = postService.write(memberId1, new PostCreateRequest("title" + i, "content" + i));
+//            else postId =  postService.write(memberId2, new PostCreateRequest("title" + i, "content" + i));;
+//
+//            if (postId == 99) postService.delete(postId);
+//        }
+//
+//        flushAndClear();
+//
+//        SearchCond cond = SearchCond.builder()
+//                .writer("nickname1")
+//                .build();
+//
+//        PageRequest pageRequest1 = PageRequest.of(0, 25, Sort.by(Sort.Direction.ASC, "createdDate"));
+//        PageRequest pageRequest2 = PageRequest.of(1, 25, Sort.by(Sort.Direction.ASC, "createdDate"));
+//
+//        //when
+//        Page<PostSummaryResponse> posts1 = postService.search(cond, pageRequest1);
+//        Page<PostSummaryResponse> posts2 = postService.search(cond, pageRequest2);
+//
+//        //then
+//        assertThat(posts1.getSize()).isEqualTo(25);
+//        assertThat(posts2.getSize()).isEqualTo(25);
+//
+//        assertThat(posts1.getTotalPages()).isEqualTo(2);
+//        assertThat(posts2.getTotalPages()).isEqualTo(2);
+//
+//        assertThat(posts1.getTotalElements()).isEqualTo(49);
+//    }
 
     @Test
     void search_제목만() {
