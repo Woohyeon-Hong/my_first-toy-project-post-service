@@ -82,7 +82,8 @@ public class SecurityConfig {
                 .requestMatchers(
                         "/v3/api-docs/**",
                         "/swagger-ui/**",
-                        "/swagger-ui.html"
+                        "/swagger-ui.html",
+                        "/health"
                 ).permitAll()
 
                 // 회원가입, 로그인
