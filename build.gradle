@@ -71,6 +71,9 @@ dependencies {
 
 	//OAuth 2.0 추가
 	implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
+
+	//Spring Actuator 추가
+	implementation 'org.springframework.boot:spring-boot-starter-actuator'
 }
 
 tasks.named('test') {

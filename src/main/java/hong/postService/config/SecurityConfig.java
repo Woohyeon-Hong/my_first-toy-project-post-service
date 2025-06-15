@@ -83,7 +83,7 @@ public class SecurityConfig {
                         "/v3/api-docs/**",
                         "/swagger-ui/**",
                         "/swagger-ui.html",
-                        "/health"
+                        "/actuator/**"
                 ).permitAll()
 
                 // 회원가입, 로그인
