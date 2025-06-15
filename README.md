@@ -181,6 +181,17 @@ src
 | 댓글 수정                  | PATCH  | /v2/comments/{commentId}               | 🔒 필요  | 작성자만 호출 가능 |
 | 댓글 삭제                  | DELETE | /v2/comments/{commentId}               | 🔒 필요  | 작성자만 호출 가능 |
 
+## 🚀 시작하기
+
+배포된 API 서버에 아래 주소를 통해 접근할 수 있습니다.
+
+```url
+http://api.my-post-service.kro.kr
+```
+
+이 주소를 통해 REST API를 테스트하거나, 프론트엔드와 연동할 수 있습니다.
+
+
 
 ## 📬 API 사용 방법
 
