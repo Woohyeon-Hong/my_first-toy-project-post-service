@@ -28,9 +28,9 @@ public class JwtFilter extends OncePerRequestFilter {
 
     /**
      * JWT 검증 요청 필터링 로직에 대한 고민
-     *      기본적으로는 모든 요청에 대해 JWT 검증 요구
-     *      또한 인가에 대해서는 SecurityFilterChain에서 처리
-     *      따라서, jWT가가 유효한지 검사만 하면 됨.
+     * 토큰이 존재하면 토큰을 추출해서 검증 처리
+     * 토큰이 없으면, 인가하지 않고 다음 필터 호출
+     * 이걸 Spring Security가 받아서 경로 별 인증/인가 매핑 처리
      */
     @Override
     protected void doFilterInternal(HttpServletRequest request,
