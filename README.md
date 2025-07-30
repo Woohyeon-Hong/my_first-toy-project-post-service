@@ -36,6 +36,7 @@
   - **RESTful API 구조**로 재설계
   - `Spring Data JPA + QueryDSL`을 활용한 ORM 기반 개발
   - `Spring Security`, `JWT`, `OAuth 2.0`을 활용한 **토큰 기반 인증/인가** 구현
+  - `docker` + `AWS EC2`를 활용한 배포
 
 
 ## 🧱 주요 기술 스택 (v2 기준)
@@ -54,10 +55,12 @@
 
 ### ✅ Infra & Documentation
 
+- **docker**
+- **AWS EC2**
 - **Git**, **GitHub** (버전 관리)
-  - **Notion** (기획)
-  - **Junit 5** (테스트 프레임워크)
-  - **Lombok**
+- **Notion** (기획)
+- **Junit 5** (테스트 프레임워크)
+- **Lombok**
 
 ## 📂 프로젝트 디렉토리 구조 (v2 기준)
 
