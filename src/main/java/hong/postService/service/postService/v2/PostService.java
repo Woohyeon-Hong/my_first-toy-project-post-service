@@ -5,7 +5,6 @@ import com.amazonaws.services.s3.model.ObjectMetadata;
 import hong.postService.domain.Member;
 import hong.postService.domain.Post;
 import hong.postService.exception.member.MemberNotFoundException;
-import hong.postService.exception.post.InvalidFileFormatException;
 import hong.postService.exception.post.InvalidPostFieldException;
 import hong.postService.exception.post.PostNotFoundException;
 import hong.postService.repository.postRepository.v2.PostRepository;
@@ -18,7 +17,6 @@ import hong.postService.service.postService.dto.PostUpdateRequest;
 import lombok.RequiredArgsConstructor;
 import org.apache.tomcat.util.http.fileupload.FileUploadException;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.UrlResource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -176,43 +174,6 @@ public class PostService {
         post.remove();
     }
 
-    public List<String> uploadFile(List<MultipartFile> multipartFiles) throws IOException {
-        ArrayList<String> fileNameList = new ArrayList<String>();
 
-        for (MultipartFile file : multipartFiles) {
-            String fileName = createFileName(file.getOriginalFilename());
 
-            ObjectMetadata metadata = new ObjectMetadata();
-            metadata.setContentType(file.getContentType());
-            metadata.setContentLength(file.getSize());
-
-            try(InputStream inputStream = file.getInputStream()){
-                amazonS3.putObject(bucket, fileName, inputStream, metadata);
-            } catch (IOException e){
-                throw new FileUploadException("파일 업로드에 실패했습니다.");
-            }
-
-            fileNameList.add(fileName);
-        }
-
-        return fileNameList;
-    }
-
-    public void deleteFile(String fileName){
-        amazonS3.deleteObject(bucket, fileName);
-        System.out.println(bucket);
-    }
-
-    public String createFileName(String fileName){
-        return UUID.randomUUID().toString().concat(getFileExtension(fileName));
-    }
-
-    //  "."의 존재 유무만 판단
-    private String getFileExtension(String fileName){
-        try{
-            return fileName.substring(fileName.lastIndexOf("."));
-        } catch (StringIndexOutOfBoundsException e){
-            throw new InvalidFileFormatException("잘못된 형식의 파일" + fileName + ") 입니다.");
-        }
-    }
 }
