@@ -1,0 +1,66 @@
+package hong.postService.domain;
+
+import hong.postService.domain.baseEntity.BaseTimeEntity;
+import hong.postService.exception.file.FileNotFoundException;
+import hong.postService.exception.file.InvalidFileFieldException;
+import jakarta.persistence.*;
+import lombok.*;
+
+import java.util.UUID;
+
+@Getter
+@Builder
+@Entity
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor
+public class File extends BaseTimeEntity{
+
+    @Id
+    @GeneratedValue
+    @Column(name = "file_id")
+    private Long id;
+
+    @Column(nullable = false)
+    private String originalFileName;
+    @Column(nullable = false)
+    private String storedFileName;
+    @Column(nullable = false, unique = true)
+    private String s3Key;
+
+    @Column(name = "is_removed", nullable = false)
+    private boolean isRemoved;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "post_id", nullable = false)
+    private Post post;
+
+    public static String extractExtension(String fileName) {
+        if (fileName == null) throw new InvalidFileFieldException("extractExtension: filename == null");
+        int idx = fileName.lastIndexOf(".");
+        if (idx == -1 || idx == fileName.length() - 1) throw new InvalidFileFieldException("extractExtension: 형식자가 잘못됐습니다.");
+        return fileName.substring(idx);
+    }
+
+
+    public static String generateStoredFileName(String extension) {
+        if (extension == null) throw new InvalidFileFieldException("generateStoredFileName: extension == null");
+        return UUID.randomUUID().toString() + extension;
+    }
+
+
+    public void generateS3Key() {
+        checkNotRemoved();
+        if (this.s3Key != null) throw new InvalidFileFieldException("registerS3Key: 이미 s3Key가 등록됐습니다.");
+
+        this.s3Key = "post/" + post.getId() + "/" + this.storedFileName;
+    }
+
+    public void remove() {
+        checkNotRemoved();
+        this.isRemoved = true;
+    }
+
+    private void checkNotRemoved() {
+        if (isRemoved()) throw new FileNotFoundException(this.getId());
+    }
+}
