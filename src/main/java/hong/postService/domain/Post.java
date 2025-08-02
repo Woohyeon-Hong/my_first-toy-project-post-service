@@ -39,6 +39,11 @@ public class Post extends BaseTimeEntity {
     @OneToMany(mappedBy = "post")
     private List<Comment> comments = new ArrayList<>();
 
+    @Builder.Default
+    @OneToMany(mappedBy = "post")
+    private List<File> files = new ArrayList<>();
+
+
 //비즈니스 로직---------------------------------------------------------------------------------------------------
 
     public void updateTitle(String newTitle) {
@@ -55,7 +60,9 @@ public class Post extends BaseTimeEntity {
 
     public void remove() {
         checkNotRemoved();
+
         removeComments();
+        removeFiles();
 
         this.title = "";
         this.content = "";
@@ -84,6 +91,27 @@ public class Post extends BaseTimeEntity {
         return comment;
     }
 
+    //File 추가---------------------------------------------------------------------------------------------------
+
+    public File addNewFile(String fileName) {
+        checkNotRemoved();
+        if (fileName == null) throw new InvalidPostFieldException("addNewFile: fileName == null");
+
+        String extension = File.extractExtension(fileName);
+        String storedFileName = File.generateStoredFileName(extension);
+
+        File file = File.builder()
+                .originalFileName(fileName)
+                .storedFileName(storedFileName)
+                .post(this)
+                .isRemoved(false)
+                .build();
+
+        this.getFiles().add(file);
+
+        return file;
+    }
+
     //내부 로직---------------------------------------------------------------------------------------------------
     private void checkNotRemoved() {
         if (this.isRemoved()) throw new PostNotFoundException(this.getId());
@@ -93,6 +121,14 @@ public class Post extends BaseTimeEntity {
         for (Comment comment : comments) {
             if (!comment.isRemoved()) {
                 comment.remove();
+            }
+        }
+    }
+
+    private void removeFiles() {
+        for (File file : files) {
+            if (!file.isRemoved()) {
+                file.remove();
             }
         }
     }

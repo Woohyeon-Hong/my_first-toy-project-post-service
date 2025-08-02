@@ -157,4 +157,43 @@ class PostTest {
         // when & then
         assertThatThrownBy(() ->  post.writeComment("댓글", member)).isInstanceOf(PostNotFoundException.class);
     }
+
+    @Test
+    void addNewFile() {
+        //given
+        Member member = Member.createNewMember("user", "pw", null, "nick");
+        Post post = member.writeNewPost("title", "content");
+
+        //when
+        File file = post.addNewFile("example.txt");
+
+        //then
+        assertThat(post.getFiles()).contains(file);
+        assertThat(file.getPost()).isEqualTo(post);
+
+        assertThatThrownBy(() -> post.addNewFile(null)).isInstanceOf(InvalidPostFieldException.class);
+    }
+
+    @Test
+    void remove_파일까지_모두_함께_삭제된다() {
+        // given
+        Member member = Member.createNewMember("user", "pw", null, "nick");
+        Post post = member.writeNewPost("title", "content");
+
+        File file1 = post.addNewFile("example1.txt");
+        File file2 = post.addNewFile("example2.txt");
+        File file3 = post.addNewFile("example3.txt");
+        File file4 = post.addNewFile("example4.txt");
+        File file5 = post.addNewFile("example5.txt");
+
+        // when
+        post.remove();
+
+        // then
+        assertThat(file1.isRemoved()).isTrue();
+        assertThat(file2.isRemoved()).isTrue();
+        assertThat(file3.isRemoved()).isTrue();
+        assertThat(file4.isRemoved()).isTrue();
+        assertThat(file5.isRemoved()).isTrue();
+    }
 }
