@@ -9,3 +9,14 @@ spring:
         use_sql_comments: true
   jwt:
     secret: vmfhaltmskdlstkfkdgodyroqkfwkdbalroqkfwkdbalHongfjdkfjd
+
+    # src/test/resources/application-test.yml
+cloud:
+  aws:
+    credentials:
+      access-key: test-key
+      secret-key: test-secret
+    region:
+      static: ap-northeast-2
+    s3:
+      bucket: test-bucket
