@@ -57,16 +57,11 @@ class FileTest {
         Member member = Member.createNewMember("user", "pw", null, "nick");
         Post post = member.writeNewPost("old", "content");
 
-        File file1 = post.addNewFile("example1.txt");
-        File file2 = post.addNewFile("example2.txt");
+        File file = post.addNewFile("example1.txt");
 
-        //when
-        file1.generateS3Key();
 
-        //then
-        assertThat(file1.getS3Key()).isNotNull();
-
-        assertThatThrownBy(() -> file1.generateS3Key())
+        //when & then
+        assertThatThrownBy(() -> file.generateS3Key())
                 .isInstanceOf(InvalidFileFieldException.class);
     }
 

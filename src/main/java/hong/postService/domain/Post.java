@@ -107,6 +107,8 @@ public class Post extends BaseTimeEntity {
                 .isRemoved(false)
                 .build();
 
+        file.generateS3Key();
+
         this.getFiles().add(file);
 
         return file;
