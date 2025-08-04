@@ -10,5 +10,4 @@ public class TestSecurityConfig {
 
     @MockBean
     private SecurityFilterChain securityFilterChain;
-
 }
