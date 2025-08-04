@@ -57,6 +57,8 @@ public class File extends BaseTimeEntity{
 
     public void remove() {
         checkNotRemoved();
+
+        storedFileName = "";
         this.isRemoved = true;
     }
 
