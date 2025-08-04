@@ -24,7 +24,6 @@ public class File extends BaseTimeEntity{
     private String originalFileName;
     @Column(nullable = false)
     private String storedFileName;
-    @Column(nullable = false, unique = true)
     private String s3Key;
 
     @Column(name = "is_removed", nullable = false)
