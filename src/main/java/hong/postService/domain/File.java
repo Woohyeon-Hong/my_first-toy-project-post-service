@@ -41,12 +41,25 @@ public class File extends BaseTimeEntity{
         return fileName.substring(idx);
     }
 
+    public static String extractStoredFileName(String s3Key) {
+        if (s3Key == null) {
+            throw new InvalidFileFieldException("extractStoredFileName: s3Key == null");
+        }
+
+        String[] parts = s3Key.split("/");
+
+        if (parts.length != 3 || !"post".equals(parts[0]) || parts[2].isBlank()) {
+            throw new InvalidFileFieldException("extractStoredFileName: s3Key 형식이 잘못됐습니다. 형식: post/{postId}/{storedFileName}");
+        }
+
+        return parts[2]; // storedFileName
+    }
+
 
     public static String generateStoredFileName(String extension) {
         if (extension == null) throw new InvalidFileFieldException("generateStoredFileName: extension == null");
         return UUID.randomUUID().toString() + extension;
     }
-
 
     public void generateS3Key() {
         checkNotRemoved();

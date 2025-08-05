@@ -35,6 +35,26 @@ class FileTest {
     }
 
     @Test
+    void extractStoredFileName() {
+        //given
+        String s3Key = "post/1/a12345.txt";
+        String wrong1 = "a12345.txt";
+        String wrong2 = "post/a12345.txt";
+
+        //when
+        String result = File.extractStoredFileName(s3Key);
+
+        //then
+        assertThat(result).isEqualTo("a12345.txt");
+
+        assertThatThrownBy(() -> File.extractStoredFileName(wrong1))
+                .isInstanceOf(InvalidFileFieldException.class);
+        assertThatThrownBy(() -> File.extractStoredFileName(wrong2))
+                .isInstanceOf(InvalidFileFieldException.class);
+
+    }
+
+    @Test
     void generateStoredFileName() {
         //given
         String extension = ".txt";
@@ -52,25 +72,11 @@ class FileTest {
     }
 
     @Test
-    void generateS3Key() {
-        //given
-        Member member = Member.createNewMember("user", "pw", null, "nick");
-        Post post = member.writeNewPost("old", "content");
-
-        File file = post.addNewFile("example1.txt");
-
-
-        //when & then
-        assertThatThrownBy(() -> file.generateS3Key())
-                .isInstanceOf(InvalidFileFieldException.class);
-    }
-
-    @Test
     void remove() {
         //given
         Member member = Member.createNewMember("user", "pw", null, "nick");
         Post post = member.writeNewPost("old", "content");
-        File file = post.addNewFile("example.txt");
+        File file = post.addNewFile("example.txt", "post/1/example-stored.txt");
 
         //when
         file.remove();

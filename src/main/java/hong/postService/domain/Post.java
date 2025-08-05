@@ -93,23 +93,22 @@ public class Post extends BaseTimeEntity {
 
     //File 추가---------------------------------------------------------------------------------------------------
 
-    public File addNewFile(String fileName) {
+    public File addNewFile(String originalFileName, String s3Key) {
         checkNotRemoved();
-        if (fileName == null) throw new InvalidPostFieldException("addNewFile: fileName == null");
+        if (originalFileName == null) throw new InvalidPostFieldException("addNewFile: originalFileName == null");
+        if (s3Key == null) throw new InvalidPostFieldException("addNewFile: s3Key == null");
 
-        String extension = File.extractExtension(fileName);
-        String storedFileName = File.generateStoredFileName(extension);
+        String storedFileName = File.extractStoredFileName(s3Key);
 
         File file = File.builder()
-                .originalFileName(fileName)
+                .originalFileName(originalFileName)
                 .storedFileName(storedFileName)
+                .s3Key(s3Key)
                 .post(this)
                 .isRemoved(false)
                 .build();
 
-        file.generateS3Key();
-
-        this.getFiles().add(file);
+        this.files.add(file);
 
         return file;
     }
