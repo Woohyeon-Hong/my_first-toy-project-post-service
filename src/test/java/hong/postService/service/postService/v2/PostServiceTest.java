@@ -4,12 +4,14 @@ import hong.postService.TestSecurityConfig;
 import hong.postService.domain.Member;
 import hong.postService.domain.Post;
 import hong.postService.domain.UserRole;
+import hong.postService.exception.file.InvalidFileFieldException;
 import hong.postService.exception.member.MemberNotFoundException;
 import hong.postService.exception.post.InvalidPostFieldException;
 import hong.postService.exception.post.PostNotFoundException;
 import hong.postService.repository.memberRepository.v2.MemberRepository;
 import hong.postService.repository.postRepository.v2.PostRepository;
 import hong.postService.repository.postRepository.v2.SearchCond;
+import hong.postService.service.fileService.dto.FileCreateRequest;
 import hong.postService.service.memberService.dto.UserCreateRequest;
 import hong.postService.service.memberService.v2.MemberService;
 import hong.postService.service.postService.dto.PostCreateRequest;
@@ -25,6 +27,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.*;
@@ -52,7 +55,7 @@ class PostServiceTest {
         memberService.findMember(memberId2).remove();
 
         //when
-        Long postId = postService.write(memberId1, new PostCreateRequest("title1", "content1"));
+        Long postId = postService.write(memberId1, new PostCreateRequest("title1", "content1", null));
 
         //then
         Post findPost = postService.getPost(postId);
@@ -61,18 +64,62 @@ class PostServiceTest {
         assertThat(findPost.getContent()).isEqualTo("content1");
         assertThat(findPost.getWriter().getId()).isEqualTo(memberId1);
 
-        assertThatThrownBy(() -> postService.write(memberId2, new PostCreateRequest("title2", "content2")))
+        assertThatThrownBy(() -> postService.write(memberId2, new PostCreateRequest("title2", "content2", null)))
                 .isInstanceOf(MemberNotFoundException.class);
 
-        assertThatThrownBy(() -> postService.write(memberId1, new PostCreateRequest(null, null)))
+        assertThatThrownBy(() -> postService.write(memberId1, new PostCreateRequest(null, null, null)))
                 .isInstanceOf(InvalidPostFieldException.class);
     }
+
+    @Test
+    void write_파일_첨부() {
+        //given
+        Long memberId = memberService.signUp(new UserCreateRequest("user", "p", "e@naver.com", "nickname", UserRole.USER));
+
+        ArrayList<FileCreateRequest> files = new ArrayList<>();
+
+        FileCreateRequest request = new FileCreateRequest("example.txt", "post/1/abc123.txt");
+        files.add(request);
+
+        FileCreateRequest originalFileNameNull = new FileCreateRequest(null, "post/1/abc123.txt");
+        FileCreateRequest s3KeyNull = new FileCreateRequest("example.txt", null);
+        FileCreateRequest wrongOriginalFileName = new FileCreateRequest("example", "post/1/abc123.txt");
+        FileCreateRequest wrongS3Key = new FileCreateRequest("example.txt", "post/abc123.txt");
+
+        //when
+        Long postId = postService.write(memberId, new PostCreateRequest("title1", "content1", files));
+
+        //then
+        Post findPost = postService.getPost(postId);
+
+        files.add(originalFileNameNull);
+        assertThatThrownBy(() -> postService.write(memberId, new PostCreateRequest("title1", "content1", files)))
+                .isInstanceOf(InvalidFileFieldException.class);
+        files.remove(originalFileNameNull);
+
+        files.add(s3KeyNull);
+        assertThatThrownBy(() -> postService.write(memberId, new PostCreateRequest("title1", "content1", files)))
+                .isInstanceOf(InvalidFileFieldException.class);
+        files.remove(s3KeyNull);
+
+        files.add(wrongOriginalFileName);
+        assertThatThrownBy(() -> postService.write(memberId, new PostCreateRequest("title1", "content1", files)))
+                .isInstanceOf(InvalidFileFieldException.class);
+        files.remove(wrongOriginalFileName);
+
+        files.add(wrongS3Key);
+        assertThatThrownBy(() -> postService.write(memberId, new PostCreateRequest("title1", "content1", files)))
+                .isInstanceOf(InvalidFileFieldException.class);
+        files.remove(wrongS3Key);
+    }
+
+
     @Test
     void deletePost_postId가_존재하면_정상_삭제() {
         //given
         Long memberId = memberService.signUp(new UserCreateRequest("user", "p", "e@naver.com", "nickname", UserRole.USER));
 
-        Long postId = postService.write(memberId, new PostCreateRequest("title1", "content1"));
+        Long postId = postService.write(memberId, new PostCreateRequest("title1", "content1", null));
         Post post = postService.getPost(postId);
 
         //when
@@ -94,7 +141,7 @@ class PostServiceTest {
 
         Long postId;
         for (int i = 1; i <= 50; i++) {
-            postId = postService.write(memberId, new PostCreateRequest("title" + i, "content" + i));
+            postId = postService.write(memberId, new PostCreateRequest("title" + i, "content" + i, null));
             if (i == 50) postService.delete(postId);
         }
 
@@ -124,8 +171,8 @@ class PostServiceTest {
 
         Long postId;
         for (int i = 1; i <= 100; i++) {
-            if (i % 2 != 0) postId = postService.write(memberId1, new PostCreateRequest("title" + i, "content" + i));
-            else postId = postService.write(memberId2, new PostCreateRequest("title" + i, "content" + i));
+            if (i % 2 != 0) postId = postService.write(memberId1, new PostCreateRequest("title" + i, "content" + i, null));
+            else postId = postService.write(memberId2, new PostCreateRequest("title" + i, "content" + i, null));
 
             if (i == 99 || i == 100) postService.delete(postId);
         }
@@ -157,8 +204,8 @@ class PostServiceTest {
 
         Long postId;
         for (int i = 1; i <= 100; i++) {
-            if (i % 2 != 0) postId = postService.write(memberId1, new PostCreateRequest("title" + i, "content" + i));
-            else postId =  postService.write(memberId2, new PostCreateRequest("title" + i, "content" + i));;
+            if (i % 2 != 0) postId = postService.write(memberId1, new PostCreateRequest("title" + i, "content" + i, null));
+            else postId =  postService.write(memberId2, new PostCreateRequest("title" + i, "content" + i, null));
 
             if (i == 99) postService.delete(postId);
         }
@@ -194,8 +241,8 @@ class PostServiceTest {
 
         Long postId;
         for (int i = 1; i <= 100; i++) {
-            if (i % 2 != 0) postId =  postService.write(memberId1, new PostCreateRequest("title" + i, "content" + i));
-            else postId = postService.write(memberId2, new PostCreateRequest("title" + i, "content" + i));;
+            if (i % 2 != 0) postId =  postService.write(memberId1, new PostCreateRequest("title" + i, "content" + i, null));
+            else postId = postService.write(memberId2, new PostCreateRequest("title" + i, "content" + i, null));
             if (i == 99) postService.delete(postId);
         }
 
@@ -221,8 +268,8 @@ class PostServiceTest {
         Long memberId2 = memberService.signUp(new UserCreateRequest("user2", "p2", "e2@naver.com", "nickname2", UserRole.USER));
 
         for (int i = 1; i <= 100; i++) {
-            if (i % 2 != 0) postService.write(memberId1, new PostCreateRequest("title" + i, "content" + i));
-            else postService.write(memberId2, new PostCreateRequest("title" + i, "content" + i));;
+            if (i % 2 != 0) postService.write(memberId1, new PostCreateRequest("title" + i, "content" + i, null));
+            else postService.write(memberId2, new PostCreateRequest("title" + i, "content" + i, null));
         }
 
         flushAndClear();
@@ -249,8 +296,8 @@ class PostServiceTest {
 
         Long postId;
         for (int i = 1; i <= 100; i++) {
-            if (i % 2 != 0) postId = postService.write(memberId1, new PostCreateRequest("title" + i, "content" + i));
-            else postId = postService.write(memberId2, new PostCreateRequest("title" + i, "content" + i));;
+            if (i % 2 != 0) postId = postService.write(memberId1, new PostCreateRequest("title" + i, "content" + i, null));
+            else postId = postService.write(memberId2, new PostCreateRequest("title" + i, "content" + i, null));
             if (i == 99) postService.delete(postId);
         }
 
@@ -276,9 +323,9 @@ class PostServiceTest {
         //given
         Long memberId = memberService.signUp(new UserCreateRequest("user", "p", "e@naver.com", "nickname", UserRole.USER));
 
-        Long postId1 = postService.write(memberId, new PostCreateRequest("title1", "content1"));
+        Long postId1 = postService.write(memberId, new PostCreateRequest("title1", "content1", null));
 
-        Long postId2 = postService.write(memberId, new PostCreateRequest("title2", "content2"));
+        Long postId2 = postService.write(memberId, new PostCreateRequest("title2", "content2", null));
         postService.delete(postId2);
 
         flushAndClear();
