@@ -57,11 +57,11 @@ class FileTest {
     @Test
     void generateStoredFileName() {
         //given
-        String extension = ".txt";
+        String originalFileName = "example.txt";
         String storedFileName = null;
 
         //when
-        storedFileName = File.generateStoredFileName(extension);
+        storedFileName = File.generateStoredFileName(originalFileName);
 
         //then
         assertThat(storedFileName).isNotNull();

@@ -56,9 +56,9 @@ public class File extends BaseTimeEntity{
     }
 
 
-    public static String generateStoredFileName(String extension) {
-        if (extension == null) throw new InvalidFileFieldException("generateStoredFileName: extension == null");
-        return UUID.randomUUID().toString() + extension;
+    public static String generateStoredFileName(String originalFileName) {
+        if (originalFileName == null) throw new InvalidFileFieldException("generateStoredFileName: originalFileName == null");
+        return UUID.randomUUID().toString() + extractExtension(originalFileName);
     }
 
     public void generateS3Key() {
