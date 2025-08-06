@@ -12,7 +12,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class FileTest {
 
     @Test
-    void extractExtension() {
+    void validateOriginalFileName() {
         //given
         String fileName_ok = "example.txt";
         String fileName_onlyDot = "example.";
@@ -20,18 +20,27 @@ class FileTest {
         String fileName_nameX = ".txt";
 
         //when
-        String result1 = File.extractExtension(fileName_ok);
-        String result2 = File.extractExtension(fileName_nameX);
+        File.validateOriginalFileName(fileName_ok);
 
         //then
-        assertThat(result1).isEqualTo(".txt");
-        assertThat(result2).isEqualTo(".txt");
-
-        assertThatThrownBy(() ->  File.extractExtension(fileName_formatX))
+        assertThatThrownBy(() -> File.validateOriginalFileName(fileName_onlyDot))
                 .isInstanceOf(InvalidFileFieldException.class);
-
-        assertThatThrownBy(() ->  File.extractExtension(fileName_onlyDot))
+        assertThatThrownBy(() -> File.validateOriginalFileName(fileName_formatX))
                 .isInstanceOf(InvalidFileFieldException.class);
+        assertThatThrownBy(() -> File.validateOriginalFileName(fileName_nameX))
+                .isInstanceOf(InvalidFileFieldException.class);
+    }
+
+    @Test
+    void extractExtension() {
+        //given
+        String fileName = "example.txt";
+
+        //when
+        String result = File.extractExtension(fileName);
+
+        //then
+        assertThat(result).isEqualTo(".txt");
     }
 
     @Test
@@ -58,10 +67,9 @@ class FileTest {
     void generateStoredFileName() {
         //given
         String originalFileName = "example.txt";
-        String storedFileName = null;
 
         //when
-        storedFileName = File.generateStoredFileName(originalFileName);
+        String storedFileName = File.generateStoredFileName(originalFileName);
 
         //then
         assertThat(storedFileName).isNotNull();

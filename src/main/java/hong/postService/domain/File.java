@@ -34,10 +34,13 @@ public class File extends BaseTimeEntity{
     @JoinColumn(name = "post_id", nullable = false)
     private Post post;
 
+
+//Static Utility 로직---------------------------------------------------------------------------------------------------
+
     public static String extractExtension(String fileName) {
-        if (fileName == null) throw new InvalidFileFieldException("extractExtension: filename == null");
+        validateOriginalFileName(fileName);
+
         int idx = fileName.lastIndexOf(".");
-        if (idx == -1 || idx == fileName.length() - 1) throw new InvalidFileFieldException("extractExtension: 형식자가 잘못됐습니다.");
         return fileName.substring(idx);
     }
 
@@ -51,15 +54,24 @@ public class File extends BaseTimeEntity{
         if (parts.length != 3 || !"post".equals(parts[0]) || parts[2].isBlank()) {
             throw new InvalidFileFieldException("extractStoredFileName: s3Key 형식이 잘못됐습니다. 형식: post/{postId}/{storedFileName}");
         }
+        validateOriginalFileName(parts[2]);
 
         return parts[2]; // storedFileName
     }
 
-
     public static String generateStoredFileName(String originalFileName) {
-        if (originalFileName == null) throw new InvalidFileFieldException("generateStoredFileName: originalFileName == null");
-        return UUID.randomUUID().toString() + extractExtension(originalFileName);
+        validateOriginalFileName(originalFileName);
+        String extension = extractExtension(originalFileName);
+        return UUID.randomUUID().toString() + extension;
     }
+
+    public static void validateOriginalFileName(String fileName) {
+        if (fileName == null) throw new InvalidFileFieldException("validateOriginalFileName: filename == null");
+        int idx = fileName.lastIndexOf(".");
+        if (idx == -1 || idx == fileName.length() - 1 || fileName.substring(0, idx).isEmpty()) throw new InvalidFileFieldException("validateOriginalFileName: 형식자가 잘못됐습니다.");
+    }
+
+//비즈니스 로직---------------------------------------------------------------------------------------------------
 
     public void generateS3Key() {
         checkNotRemoved();
@@ -74,6 +86,8 @@ public class File extends BaseTimeEntity{
         storedFileName = "";
         this.isRemoved = true;
     }
+
+//내부 로직---------------------------------------------------------------------------------------------------
 
     private void checkNotRemoved() {
         if (isRemoved()) throw new FileNotFoundException(this.getId());
