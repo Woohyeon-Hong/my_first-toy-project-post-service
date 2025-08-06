@@ -54,7 +54,7 @@ class CommentServiceTest {
         //given
         Long memberId = memberService.signUp(new UserCreateRequest("user", "p", "e@naver.com", "nickname", UserRole.USER));
 
-        Long postId = postService.write(memberId, new PostCreateRequest("title", "content"));
+        Long postId = postService.write(memberId, new PostCreateRequest("title", "content", null));
 
         CommentCreateRequest commentCreateRequest = new CommentCreateRequest("comment");
 
@@ -74,7 +74,7 @@ class CommentServiceTest {
         //given
         Long memberId = memberService.signUp(new UserCreateRequest("user", "p", "e@naver.com", "nickname", UserRole.USER));
 
-        Long postId = postService.write(memberId, new PostCreateRequest("title", "content"));
+        Long postId = postService.write(memberId, new PostCreateRequest("title", "content", null));
 
         Long commentId = commentService.write(postId, memberId, new CommentCreateRequest("comment"));
 
@@ -94,8 +94,8 @@ class CommentServiceTest {
         //given
         Long memberId = memberService.signUp(new UserCreateRequest("user", "p", "e@naver.com", "nickname", UserRole.USER));
 
-        Long postId1 = postService.write(memberId, new PostCreateRequest("title1", "content1"));
-        Long postId2 = postService.write(memberId, new PostCreateRequest("title2", "content2"));
+        Long postId1 = postService.write(memberId, new PostCreateRequest("title1", "content1", null));
+        Long postId2 = postService.write(memberId, new PostCreateRequest("title2", "content2", null));
 
         for (int i = 1; i <= 50; i++) {
             Long commentId;
@@ -130,7 +130,7 @@ class CommentServiceTest {
         //given
         Long memberId = memberService.signUp(new UserCreateRequest("user", "p", "e@naver.com", "nickname", UserRole.USER));
 
-        Long postId = postService.write(memberId, new PostCreateRequest("title1", "content1"));
+        Long postId = postService.write(memberId, new PostCreateRequest("title", "content", null));
 
         Long commentId1 = commentService.write(postId, memberId, new CommentCreateRequest("comment1"));
         Long commentId2 = commentService.write(postId, memberId, new CommentCreateRequest("comment2"));
@@ -166,7 +166,7 @@ class CommentServiceTest {
         //given
         Long memberId = memberService.signUp(new UserCreateRequest("user", "p", "e@naver.com", "nickname", UserRole.USER));
 
-        Long postId = postService.write(memberId, new PostCreateRequest("title1", "content1"));
+        Long postId = postService.write(memberId, new PostCreateRequest("title", "content", null));
 
         Long commentId = commentService.write(postId, memberId, new CommentCreateRequest("comment"));
 
@@ -188,7 +188,7 @@ class CommentServiceTest {
         //given
         Long memberId = memberService.signUp(new UserCreateRequest("user", "p", "e@naver.com", "nickname", UserRole.USER));
 
-        Long postId = postService.write(memberId, new PostCreateRequest("title1", "content1"));
+        Long postId = postService.write(memberId, new PostCreateRequest("title", "content", null));
 
         Long commentId = commentService.write(postId, memberId, new CommentCreateRequest("comment"));
 
@@ -208,7 +208,7 @@ class CommentServiceTest {
         //given
         Long memberId = memberService.signUp(new UserCreateRequest("user", "p", "e@naver.com", "nickname", UserRole.USER));
 
-        Long postId = postService.write(memberId, new PostCreateRequest("title1", "content1"));
+        Long postId = postService.write(memberId, new PostCreateRequest("title", "content", null));
         Post post = postService.getPost(postId);
 
         Long commentId = commentService.write(postId, memberId, new CommentCreateRequest("comment"));

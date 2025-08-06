@@ -1,10 +1,13 @@
 package hong.postService.service.postService.dto;
 
+import hong.postService.service.fileService.dto.FileCreateRequest;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+
+import java.util.List;
 
 @Getter
 @Builder
@@ -16,4 +19,6 @@ public class PostCreateRequest {
 
     @NotNull
     private String content;
+
+    private List<FileCreateRequest> files;
 }

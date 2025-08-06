@@ -2,13 +2,16 @@ package hong.postService.service.postService.v2;
 
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.ObjectMetadata;
+import hong.postService.domain.File;
 import hong.postService.domain.Member;
 import hong.postService.domain.Post;
+import hong.postService.exception.file.InvalidFileFieldException;
 import hong.postService.exception.member.MemberNotFoundException;
 import hong.postService.exception.post.InvalidPostFieldException;
 import hong.postService.exception.post.PostNotFoundException;
 import hong.postService.repository.postRepository.v2.PostRepository;
 import hong.postService.repository.postRepository.v2.SearchCond;
+import hong.postService.service.fileService.dto.FileCreateRequest;
 import hong.postService.service.memberService.v2.MemberService;
 import hong.postService.service.postService.dto.PostCreateRequest;
 import hong.postService.service.postService.dto.PostDetailResponse;
@@ -58,11 +61,12 @@ public class PostService {
      * 게시글을 새로 작성합니다.
      *
      * @param memberId 게시글을 작성할 회원 ID
-     * @param request title, content을 포함한 생성 DTO
+     * @param request title, content, List<FileCreateRequest를 포함한 생성 DTO
      * @return 작성된 게시글의 ID
      *
      * @throws MemberNotFoundException 존재하지 않거나 이미 삭제된 회원인 경우
      * @throws InvalidPostFieldException null 값이 경우
+     * @throws InvalidFileFieldException File 생성 요청이 잘못된 경우
      */
     @Transactional
     public Long write(Long memberId, PostCreateRequest request) {
@@ -73,6 +77,17 @@ public class PostService {
         if (request.getContent() == null) throw new InvalidPostFieldException("write: content == null");
 
         Post post = member.writeNewPost(request.getTitle(), request.getContent());
+
+        if (request.getFiles() != null) {
+            List<FileCreateRequest> files = request.getFiles();
+
+            for (FileCreateRequest file : files) {
+                if (file.getOriginalFileName() == null || file.getS3Key() == null) {
+                    throw new InvalidFileFieldException("write: file 정보가 누락됨");
+                }
+                post.addNewFile(file.getOriginalFileName(), file.getS3Key());
+            }
+        }
         return postRepository.save(post).getId();
     }
 
