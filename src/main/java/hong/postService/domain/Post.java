@@ -95,8 +95,7 @@ public class Post extends BaseTimeEntity {
 
     public File addNewFile(String originalFileName, String s3Key) {
         checkNotRemoved();
-        if (originalFileName == null) throw new InvalidPostFieldException("addNewFile: originalFileName == null");
-        if (s3Key == null) throw new InvalidPostFieldException("addNewFile: s3Key == null");
+        File.validateOriginalFileName(originalFileName);
 
         String storedFileName = File.extractStoredFileName(s3Key);
 

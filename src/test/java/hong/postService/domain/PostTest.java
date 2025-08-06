@@ -1,6 +1,7 @@
 package hong.postService.domain;
 
 import hong.postService.exception.comment.InvalidCommentFieldException;
+import hong.postService.exception.file.InvalidFileFieldException;
 import hong.postService.exception.post.InvalidPostFieldException;
 import hong.postService.exception.post.PostNotFoundException;
 import org.junit.jupiter.api.Test;
@@ -162,17 +163,27 @@ class PostTest {
     void addNewFile() {
         //given
         Member member = Member.createNewMember("user", "pw", null, "nick");
-        Post post = member.writeNewPost("title", "content");
+        Post post1 = member.writeNewPost("title", "content");
+        Post post2 = member.writeNewPost("title2", "content2");
+
+        post2.remove();
 
         //when
-        File file = post.addNewFile("example.txt", "post/1/example-stored.txt");
+        File file = post1.addNewFile("example.txt", "post/1/example-stored.txt");
 
         //then
-        assertThat(post.getFiles()).contains(file);
-        assertThat(file.getPost()).isEqualTo(post);
+        assertThat(post1.getFiles()).contains(file);
+        assertThat(file.getPost()).isEqualTo(post1);
 
-        assertThatThrownBy(() -> post.addNewFile("example.txt", null)).isInstanceOf(InvalidPostFieldException.class);
-        assertThatThrownBy(() -> post.addNewFile(null, "post/1/example-stored.txt")).isInstanceOf(InvalidPostFieldException.class);
+        assertThatThrownBy(() -> post1.addNewFile("example.txt", null)).isInstanceOf(InvalidFileFieldException.class);
+        assertThatThrownBy(() -> post1.addNewFile(null, "post/1/example-stored.txt")).isInstanceOf(InvalidFileFieldException.class);
+
+        assertThatThrownBy(() -> post1.addNewFile("example", "post/1/example-stored.txt")).isInstanceOf(InvalidFileFieldException.class);
+        assertThatThrownBy(() -> post1.addNewFile("example.", "post/1/example-stored.txt")).isInstanceOf(InvalidFileFieldException.class);
+        assertThatThrownBy(() -> post1.addNewFile(".txt", "post/1/example-stored.txt")).isInstanceOf(InvalidFileFieldException.class);
+
+        assertThatThrownBy(() -> post2.addNewFile("example.txt", "post/1/example-stored.txt"))
+                .isInstanceOf(PostNotFoundException.class);
     }
 
     @Test
