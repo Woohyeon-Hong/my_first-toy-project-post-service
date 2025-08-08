@@ -1,6 +1,7 @@
 package hong.postService.service.postService.v2;
 
 import hong.postService.TestSecurityConfig;
+import hong.postService.domain.File;
 import hong.postService.domain.Member;
 import hong.postService.domain.Post;
 import hong.postService.domain.UserRole;
@@ -15,6 +16,7 @@ import hong.postService.service.fileService.dto.FileCreateRequest;
 import hong.postService.service.memberService.dto.UserCreateRequest;
 import hong.postService.service.memberService.v2.MemberService;
 import hong.postService.service.postService.dto.PostCreateRequest;
+import hong.postService.service.postService.dto.PostDetailResponse;
 import hong.postService.service.postService.dto.PostSummaryResponse;
 import hong.postService.service.postService.dto.PostUpdateRequest;
 import jakarta.persistence.EntityManager;
@@ -111,6 +113,60 @@ class PostServiceTest {
         assertThatThrownBy(() -> postService.write(memberId, new PostCreateRequest("title1", "content1", files)))
                 .isInstanceOf(InvalidFileFieldException.class);
         files.remove(wrongS3Key);
+    }
+
+    @Test
+    void getPost_post가_존재하면_정상_반환() {
+        //given
+        Long memberId = memberService.signUp(new UserCreateRequest("user", "p", "e@naver.com", "nickname", UserRole.USER));
+
+        ArrayList<FileCreateRequest> files = new ArrayList<>();
+        for (int i = 1; i <= 5; i++) {
+            files.add(new FileCreateRequest("example" + i + ".txt", "post/1/abcd123.txt"));
+        }
+
+        Long postId1 = postService.write(memberId, new PostCreateRequest("title1", "content1", files));
+        Long postId2 = postService.write(memberId, new PostCreateRequest("title2", "content2", null));
+
+        postService.delete(postId2);
+
+        //when
+        Post post = postService.getPost(postId1);
+
+        //then
+        assertThat(post.getTitle()).isEqualTo("title1");
+        assertThat(post.getContent()).isEqualTo("content1");
+        assertThat(post.getFiles().size()).isEqualTo(5);
+
+        assertThatThrownBy(() -> postService.getPost(postId2))
+                .isInstanceOf(PostNotFoundException.class);
+    }
+
+    @Test
+    void getPostDetailResponse_post가_존재하면_정상_반환() {
+        //given
+        Long memberId = memberService.signUp(new UserCreateRequest("user", "p", "e@naver.com", "nickname", UserRole.USER));
+
+        ArrayList<FileCreateRequest> files = new ArrayList<>();
+        for (int i = 1; i <= 5; i++) {
+            files.add(new FileCreateRequest("example" + i + ".txt", "post/1/abcd123.txt"));
+        }
+
+        Long postId1 = postService.write(memberId, new PostCreateRequest("title1", "content1", files));
+        Long postId2 = postService.write(memberId, new PostCreateRequest("title2", "content2", null));
+
+        postService.delete(postId2);
+
+        //when
+        PostDetailResponse post = postService.getPostDetailResponse(postId1);
+
+        //then
+        assertThat(post.getTitle()).isEqualTo("title1");
+        assertThat(post.getContent()).isEqualTo("content1");
+        assertThat(post.getFileNames()).containsExactly("example1.txt", "example2.txt", "example3.txt", "example4.txt", "example5.txt");
+
+        assertThatThrownBy(() -> postService.getPostDetailResponse(postId2))
+                .isInstanceOf(PostNotFoundException.class);
     }
 
 
