@@ -74,7 +74,7 @@ class PostServiceTest {
     }
 
     @Test
-    void write_파일_첨부() {
+    void write_파일_첨부_s3Key_중복_x() {
         //given
         Long memberId = memberService.signUp(new UserCreateRequest("user", "p", "e@naver.com", "nickname", UserRole.USER));
 
@@ -117,6 +117,20 @@ class PostServiceTest {
         files.remove(wrongS3Key);
     }
 
+    @Test
+    void write_s3Key_중복() {
+        //given
+        Long memberId = memberService.signUp(new UserCreateRequest("user", "p", "e@naver.com", "nickname", UserRole.USER));
+
+        ArrayList<FileCreateRequest> fileCreateRequests = new ArrayList<>();
+
+        fileCreateRequests.add(new FileCreateRequest("example1.txt", "post/1/example.txt"));
+        fileCreateRequests.add(new FileCreateRequest("example1.txt", "post/1/example.txt"));
+
+        //when & then
+        assertThatThrownBy(() -> postService.write(memberId, new PostCreateRequest("title", "content", fileCreateRequests)))
+                .isInstanceOf(InvalidFileFieldException.class);
+    }
     @Test
     void getPost_post가_존재하면_정상_반환() {
         //given

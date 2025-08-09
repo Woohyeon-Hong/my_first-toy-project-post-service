@@ -9,6 +9,7 @@ import hong.postService.exception.file.InvalidFileFieldException;
 import hong.postService.exception.member.MemberNotFoundException;
 import hong.postService.exception.post.InvalidPostFieldException;
 import hong.postService.exception.post.PostNotFoundException;
+import hong.postService.repository.fileRepository.v2.FileRepository;
 import hong.postService.repository.postRepository.v2.PostRepository;
 import hong.postService.repository.postRepository.v2.SearchCond;
 import hong.postService.service.fileService.dto.FileCreateRequest;
@@ -20,6 +21,7 @@ import hong.postService.service.postService.dto.PostUpdateRequest;
 import lombok.RequiredArgsConstructor;
 import org.apache.tomcat.util.http.fileupload.FileUploadException;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -28,9 +30,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * PostService는 게시글에 대한 비즈니스 로직을 담당하는 서비스 계층입니다.
@@ -52,13 +52,9 @@ public class PostService {
 
     private final MemberService memberService;
     private final PostRepository postRepository;
-
-    private final AmazonS3 amazonS3;
-    @Value("${cloud.aws.s3.bucket}")
-    private String bucket;
+    private final FileRepository fileRepository;
 
     // TO-DO: 파일을 작성 시 중복 검사 시행 후 예외 발생
-
     /**
      * 게시글을 새로 작성합니다.
      *
@@ -83,14 +79,35 @@ public class PostService {
         if (request.getFiles() != null) {
             List<FileCreateRequest> files = request.getFiles();
 
+            Set<String> seen = new HashSet<>();
+
             for (FileCreateRequest file : files) {
-                if (file.getOriginalFileName() == null || file.getS3Key() == null) {
+                String originalFileName = file.getOriginalFileName();
+                String s3Key = file.getS3Key();
+
+                if (originalFileName == null || s3Key == null) {
                     throw new InvalidFileFieldException("write: file 정보가 누락됨");
                 }
+
+                if (!seen.add(file.getS3Key())) {
+                    throw new InvalidFileFieldException("write: 요청 내 s3Key가 중복됨");
+                }
+
+                if (fileRepository.findByS3KeyAndIsRemovedFalse(s3Key).isPresent()) {
+                    throw new InvalidFileFieldException("write: 기존에 해당 s3Key가 이미 사용됨");
+                }
+
                 post.addNewFile(file.getOriginalFileName(), file.getS3Key());
             }
         }
-        return postRepository.save(post).getId();
+
+
+        //동시에 들어오는 경우 처리
+        try {
+            return postRepository.save(post).getId();
+        } catch (DataIntegrityViolationException e) {
+            throw new InvalidFileFieldException("write: s3Key가 중복됨");
+        }
     }
 
     /**
