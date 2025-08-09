@@ -30,16 +30,4 @@ public class PostSummaryResponse {
         this.commentCount = commentCount == null ? 0 : commentCount.intValue();
         this.includingFile = includingFile != null && includingFile;
     }
-
-    public static PostSummaryResponse from(Post post) {
-
-
-        return new PostSummaryResponse(post.getId(),
-                post.getTitle(),
-                post.getWriter().getNickname(),
-                post.getCreatedDate(),
-                post.getComments().size(),
-                false
-        );
-    }
 }
