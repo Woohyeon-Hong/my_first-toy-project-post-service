@@ -138,7 +138,7 @@ class PostServiceTest {
 
         ArrayList<FileCreateRequest> files = new ArrayList<>();
         for (int i = 1; i <= 5; i++) {
-            files.add(new FileCreateRequest("example" + i + ".txt", "post/1/abcd123.txt"));
+            files.add(new FileCreateRequest("example" + i + ".txt", "post/" + i + "/file-" + "-" + UUID.randomUUID() + ".txt"));
         }
 
         Long postId1 = postService.write(memberId, new PostCreateRequest("title1", "content1", files));
@@ -193,20 +193,22 @@ class PostServiceTest {
         Long memberId = memberService.signUp(new UserCreateRequest("user", "p", "e@naver.com", "nickname", UserRole.USER));
 
         for (int i = 1; i <= 50; i++) {
-            List<FileCreateRequest> files = new ArrayList<>();
-            for (int j = 1; j <= 5; j++) {
-                files.add(new FileCreateRequest(
-                        "example" + j + ".txt",
-                        "post/" + i + "/file-" + j + "-" + UUID.randomUUID() + ".txt"
-                ));
-            }
-
             Long postId;
-            if (i % 2 != 0) postId = postService.write(memberId, new PostCreateRequest("title" + i, "content" + i, files));
-            else postId = postService.write(memberId, new PostCreateRequest("title" + i, "content" + i, null));
+            if (i % 2 != 0) {
+                List<FileCreateRequest> files = new ArrayList<>();
+                for (int j = 1; j <= 5; j++) {
+                    files.add(new FileCreateRequest(
+                            "example" + j + ".txt",
+                            "post/" + i + "/file-" + j + "-" + UUID.randomUUID() + ".txt"
+                    ));
+                }
+
+                postId = postService.write(memberId, new PostCreateRequest("title" + i, "content" + i, files));
+            } else postId = postService.write(memberId, new PostCreateRequest("title" + i, "content" + i, null));
 
             if (i == 50) postService.delete(postId);
         }
+
         flushAndClear();
 
         PageRequest pageRequest1 = PageRequest.of(0, 25, Sort.by(Sort.Direction.ASC, "createdDate"));
@@ -225,39 +227,6 @@ class PostServiceTest {
 
         assertThat(result1.getContent().get(0).isIncludingFile()).isTrue();
         assertThat(result1.getContent().get(1).isIncludingFile()).isFalse();
-    }
-
-    @Test
-    void getMemberPosts_회원이_작성한_글_중에서_삭제된_글_제외하고_모두_반환() {
-        //given
-        Long memberId1 = memberService.signUp(new UserCreateRequest("userA", "pA", "userA@naver.com", "nicknameA", UserRole.USER));
-        Long memberId2 = memberService.signUp(new UserCreateRequest("userB", "pB", "userB@naver.com", "nicknameB", UserRole.USER));
-
-        Long postId;
-        for (int i = 1; i <= 100; i++) {
-            if (i % 2 != 0) postId = postService.write(memberId1, new PostCreateRequest("title" + i, "content" + i, null));
-            else postId = postService.write(memberId2, new PostCreateRequest("title" + i, "content" + i, null));
-
-            if (i == 99 || i == 100) postService.delete(postId);
-        }
-
-        flushAndClear();
-
-        PageRequest pageRequest = PageRequest.of(0, 25, Sort.by(Sort.Direction.ASC, "createdDate"));
-
-        //when
-        Page<PostSummaryResponse> posts1 = postService.getMemberPosts(memberId1, pageRequest);
-        Page<PostSummaryResponse> posts2 = postService.getMemberPosts(memberId2, pageRequest);
-
-        //then
-        assertThat(posts1.getSize()).isEqualTo(25);
-        assertThat(posts2.getSize()).isEqualTo(25);
-
-        assertThat(posts1.getTotalPages()).isEqualTo(2);
-        assertThat(posts2.getTotalPages()).isEqualTo(2);
-
-        assertThat(posts1.getTotalElements()).isEqualTo(49);
-        assertThat(posts2.getTotalElements()).isEqualTo(49);
     }
 
     @Test
@@ -381,6 +350,70 @@ class PostServiceTest {
         assertThat(posts.getTotalElements()).isEqualTo(0);
     }
 
+    @Test
+    void search_File_첨부() {
+        //given
+        Long memberId = memberService.signUp(new UserCreateRequest("user", "p", "e@naver.com", "nickname1", UserRole.USER));
+
+        for (int i = 1; i <= 50; i++) {
+            if (i % 2 != 0) {
+                List<FileCreateRequest> files = new ArrayList<>();
+                for (int j = 1; j <= 5; j++) {
+                    files.add(new FileCreateRequest(
+                            "example" + j + ".txt",
+                            "post/" + i + "/file-" + j + "-" + UUID.randomUUID() + ".txt"
+                    ));
+                }
+
+                postService.write(memberId, new PostCreateRequest("title" + i, "content" + i, files));
+            } else postService.write(memberId, new PostCreateRequest("title" + i, "content" + i, null));
+        }
+
+        flushAndClear();
+
+        SearchCond cond = SearchCond.builder().build();
+        PageRequest pageRequest1 = PageRequest.of(0, 25, Sort.by(Sort.Direction.ASC, "createdDate"));
+
+        //when
+        Page<PostSummaryResponse> posts = postService.search(cond, pageRequest1);
+
+        //then
+        assertThat(posts.getContent().get(0).isIncludingFile()).isTrue();
+        assertThat(posts.getContent().get(1).isIncludingFile()).isFalse();
+    }
+
+    @Test
+    void getMemberPosts_회원이_작성한_글_중에서_삭제된_글_제외하고_모두_반환() {
+        //given
+        Long memberId1 = memberService.signUp(new UserCreateRequest("userA", "pA", "userA@naver.com", "nicknameA", UserRole.USER));
+        Long memberId2 = memberService.signUp(new UserCreateRequest("userB", "pB", "userB@naver.com", "nicknameB", UserRole.USER));
+
+        Long postId;
+        for (int i = 1; i <= 100; i++) {
+            if (i % 2 != 0) postId = postService.write(memberId1, new PostCreateRequest("title" + i, "content" + i, null));
+            else postId = postService.write(memberId2, new PostCreateRequest("title" + i, "content" + i, null));
+
+            if (i == 99 || i == 100) postService.delete(postId);
+        }
+
+        flushAndClear();
+
+        PageRequest pageRequest = PageRequest.of(0, 25, Sort.by(Sort.Direction.ASC, "createdDate"));
+
+        //when
+        Page<PostSummaryResponse> posts1 = postService.getMemberPosts(memberId1, pageRequest);
+        Page<PostSummaryResponse> posts2 = postService.getMemberPosts(memberId2, pageRequest);
+
+        //then
+        assertThat(posts1.getSize()).isEqualTo(25);
+        assertThat(posts2.getSize()).isEqualTo(25);
+
+        assertThat(posts1.getTotalPages()).isEqualTo(2);
+        assertThat(posts2.getTotalPages()).isEqualTo(2);
+
+        assertThat(posts1.getTotalElements()).isEqualTo(49);
+        assertThat(posts2.getTotalElements()).isEqualTo(49);
+    }
 
     @Test
     void update_postId가_있으면_정상_수행() {

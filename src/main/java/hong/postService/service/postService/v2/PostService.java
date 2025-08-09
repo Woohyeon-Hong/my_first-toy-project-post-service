@@ -54,7 +54,6 @@ public class PostService {
     private final PostRepository postRepository;
     private final FileRepository fileRepository;
 
-    // TO-DO: 파일을 작성 시 중복 검사 시행 후 예외 발생
     /**
      * 게시글을 새로 작성합니다.
      *
@@ -143,6 +142,7 @@ public class PostService {
     public Page<PostSummaryResponse> getPosts(Pageable pageable) {
         return postRepository.findSummaries(pageable);
     }
+
     /**
      * 게시글을 검색 조건에 따라 조회합니다.
      *
@@ -151,8 +151,7 @@ public class PostService {
      * @return 조건에 부합하는 게시글들의 페이징 결과 (요약 응답 DTO로 매핑됨)
      */
     public Page<PostSummaryResponse> search(SearchCond cond, Pageable pageable) {
-        return postRepository.searchPosts(cond, pageable)
-                .map(PostSummaryResponse::from);
+        return postRepository.searchPosts(cond, pageable);
     }
 
     /**
