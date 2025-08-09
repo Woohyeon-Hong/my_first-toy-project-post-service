@@ -6,6 +6,7 @@ import hong.postService.exception.post.InvalidPostFieldException;
 import hong.postService.exception.post.PostNotFoundException;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.BatchSize;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -37,10 +38,12 @@ public class Post extends BaseTimeEntity {
 
     @Builder.Default
     @OneToMany(mappedBy = "post")
+    @BatchSize(size = 100)
     private List<Comment> comments = new ArrayList<>();
 
     @Builder.Default
-    @OneToMany(mappedBy = "post")
+    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
+    @BatchSize(size = 50)
     private List<File> files = new ArrayList<>();
 
 
