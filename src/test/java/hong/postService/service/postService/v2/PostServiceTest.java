@@ -390,8 +390,17 @@ class PostServiceTest {
 
         Long postId;
         for (int i = 1; i <= 100; i++) {
-            if (i % 2 != 0) postId = postService.write(memberId1, new PostCreateRequest("title" + i, "content" + i, null));
-            else postId = postService.write(memberId2, new PostCreateRequest("title" + i, "content" + i, null));
+            if (i % 2 != 0) {
+                List<FileCreateRequest> files = new ArrayList<>();
+                for (int j = 1; j <= 5; j++) {
+                    files.add(new FileCreateRequest(
+                            "example" + j + ".txt",
+                            "post/" + i + "/file-" + j + "-" + UUID.randomUUID() + ".txt"
+                    ));
+                }
+
+                postId = postService.write(memberId1, new PostCreateRequest("title" + i, "content" + i, files));
+            } else postId = postService.write(memberId2, new PostCreateRequest("title" + i, "content" + i, null));
 
             if (i == 99 || i == 100) postService.delete(postId);
         }
@@ -413,6 +422,9 @@ class PostServiceTest {
 
         assertThat(posts1.getTotalElements()).isEqualTo(49);
         assertThat(posts2.getTotalElements()).isEqualTo(49);
+
+        assertThat(posts1.getContent().get(0).isIncludingFile()).isTrue();
+        assertThat(posts2.getContent().get(0).isIncludingFile()).isFalse();
     }
 
     @Test

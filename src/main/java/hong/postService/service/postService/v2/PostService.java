@@ -101,7 +101,7 @@ public class PostService {
         }
 
 
-        //동시에 들어오는 경우 처리
+        //동시에 들어오는 경우 처가
         try {
             return postRepository.save(post).getId();
         } catch (DataIntegrityViolationException e) {
@@ -165,9 +165,7 @@ public class PostService {
      */
     public Page<PostSummaryResponse> getMemberPosts(Long memberId, Pageable pageable) {
         Member member = memberService.findMember(memberId);
-
-        return postRepository.findAllByWriterAndIsRemovedFalse(member, pageable)
-                .map(PostSummaryResponse::from);
+        return postRepository.findAllByWriterAndIsRemovedFalse(member, pageable);
     }
 
     /**
