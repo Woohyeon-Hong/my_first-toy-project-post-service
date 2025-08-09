@@ -2,14 +2,12 @@ package hong.postService.service.postService.v2;
 
 import hong.postService.TestSecurityConfig;
 import hong.postService.domain.File;
-import hong.postService.domain.Member;
 import hong.postService.domain.Post;
 import hong.postService.domain.UserRole;
 import hong.postService.exception.file.InvalidFileFieldException;
 import hong.postService.exception.member.MemberNotFoundException;
 import hong.postService.exception.post.InvalidPostFieldException;
 import hong.postService.exception.post.PostNotFoundException;
-import hong.postService.repository.memberRepository.v2.MemberRepository;
 import hong.postService.repository.postRepository.v2.PostRepository;
 import hong.postService.repository.postRepository.v2.SearchCond;
 import hong.postService.service.fileService.dto.FileCreateRequest;
@@ -31,6 +29,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.*;
 
@@ -58,6 +57,7 @@ class PostServiceTest {
 
         //when
         Long postId = postService.write(memberId1, new PostCreateRequest("title1", "content1", null));
+        flushAndClear();
 
         //then
         Post findPost = postService.getPost(postId);
@@ -90,9 +90,11 @@ class PostServiceTest {
 
         //when
         Long postId = postService.write(memberId, new PostCreateRequest("title1", "content1", files));
+        flushAndClear();
 
         //then
         Post findPost = postService.getPost(postId);
+        assertThat(findPost.getFiles().size()).isEqualTo(1);
 
         files.add(originalFileNameNull);
         assertThatThrownBy(() -> postService.write(memberId, new PostCreateRequest("title1", "content1", files)))
@@ -129,6 +131,7 @@ class PostServiceTest {
         Long postId2 = postService.write(memberId, new PostCreateRequest("title2", "content2", null));
 
         postService.delete(postId2);
+        flushAndClear();
 
         //when
         Post post = postService.getPost(postId1);
@@ -149,7 +152,7 @@ class PostServiceTest {
 
         ArrayList<FileCreateRequest> files = new ArrayList<>();
         for (int i = 1; i <= 5; i++) {
-            files.add(new FileCreateRequest("example" + i + ".txt", "post/1/abcd123.txt"));
+            files.add(new FileCreateRequest("example" + i + ".txt", "post/" + i + "/file-" + "-" + UUID.randomUUID() + ".txt"));
         }
 
         Long postId1 = postService.write(memberId, new PostCreateRequest("title1", "content1", files));
@@ -171,52 +174,43 @@ class PostServiceTest {
 
 
     @Test
-    void deletePost_postId가_존재하면_정상_삭제() {
-        //given
-        Long memberId = memberService.signUp(new UserCreateRequest("user", "p", "e@naver.com", "nickname", UserRole.USER));
-
-        Long postId = postService.write(memberId, new PostCreateRequest("title1", "content1", null));
-        Post post = postService.getPost(postId);
-
-        //when
-        postService.delete(postId);
-        flushAndClear();
-
-        //then
-        Page<Post> posts = postRepository.findAllByIsRemovedFalse(PageRequest.of(0, 5, Sort.by(Sort.Direction.ASC, "createdDate")));
-        assertThat(posts).doesNotContain(post);
-
-        assertThatThrownBy(() -> postService.delete(10000L))
-                .isInstanceOf(PostNotFoundException.class);
-    }
-
-    @Test
     void getPosts_삭제된_글_제외하고_모두_반환() {
         //given
         Long memberId = memberService.signUp(new UserCreateRequest("user", "p", "e@naver.com", "nickname", UserRole.USER));
 
-        Long postId;
         for (int i = 1; i <= 50; i++) {
-            postId = postService.write(memberId, new PostCreateRequest("title" + i, "content" + i, null));
+            List<FileCreateRequest> files = new ArrayList<>();
+            for (int j = 1; j <= 5; j++) {
+                files.add(new FileCreateRequest(
+                        "example" + j + ".txt",
+                        "post/" + i + "/file-" + j + "-" + UUID.randomUUID() + ".txt"
+                ));
+            }
+
+            Long postId;
+            if (i % 2 != 0) postId = postService.write(memberId, new PostCreateRequest("title" + i, "content" + i, files));
+            else postId = postService.write(memberId, new PostCreateRequest("title" + i, "content" + i, null));
+
             if (i == 50) postService.delete(postId);
         }
-
         flushAndClear();
 
         PageRequest pageRequest1 = PageRequest.of(0, 25, Sort.by(Sort.Direction.ASC, "createdDate"));
         PageRequest pageRequest2 = PageRequest.of(1, 25, Sort.by(Sort.Direction.ASC, "createdDate"));
 
         //when
-        Page<PostSummaryResponse> posts1 = postService.getPosts(pageRequest1);
-        Page<PostSummaryResponse> posts2 = postService.getPosts(pageRequest2);
+        Page<PostSummaryResponse> result1 = postService.getPosts(pageRequest1);
+        Page<PostSummaryResponse> result2 = postService.getPosts(pageRequest2);
 
         //then
-        assertThat(posts1.getSize()).isEqualTo(25);
-        assertThat(posts2.getSize()).isEqualTo(25);
+        assertThat(result1.getSize()).isEqualTo(25);
+        assertThat(result2.getSize()).isEqualTo(25);
 
-        assertThat(posts1.getTotalPages()).isEqualTo(2);
+        assertThat(result1.getTotalPages()).isEqualTo(2);
+        assertThat(result1.getTotalElements()).isEqualTo(49);
 
-        assertThat(posts1.getTotalElements()).isEqualTo(49);
+        assertThat(result1.getContent().get(0).isIncludingFile()).isTrue();
+        assertThat(result1.getContent().get(1).isIncludingFile()).isFalse();
     }
 
     @Test
@@ -408,6 +402,26 @@ class PostServiceTest {
         assertThat(findPost.getLastModifiedDate()).isAfter(findPost.getCreatedDate());
 
         assertThatThrownBy(() -> postService.delete(postId2)).isInstanceOf(PostNotFoundException.class);
+    }
+
+    @Test
+    void deletePost_postId가_존재하면_정상_삭제() {
+        //given
+        Long memberId = memberService.signUp(new UserCreateRequest("user", "p", "e@naver.com", "nickname", UserRole.USER));
+
+        Long postId = postService.write(memberId, new PostCreateRequest("title1", "content1", null));
+        Post post = postService.getPost(postId);
+
+        //when
+        postService.delete(postId);
+        flushAndClear();
+
+        //then
+        Page<Post> posts = postRepository.findAllByIsRemovedFalse(PageRequest.of(0, 5, Sort.by(Sort.Direction.ASC, "createdDate")));
+        assertThat(posts).doesNotContain(post);
+
+        assertThatThrownBy(() -> postService.delete(10000L))
+                .isInstanceOf(PostNotFoundException.class);
     }
 
     private void flushAndClear() {

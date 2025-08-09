@@ -57,6 +57,8 @@ public class PostService {
     @Value("${cloud.aws.s3.bucket}")
     private String bucket;
 
+    // TO-DO: 파일을 작성 시 중복 검사 시행 후 예외 발생
+
     /**
      * 게시글을 새로 작성합니다.
      *
@@ -122,10 +124,8 @@ public class PostService {
      * @return 삭제되지 않은 게시글들의 페이징 결과 (요약 응답 DTO로 매핑됨)
      */
     public Page<PostSummaryResponse> getPosts(Pageable pageable) {
-        return postRepository.findAllByIsRemovedFalse(pageable)
-                .map(PostSummaryResponse::from);
+        return postRepository.findSummaries(pageable);
     }
-
     /**
      * 게시글을 검색 조건에 따라 조회합니다.
      *
