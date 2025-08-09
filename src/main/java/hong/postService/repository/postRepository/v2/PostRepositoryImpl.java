@@ -4,9 +4,12 @@ import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.PathBuilder;
+import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import hong.postService.domain.Post;
+import hong.postService.service.postService.dto.PostSummaryResponse;
+import hong.postService.service.postService.dto.QPostSummaryResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -16,6 +19,8 @@ import org.springframework.data.support.PageableExecutionUtils;
 import java.util.ArrayList;
 import java.util.List;
 
+import static hong.postService.domain.QComment.comment;
+import static hong.postService.domain.QFile.file;
 import static hong.postService.domain.QMember.member;
 import static hong.postService.domain.QPost.*;
 
@@ -29,7 +34,7 @@ public class PostRepositoryImpl implements PostRepositoryCustom{
     - queryDsl에서는 orderBy가 별도로 적용되야하기 때문에 OrderSpecifier 필요
      */
     @Override
-    public Page<Post> searchPosts(SearchCond cond, Pageable pageable) {
+    public Page<PostSummaryResponse> searchPosts(SearchCond cond, Pageable pageable) {
         BooleanBuilder builder = new BooleanBuilder();
 
         builder.and(post.isRemoved.isFalse());
@@ -43,9 +48,24 @@ public class PostRepositoryImpl implements PostRepositoryCustom{
         }
 
 
-        List<Post> posts = queryFactory
-                .selectFrom(post)
-                .leftJoin(post.writer, member).fetchJoin()
+        List<PostSummaryResponse> contents = queryFactory
+                .select(new QPostSummaryResponse(
+                        post.id,
+                        post.title,
+                        post.writer.nickname,
+                        post.createdDate,
+                        JPAExpressions.select(comment.count())
+                                .from(comment)
+                                .where(comment.post.eq(post)
+                                        .and(comment.isRemoved.isFalse())),
+                        JPAExpressions.selectOne()
+                                .from(file)
+                                .where(file.post.eq(post)
+                                        .and(file.isRemoved.isFalse()))
+                                .exists()
+                ))
+                .from(post)
+                .leftJoin(post.writer, member)
                 .where(builder)
                 .orderBy(getOrderSpecifiers(pageable, Post.class, "post").toArray(new OrderSpecifier[0]))
                 .offset(pageable.getOffset())
@@ -57,7 +77,7 @@ public class PostRepositoryImpl implements PostRepositoryCustom{
                 .from(post)
                 .where(builder);
 
-        return PageableExecutionUtils.getPage(posts, pageable, countQuery::fetchOne);
+        return PageableExecutionUtils.getPage(contents, pageable, countQuery::fetchOne);
     }
 
     private List<OrderSpecifier<?>> getOrderSpecifiers(Pageable pageable, Class<?> type, String alias) {

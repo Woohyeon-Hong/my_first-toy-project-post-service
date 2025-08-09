@@ -4,6 +4,7 @@ import hong.postService.TestSecurityConfig;
 import hong.postService.domain.Member;
 import hong.postService.domain.Post;
 import hong.postService.repository.memberRepository.v2.MemberRepository;
+import hong.postService.service.postService.dto.PostSummaryResponse;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -200,7 +201,7 @@ class PostRepositoryTest {
         Pageable pageable = PageRequest.of(0, 10, Sort.by("createdDate"));
 
         //when
-        Page<Post> result = postRepository.searchPosts(cond, pageable);
+        Page<PostSummaryResponse> result = postRepository.searchPosts(cond, pageable);
 
         // then
         assertThat(result.getSize()).isEqualTo(10);
@@ -233,7 +234,7 @@ class PostRepositoryTest {
         Pageable pageable = PageRequest.of(0, 10, Sort.by("createdDate"));
 
         //when
-        Page<Post> result = postRepository.searchPosts(cond, pageable);
+        Page<PostSummaryResponse> result = postRepository.searchPosts(cond, pageable);
 
         // then
         assertThat(result.getSize()).isEqualTo(10);
@@ -269,11 +270,11 @@ class PostRepositoryTest {
         Pageable pageable = PageRequest.of(0, 10, Sort.by("createdDate"));
 
         //when
-        Page<Post> result = postRepository.searchPosts(cond, pageable);
+        Page<PostSummaryResponse> result = postRepository.searchPosts(cond, pageable);
 
         // then
         assertThat(result.getContent().get(0).getTitle()).isEqualTo("title25");
-        assertThat(result.getContent().get(0).getWriter().getNickname()).isEqualTo("nickB");
+        assertThat(result.getContent().get(0).getWriterNickname()).isEqualTo("nickB");
     }
 
     @Test
@@ -299,7 +300,7 @@ class PostRepositoryTest {
         Pageable pageable = PageRequest.of(0, 10, Sort.by("createdDate"));
 
         //when
-        Page<Post> result = postRepository.searchPosts(cond, pageable);
+        Page<PostSummaryResponse> result = postRepository.searchPosts(cond, pageable);
 
         // then
         assertThat(result).isEmpty();
@@ -329,7 +330,7 @@ class PostRepositoryTest {
         Pageable pageable = PageRequest.of(0, 10, Sort.by("createdDate"));
 
         //when
-        Page<Post> result = postRepository.searchPosts(cond, pageable);
+        Page<PostSummaryResponse> result = postRepository.searchPosts(cond, pageable);
 
         // then
         assertThat(result).isEmpty();
