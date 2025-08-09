@@ -86,10 +86,10 @@ class PostRepositoryTest {
         PageRequest pageable2 = PageRequest.of(1, 5, Sort.by("createdDate"));
 
         // when
-        Page<Post> result1 = postRepository.findAllByWriterAndIsRemovedFalse(m1, pageable1);
-        Page<Post> result2 = postRepository.findAllByWriterAndIsRemovedFalse(m1, pageable2);
-        Page<Post> result3 = postRepository.findAllByWriterAndIsRemovedFalse(m2, pageable1);
-        Page<Post> result4 = postRepository.findAllByWriterAndIsRemovedFalse(m2, pageable2);
+        Page<PostSummaryResponse> result1 = postRepository.findAllByWriterAndIsRemovedFalse(m1, pageable1);
+        Page<PostSummaryResponse> result2 = postRepository.findAllByWriterAndIsRemovedFalse(m1, pageable2);
+        Page<PostSummaryResponse> result3 = postRepository.findAllByWriterAndIsRemovedFalse(m2, pageable1);
+        Page<PostSummaryResponse> result4 = postRepository.findAllByWriterAndIsRemovedFalse(m2, pageable2);
 
         // then
         assertThat(result1.getSize()).isEqualTo(5);
@@ -122,7 +122,7 @@ class PostRepositoryTest {
         PageRequest pageable = PageRequest.of(0, 5, Sort.by("createdDate"));
 
         // when
-        Page<Post> result = postRepository.findAllByWriterAndIsRemovedFalse(m1, pageable);
+        Page<PostSummaryResponse> result = postRepository.findAllByWriterAndIsRemovedFalse(m1, pageable);
 
         // then
         assertThat(result).isEmpty();

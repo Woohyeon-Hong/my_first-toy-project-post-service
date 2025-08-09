@@ -38,10 +38,14 @@ public interface PostRepository extends JpaRepository<Post, Long>, PostRepositor
     Optional<Post> findByIdAndIsRemovedFalse(Long id);
 
     @Query(
-            value = "select p from Post p left join fetch p.writer where p.writer = :writer and p.isRemoved = false",
+            value = "select new hong.postService.service.postService.dto.PostSummaryResponse " +
+                    "(p.id, p.title, p.writer.nickname, p.createdDate, " +
+                    "(select count(c) from Comment c where c.post = p and c.isRemoved = false), " +
+                    "case when exists (select  f.id from File f where f.post = p and f.isRemoved = false) then true else false end)" +
+                    "from Post p where p.writer = :writer and p.isRemoved = false",
             countQuery = "select count(p) from Post p where p.writer = :writer and p.isRemoved = false"
     )
-    Page<Post> findAllByWriterAndIsRemovedFalse(Member writer, Pageable pageable);
+    Page<PostSummaryResponse> findAllByWriterAndIsRemovedFalse(Member writer, Pageable pageable);
 
     @Query(
             value = "select p from Post p left join fetch p.writer where p.isRemoved = false",
