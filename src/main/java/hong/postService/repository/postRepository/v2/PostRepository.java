@@ -2,6 +2,7 @@ package hong.postService.repository.postRepository.v2;
 
 import hong.postService.domain.Member;
 import hong.postService.domain.Post;
+import hong.postService.service.postService.dto.PostSummaryResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -47,4 +48,16 @@ public interface PostRepository extends JpaRepository<Post, Long>, PostRepositor
             countQuery = "select count(p) from Post p where p.isRemoved = false"
     )
     Page<Post> findAllByIsRemovedFalse(Pageable pageable);
+
+    @Query(
+            value = "select new hong.postService.service.postService.dto.PostSummaryResponse " +
+                    "(p.id, p.title, p.writer.nickname, p.createdDate, " +
+                    "(select count(c) from Comment c where c.post = p and c.isRemoved = false), " +
+                    "case when exists (select  f.id from File f where f.post = p and f.isRemoved = false) then true else false end) " +
+                    "from Post  p where p.isRemoved = false",
+            countQuery = "select count(p) from Post p where p.isRemoved = false"
+    )
+    Page<PostSummaryResponse> findSummaries(Pageable pageable);
+
+
 }
