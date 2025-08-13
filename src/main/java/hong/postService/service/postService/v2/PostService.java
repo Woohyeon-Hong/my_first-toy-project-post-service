@@ -202,7 +202,4 @@ public class PostService {
 
         post.remove();
     }
-
-
-
 }

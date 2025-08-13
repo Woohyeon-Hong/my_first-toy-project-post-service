@@ -2,6 +2,7 @@ package hong.postService.service.postService.dto;
 
 import hong.postService.domain.File;
 import hong.postService.domain.Post;
+import hong.postService.service.fileService.dto.FileResponse;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -20,15 +21,17 @@ public class PostDetailResponse {
     private LocalDateTime createdDate;
     private LocalDateTime lastModifiedDate;
 
-    private List<String> fileNames;
+    private List<FileResponse> files;
 
     public static PostDetailResponse from(Post post) {
 
-        ArrayList<String> fileNames = new ArrayList<>();
+        ArrayList<FileResponse> fileResponses = new ArrayList<>();
 
         List<File> files = post.getFiles();
         for (File file : files) {
-            fileNames.add(file.getOriginalFileName());
+            if (!file.isRemoved()) {
+                fileResponses.add(new FileResponse(file.getId(), file.getOriginalFileName()));
+            }
         }
 
         return new PostDetailResponse(
@@ -38,7 +41,9 @@ public class PostDetailResponse {
                 post.getWriter().getNickname(),
                 post.getCreatedDate(),
                 post.getLastModifiedDate(),
-                fileNames
+                fileResponses
         );
     }
 }
+
+

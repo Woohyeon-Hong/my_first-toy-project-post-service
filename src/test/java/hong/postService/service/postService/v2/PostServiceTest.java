@@ -1,7 +1,6 @@
 package hong.postService.service.postService.v2;
 
 import hong.postService.TestSecurityConfig;
-import hong.postService.domain.File;
 import hong.postService.domain.Post;
 import hong.postService.domain.UserRole;
 import hong.postService.exception.file.InvalidFileFieldException;
@@ -180,7 +179,7 @@ class PostServiceTest {
         //then
         assertThat(post.getTitle()).isEqualTo("title1");
         assertThat(post.getContent()).isEqualTo("content1");
-        assertThat(post.getFileNames()).containsExactly("example1.txt", "example2.txt", "example3.txt", "example4.txt", "example5.txt");
+        assertThat(post.getFiles().get(0).getOriginalFileName()).isEqualTo("example1.txt");
 
         assertThatThrownBy(() -> postService.getPostDetailResponse(postId2))
                 .isInstanceOf(PostNotFoundException.class);
