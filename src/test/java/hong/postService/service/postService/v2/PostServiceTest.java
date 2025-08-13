@@ -10,6 +10,7 @@ import hong.postService.exception.post.PostNotFoundException;
 import hong.postService.repository.postRepository.v2.PostRepository;
 import hong.postService.repository.postRepository.v2.SearchCond;
 import hong.postService.service.fileService.dto.FileCreateRequest;
+import hong.postService.service.fileService.dto.FileResponse;
 import hong.postService.service.memberService.dto.UserCreateRequest;
 import hong.postService.service.memberService.v2.MemberService;
 import hong.postService.service.postService.dto.PostCreateRequest;
@@ -460,6 +461,83 @@ class PostServiceTest {
         assertThat(findPost.getLastModifiedDate()).isAfter(findPost.getCreatedDate());
 
         assertThatThrownBy(() -> postService.delete(postId2)).isInstanceOf(PostNotFoundException.class);
+    }
+
+    @Test
+    void update_파일_추가() {
+        //given
+        Long memberId = memberService.signUp(new UserCreateRequest("user", "p", "e@naver.com", "nickname", UserRole.USER));
+
+        ArrayList<FileCreateRequest> fileCreateRequests = new ArrayList<>();
+        UUID uuid = UUID.randomUUID();
+        fileCreateRequests.add(new FileCreateRequest("example1.txt", "post/1/" + uuid + ".txt"));
+
+        Long postId = postService.write(memberId, new PostCreateRequest("title1", "content1", fileCreateRequests));
+
+        flushAndClear();
+
+        ArrayList<FileCreateRequest> addFiles = new ArrayList<>();
+        addFiles.add(new FileCreateRequest("other.txt", "post/1/" + UUID.randomUUID() + ".txt"));
+
+        PostUpdateRequest updateParam = PostUpdateRequest.builder()
+                .addFiles(addFiles)
+                .build();
+
+        //when
+        postService.update(postId, updateParam);
+        flushAndClear();
+
+        //then
+        Post findPost = postService.getPost(postId);
+
+
+        assertThat(findPost.getFiles().size()).isEqualTo(2);
+        assertThat(findPost.getFiles().get(1).getOriginalFileName()).isEqualTo("other.txt");
+        assertThat(findPost.getLastModifiedDate()).isAfter(findPost.getCreatedDate());
+
+        addFiles = new ArrayList<>();
+        addFiles.add(new FileCreateRequest("example1.txt", "post/1/" + uuid + ".txt"));
+        PostUpdateRequest updateParam2 = PostUpdateRequest.builder()
+                .addFiles(addFiles)
+                .build();
+
+        assertThatThrownBy(() -> postService.update(postId, updateParam2)).isInstanceOf(InvalidFileFieldException.class);
+    }
+
+    @Test
+    void update_파일_삭제() {
+        //given
+        Long memberId = memberService.signUp(new UserCreateRequest("user", "p", "e@naver.com", "nickname", UserRole.USER));
+
+        ArrayList<FileCreateRequest> fileCreateRequests = new ArrayList<>();
+        UUID uuid = UUID.randomUUID();
+        fileCreateRequests.add(new FileCreateRequest("example1.txt", "post/1/" + uuid + ".txt"));
+
+        Long postId = postService.write(memberId, new PostCreateRequest("title1", "content1", fileCreateRequests));
+
+        flushAndClear();
+
+        Long fileId = postService.getPostDetailResponse(postId).getFiles().get(0).getId();
+
+        ArrayList<Long> removeFileIds = new ArrayList<>();
+        removeFileIds.add(fileId);
+
+        PostUpdateRequest updateParam = PostUpdateRequest.builder()
+                .removeFileIds(removeFileIds)
+                .build();
+
+        //when
+        postService.update(postId, updateParam);
+        flushAndClear();
+
+        //then
+        Post findPost = postService.getPost(postId);
+
+        List<FileResponse> files = postService.getPostDetailResponse(postId).getFiles();
+
+        assertThat(files).isEmpty();
+        assertThat(findPost.getLastModifiedDate()).isAfter(findPost.getCreatedDate());
+
     }
 
     @Test

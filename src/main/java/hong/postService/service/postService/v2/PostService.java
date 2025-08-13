@@ -5,6 +5,7 @@ import com.amazonaws.services.s3.model.ObjectMetadata;
 import hong.postService.domain.File;
 import hong.postService.domain.Member;
 import hong.postService.domain.Post;
+import hong.postService.exception.file.FileNotFoundException;
 import hong.postService.exception.file.InvalidFileFieldException;
 import hong.postService.exception.member.MemberNotFoundException;
 import hong.postService.exception.post.InvalidPostFieldException;
@@ -75,29 +76,10 @@ public class PostService {
 
         Post post = member.writeNewPost(request.getTitle(), request.getContent());
 
-        if (request.getFiles() != null) {
-            List<FileCreateRequest> files = request.getFiles();
+        List<FileCreateRequest> fileCreateRequests = request.getFiles();
 
-            Set<String> seen = new HashSet<>();
-
-            for (FileCreateRequest file : files) {
-                String originalFileName = file.getOriginalFileName();
-                String s3Key = file.getS3Key();
-
-                if (originalFileName == null || s3Key == null) {
-                    throw new InvalidFileFieldException("write: file 정보가 누락됨");
-                }
-
-                if (!seen.add(file.getS3Key())) {
-                    throw new InvalidFileFieldException("write: 요청 내 s3Key가 중복됨");
-                }
-
-                if (fileRepository.findByS3KeyAndIsRemovedFalse(s3Key).isPresent()) {
-                    throw new InvalidFileFieldException("write: 기존에 해당 s3Key가 이미 사용됨");
-                }
-
-                post.addNewFile(file.getOriginalFileName(), file.getS3Key());
-            }
+        if (fileCreateRequests != null && !fileCreateRequests.isEmpty()) {
+            addFilesWith(fileCreateRequests, post);
         }
 
 
@@ -183,9 +165,33 @@ public class PostService {
 
         String title = updateParam.getTitle();
         String content = updateParam.getContent();
+        List<FileCreateRequest> addFiles = updateParam.getAddFiles();
+        List<Long> removeFileIds = updateParam.getRemoveFileIds();
 
         if (title != null) post.updateTitle(title);
         if (content != null) post.updateContent(content);
+
+        if (addFiles != null && !addFiles.isEmpty()) addFilesWith(addFiles, post);
+        if (removeFileIds != null && !removeFileIds.isEmpty()) {
+            List<File> targets = fileRepository.findAllById(removeFileIds);
+
+            if (targets.size() != removeFileIds.size()) {
+                throw new InvalidFileFieldException("update: 존재하지 않는 파일 id 포함");
+            }
+
+            for (File target : targets) {
+                if (!target.getPost().getId().equals(postId)) {
+                    throw new InvalidFileFieldException("update: 타 게시글의 파일 포함");
+                }
+
+                if (target.isRemoved()) {
+                    throw new FileNotFoundException(target.getId());
+                }
+
+                post.removeFile(target);
+            }
+        }
+
     }
 
     /**
@@ -202,4 +208,30 @@ public class PostService {
 
         post.remove();
     }
+
+    private void addFilesWith(List<FileCreateRequest> fileCreateRequests, Post post) {
+        List<FileCreateRequest> files = fileCreateRequests;
+
+        Set<String> seen = new HashSet<>();
+
+        for (FileCreateRequest file : files) {
+            String originalFileName = file.getOriginalFileName();
+            String s3Key = file.getS3Key();
+
+            if (originalFileName == null || s3Key == null) {
+                throw new InvalidFileFieldException("addFilesWith: file 정보가 누락됨");
+            }
+
+            if (!seen.add(file.getS3Key())) {
+                throw new InvalidFileFieldException("addFilesWith: 요청 내 s3Key가 중복됨");
+            }
+
+            if (fileRepository.findByS3KeyAndIsRemovedFalse(s3Key).isPresent()) {
+                throw new InvalidFileFieldException("addFilesWith: 기존에 해당 s3Key가 이미 사용됨");
+            }
+
+            post.addNewFile(file.getOriginalFileName(), file.getS3Key());
+        }
+    }
+
 }
