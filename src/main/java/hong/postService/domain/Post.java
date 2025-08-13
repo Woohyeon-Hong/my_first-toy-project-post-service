@@ -2,6 +2,7 @@ package hong.postService.domain;
 
 import hong.postService.domain.baseEntity.BaseTimeEntity;
 import hong.postService.exception.comment.InvalidCommentFieldException;
+import hong.postService.exception.file.InvalidFileFieldException;
 import hong.postService.exception.post.InvalidPostFieldException;
 import hong.postService.exception.post.PostNotFoundException;
 import jakarta.persistence.*;
@@ -45,6 +46,9 @@ public class Post extends BaseTimeEntity {
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
     @BatchSize(size = 50)
     private List<File> files = new ArrayList<>();
+
+    @Column(nullable = false)
+    private int filesRevision = 0;
 
 
 //비즈니스 로직---------------------------------------------------------------------------------------------------
@@ -111,8 +115,20 @@ public class Post extends BaseTimeEntity {
                 .build();
 
         this.files.add(file);
+        this.filesRevision++;
 
         return file;
+    }
+
+    public void removeFile(File file) {
+        checkNotRemoved();
+        if (file == null || !file.getPost().getId().equals(this.getId())) {
+            throw new InvalidFileFieldException("removeFile: 다른 게시글의 파일");
+        }
+        if (!file.isRemoved()) {
+            file.remove();
+            this.filesRevision++;
+        }
     }
 
     //내부 로직---------------------------------------------------------------------------------------------------
