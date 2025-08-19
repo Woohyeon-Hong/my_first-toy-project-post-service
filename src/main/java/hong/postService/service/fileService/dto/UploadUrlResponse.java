@@ -1,4 +1,4 @@
-package hong.postService.web.file.dto;
+package hong.postService.service.fileService.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
