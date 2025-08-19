@@ -97,6 +97,8 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.PATCH, "/v2/posts/**", "/v2/comments/**").authenticated()
                 .requestMatchers(HttpMethod.DELETE, "/v2/posts/**", "/v2/comments/**").authenticated()
 
+                .requestMatchers(HttpMethod.POST, "/v2/files/**").authenticated()
+
                 // 회원 관련 조회 및 수정, 삭제는 인증 필요
                 .requestMatchers("/v2/users/me/**").authenticated()
 
