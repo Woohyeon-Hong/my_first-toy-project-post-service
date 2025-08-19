@@ -43,7 +43,7 @@ import java.util.*;
  *      전체 게시글 목록 조회 (Paging)
  *      게시글 검색 (writer, title)
  *      회원이 작성한 전체 게시글 목록 조회 (Paging)
- *      게시글 수정 (title, content)
+ *      게시글 수정 (title, content, files)
  *      게시글 삭제 (soft delete)
  */
 @Service
