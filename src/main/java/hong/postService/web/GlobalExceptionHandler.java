@@ -3,6 +3,8 @@ package hong.postService.web;
 import hong.postService.exception.ErrorResponse;
 import hong.postService.exception.comment.CommentNotFoundException;
 import hong.postService.exception.comment.InvalidCommentFieldException;
+import hong.postService.exception.file.FileNotFoundException;
+import hong.postService.exception.file.InvalidFileFieldException;
 import hong.postService.exception.member.*;
 import hong.postService.exception.post.InvalidPostFieldException;
 import hong.postService.exception.post.PostNotFoundException;
@@ -125,5 +127,21 @@ public class GlobalExceptionHandler {
         return ResponseEntity
                 .status(BAD_REQUEST)
                 .body(new ErrorResponse(400, "INVALID_COMMENT_FIELD_EXCEPTION", e.getMessage()));
+    }
+
+//File-----------------------------------------------------------------------------
+
+    @ExceptionHandler(FileNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleFileNotFound(FileNotFoundException e) {
+        return ResponseEntity
+                .status(NOT_FOUND)
+                .body(new ErrorResponse(404, "FILE_NOT_FOUND_EXCEPTION", e.getMessage()));
+    }
+
+    @ExceptionHandler(InvalidFileFieldException.class)
+    public ResponseEntity<ErrorResponse> handleInvalidFileField(InvalidFileFieldException e) {
+        return ResponseEntity
+                .status(BAD_REQUEST)
+                .body(new ErrorResponse(400, "INVALID_FILE_FIELD_EXCEPTION", e.getMessage()));
     }
 }
