@@ -276,7 +276,7 @@ public class MemberController {
                     @ApiResponse(responseCode = "201", description = "게시긒 작성 성공"),
                     @ApiResponse(responseCode = "404", description = "존재하지 않거나 이미 삭제된 회원 ID",
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
-                    @ApiResponse(responseCode = "400", description = "게시글 필드가 Null",
+                    @ApiResponse(responseCode = "400", description = "잘못된 게시글 작성 요청",
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
                     @ApiResponse(responseCode = "500", description = "서버 내부 오류",
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class)))

@@ -97,12 +97,14 @@ public class PostController {
 
 
     @Operation(summary = "게시글 수정",
-            description = "게시글의 제목이나 본문을 수정한다.")
+            description = "게시글의 제목이나 본문을 수정하고, 새로운 파일을 추가하거나 기존 파일을 삭제한다.")
     @ApiResponses(
             value = {
                     @ApiResponse(responseCode = "204", description = "게시글 수정 성공"),
-                    @ApiResponse(responseCode = "404", description = "존재하지 않거나 이미 삭제된 게시글 ID",
+                    @ApiResponse(responseCode = "404", description = "존재하지 않거나 이미 삭제된 게시글 또는 파일",
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+                    @ApiResponse(responseCode = "400", description = "잘못된 파일 추가/삭제 요청",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
                     @ApiResponse(responseCode = "500", description = "서버 내부 오류",
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
             }
