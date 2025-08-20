@@ -1,5 +1,7 @@
 package hong.postService.service.postService.v2;
 
+import com.amazonaws.services.s3.model.CopyObjectResult;
+import hong.postService.TestS3Config;
 import hong.postService.TestSecurityConfig;
 import hong.postService.domain.Post;
 import hong.postService.domain.UserRole;
@@ -18,13 +20,17 @@ import hong.postService.service.postService.dto.PostDetailResponse;
 import hong.postService.service.postService.dto.PostSummaryResponse;
 import hong.postService.service.postService.dto.PostUpdateRequest;
 import jakarta.persistence.EntityManager;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
@@ -34,7 +40,15 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.*;
 
 @SpringBootTest
-@Import(TestSecurityConfig.class)
+@Import({TestSecurityConfig.class, TestS3Config.class}) // TestS3Config 추가
+@ActiveProfiles("test")
+@TestPropertySource(properties = {
+        "cloud.aws.s3.bucket=dummy-bucket",
+        "cloud.aws.region.static=us-east-1",
+        "cloud.aws.stack.auto=false",
+        "cloud.aws.credentials.access-key=dummy",
+        "cloud.aws.credentials.secret-key=dummy"
+})
 @Transactional
 class PostServiceTest {
 
@@ -47,6 +61,27 @@ class PostServiceTest {
     @Autowired
     EntityManager em;
 
+    @Autowired
+    private com.amazonaws.services.s3.AmazonS3Client amazonS3Client;
+    @BeforeEach
+    void setup() throws Exception {
+        // 1. copyObject() 처리
+        Mockito.when(amazonS3Client.copyObject(
+                Mockito.anyString(),
+                Mockito.anyString(),
+                Mockito.anyString(),
+                Mockito.anyString()
+        )).thenReturn(new CopyObjectResult());
+
+        // 2. deleteObject() 처리
+        Mockito.doNothing()
+                .when(amazonS3Client).deleteObject(Mockito.anyString(),
+                        Mockito.anyString());
+
+        // 3. generatePresignedUrl() 처리
+        Mockito.when(amazonS3Client.generatePresignedUrl(Mockito.any()))
+                .thenReturn(new java.net.URL("http://example.com/fake"));
+    }
     @Test
     void write_회원조회_후_회원이_있고_request가_null이_아니면_정상_수행() {
         //given
@@ -80,7 +115,7 @@ class PostServiceTest {
 
         ArrayList<FileCreateRequest> files = new ArrayList<>();
 
-        FileCreateRequest request = new FileCreateRequest("example.txt", "post/1/abc123.txt");
+        FileCreateRequest request = new FileCreateRequest("example.txt", "post/tmp/abc123.txt");
         files.add(request);
 
         FileCreateRequest originalFileNameNull = new FileCreateRequest(null, "post/1/abc123.txt");
@@ -138,7 +173,7 @@ class PostServiceTest {
 
         ArrayList<FileCreateRequest> files = new ArrayList<>();
         for (int i = 1; i <= 5; i++) {
-            files.add(new FileCreateRequest("example" + i + ".txt", "post/" + i + "/file-" + "-" + UUID.randomUUID() + ".txt"));
+            files.add(new FileCreateRequest("example" + i + ".txt", "post/tmp/" + UUID.randomUUID() + ".txt"));
         }
 
         Long postId1 = postService.write(memberId, new PostCreateRequest("title1", "content1", files));
@@ -166,7 +201,7 @@ class PostServiceTest {
 
         ArrayList<FileCreateRequest> files = new ArrayList<>();
         for (int i = 1; i <= 5; i++) {
-            files.add(new FileCreateRequest("example" + i + ".txt", "post/" + i + "/file-" + "-" + UUID.randomUUID() + ".txt"));
+            files.add(new FileCreateRequest("example" + i + ".txt", "post/tmp/" + UUID.randomUUID() + ".txt"));
         }
 
         Long postId1 = postService.write(memberId, new PostCreateRequest("title1", "content1", files));
@@ -199,7 +234,7 @@ class PostServiceTest {
                 for (int j = 1; j <= 5; j++) {
                     files.add(new FileCreateRequest(
                             "example" + j + ".txt",
-                            "post/" + i + "/file-" + j + "-" + UUID.randomUUID() + ".txt"
+                            "post/tmp/" + UUID.randomUUID() + ".txt"
                     ));
                 }
 
@@ -361,7 +396,7 @@ class PostServiceTest {
                 for (int j = 1; j <= 5; j++) {
                     files.add(new FileCreateRequest(
                             "example" + j + ".txt",
-                            "post/" + i + "/file-" + j + "-" + UUID.randomUUID() + ".txt"
+                            "post/tmp/" + UUID.randomUUID() + ".txt"
                     ));
                 }
 
@@ -395,7 +430,7 @@ class PostServiceTest {
                 for (int j = 1; j <= 5; j++) {
                     files.add(new FileCreateRequest(
                             "example" + j + ".txt",
-                            "post/" + i + "/file-" + j + "-" + UUID.randomUUID() + ".txt"
+                            "post/tmp/" + UUID.randomUUID() + ".txt"
                     ));
                 }
 
@@ -470,14 +505,14 @@ class PostServiceTest {
 
         ArrayList<FileCreateRequest> fileCreateRequests = new ArrayList<>();
         UUID uuid = UUID.randomUUID();
-        fileCreateRequests.add(new FileCreateRequest("example1.txt", "post/1/" + uuid + ".txt"));
+        fileCreateRequests.add(new FileCreateRequest("example1.txt", "post/tmp/" + uuid + ".txt"));
 
         Long postId = postService.write(memberId, new PostCreateRequest("title1", "content1", fileCreateRequests));
 
         flushAndClear();
 
         ArrayList<FileCreateRequest> addFiles = new ArrayList<>();
-        addFiles.add(new FileCreateRequest("other.txt", "post/1/" + UUID.randomUUID() + ".txt"));
+        addFiles.add(new FileCreateRequest("other.txt", "post/tmp/" + UUID.randomUUID() + ".txt"));
 
         PostUpdateRequest updateParam = PostUpdateRequest.builder()
                 .addFiles(addFiles)
@@ -496,7 +531,7 @@ class PostServiceTest {
         assertThat(findPost.getLastModifiedDate()).isAfter(findPost.getCreatedDate());
 
         addFiles = new ArrayList<>();
-        addFiles.add(new FileCreateRequest("example1.txt", "post/1/" + uuid + ".txt"));
+        addFiles.add(new FileCreateRequest("example1.txt", "post/tmp/" + uuid + ".txt"));
         PostUpdateRequest updateParam2 = PostUpdateRequest.builder()
                 .addFiles(addFiles)
                 .build();
@@ -511,7 +546,7 @@ class PostServiceTest {
 
         ArrayList<FileCreateRequest> fileCreateRequests = new ArrayList<>();
         UUID uuid = UUID.randomUUID();
-        fileCreateRequests.add(new FileCreateRequest("example1.txt", "post/1/" + uuid + ".txt"));
+        fileCreateRequests.add(new FileCreateRequest("example1.txt", "post/tmp/" + uuid + ".txt"));
 
         Long postId = postService.write(memberId, new PostCreateRequest("title1", "content1", fileCreateRequests));
 

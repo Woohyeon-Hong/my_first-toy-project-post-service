@@ -43,7 +43,7 @@ public class Post extends BaseTimeEntity {
     private List<Comment> comments = new ArrayList<>();
 
     @Builder.Default
-    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "post", orphanRemoval = true)
     @BatchSize(size = 50)
     private List<File> files = new ArrayList<>();
 

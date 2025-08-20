@@ -1,3 +1,4 @@
+
 logging.level:
   org.hibernate.SQL: debug
 
@@ -13,10 +14,9 @@ spring:
     # src/test/resources/application-test.yml
 cloud:
   aws:
-    credentials:
-      access-key: test-key
-      secret-key: test-secret
-    region:
-      static: ap-northeast-2
+    stack:
+      auto: false
     s3:
-      bucket: test-bucket
+      bucket: dummy-bucket
+    region:
+      static: us-east-1

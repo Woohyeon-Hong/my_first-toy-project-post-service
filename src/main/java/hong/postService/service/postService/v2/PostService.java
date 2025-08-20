@@ -1,6 +1,7 @@
 package hong.postService.service.postService.v2;
 
 import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import hong.postService.domain.File;
 import hong.postService.domain.Member;
@@ -20,6 +21,7 @@ import hong.postService.service.postService.dto.PostDetailResponse;
 import hong.postService.service.postService.dto.PostSummaryResponse;
 import hong.postService.service.postService.dto.PostUpdateRequest;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.tomcat.util.http.fileupload.FileUploadException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -46,6 +48,7 @@ import java.util.*;
  *      게시글 수정 (title, content, files)
  *      게시글 삭제 (soft delete)
  */
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -54,6 +57,10 @@ public class PostService {
     private final MemberService memberService;
     private final PostRepository postRepository;
     private final FileRepository fileRepository;
+
+    private final AmazonS3Client amazonS3Client;
+    @Value("${cloud.aws.s3.bucket}")
+    private String bucket;
 
     /**
      * 게시글을 새로 작성합니다.
@@ -68,13 +75,13 @@ public class PostService {
      */
     @Transactional
     public Long write(Long memberId, PostCreateRequest request) {
-
         Member member = memberService.findMember(memberId);
 
         if (request.getTitle() == null) throw new InvalidPostFieldException("write: title == null");
         if (request.getContent() == null) throw new InvalidPostFieldException("write: content == null");
 
         Post post = member.writeNewPost(request.getTitle(), request.getContent());
+        postRepository.save(post);
 
         List<FileCreateRequest> fileCreateRequests = request.getFiles();
 
@@ -82,12 +89,67 @@ public class PostService {
             addFilesWith(fileCreateRequests, post);
         }
 
+        return post.getId();
+    }
 
-        //동시에 들어오는 경우 처가
-        try {
-            return postRepository.save(post).getId();
-        } catch (DataIntegrityViolationException e) {
-            throw new InvalidFileFieldException("write: s3Key가 중복됨");
+    private void addFilesWith(List<FileCreateRequest> fileCreateRequests, Post post) {
+        List<FileCreateRequest> files = fileCreateRequests;
+
+        Set<String> tmpSeen = new HashSet<>();
+        Set<String> finalSeen = new HashSet<>();
+
+        for (FileCreateRequest fileCreateRequest : files) {
+            String originalFileName = fileCreateRequest.getOriginalFileName();
+            String tmpS3Key = fileCreateRequest.getS3Key();
+
+            if (originalFileName == null || tmpS3Key == null) {
+                throw new InvalidFileFieldException("addFilesWith: fileCreateRequest 정보가 누락됨");
+            }
+
+            File.validateTmpS3KeyFormat(tmpS3Key);
+
+            if (!tmpSeen.add(fileCreateRequest.getS3Key())) {
+                throw new InvalidFileFieldException("addFilesWith: 요청 내 임시 s3Key가 중복됨");
+            }
+
+            String finalS3Key = "post/" + post.getId() + "/" + File.extractStoredFileName(tmpS3Key);
+
+            if (!finalSeen.add(finalS3Key)) {
+                throw new InvalidFileFieldException("addFilesWith: 요청 내 최종 s3Key가 중복됨");
+            }
+
+            if (fileRepository.findByS3KeyAndIsRemovedFalse(finalS3Key).isPresent()) {
+                throw new InvalidFileFieldException("addFilesWith: 최종 s3Key가 이미 존재함");
+            }
+
+            //예외 발생 시 자체 처리
+            amazonS3Client.copyObject(bucket, tmpS3Key, bucket, finalS3Key);
+
+            File file = post.addNewFile(fileCreateRequest.getOriginalFileName(), finalS3Key);
+
+            //동시에 들어오는 경우 예외 처리
+            try {
+                fileRepository.save(file);
+            }  catch (DataIntegrityViolationException e) {
+                try {
+                    //동시에 들어오는 예외 발생 시 오브젝트 삭제 시도
+                    amazonS3Client.deleteObject(bucket, finalS3Key);
+                } catch (RuntimeException ex) {
+                    //삭제 실패 시 로그만 남기기 - DB 정합성 영향 x이기 때문
+                    log.warn("final object 삭제 실패, final Key = {}",finalS3Key, ex);
+                }
+
+                throw new InvalidFileFieldException("addFilesWith: s3Key가 중복됨");
+            }
+
+            try {
+                amazonS3Client.deleteObject(bucket, tmpS3Key);
+            } catch (RuntimeException e) {
+                log.warn("tmp object 삭제 실패, final Key = {}",finalS3Key, e);
+            }
+
+
+
         }
     }
 
@@ -209,29 +271,5 @@ public class PostService {
         post.remove();
     }
 
-    private void addFilesWith(List<FileCreateRequest> fileCreateRequests, Post post) {
-        List<FileCreateRequest> files = fileCreateRequests;
-
-        Set<String> seen = new HashSet<>();
-
-        for (FileCreateRequest file : files) {
-            String originalFileName = file.getOriginalFileName();
-            String s3Key = file.getS3Key();
-
-            if (originalFileName == null || s3Key == null) {
-                throw new InvalidFileFieldException("addFilesWith: file 정보가 누락됨");
-            }
-
-            if (!seen.add(file.getS3Key())) {
-                throw new InvalidFileFieldException("addFilesWith: 요청 내 s3Key가 중복됨");
-            }
-
-            if (fileRepository.findByS3KeyAndIsRemovedFalse(s3Key).isPresent()) {
-                throw new InvalidFileFieldException("addFilesWith: 기존에 해당 s3Key가 이미 사용됨");
-            }
-
-            post.addNewFile(file.getOriginalFileName(), file.getS3Key());
-        }
-    }
 
 }
