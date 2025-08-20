@@ -4,8 +4,8 @@
 
 - 📝 프로젝트 소개
 - 🔄 버전 이력 및 개선 방향
-- 🧱 주요 기술 스택 (v2 기준)
-- 📂 프로젝트 디렉토리 구조 (v2 기준)
+- 🧱 주요 기술 스택 (v2.1 기준)
+- 📂 프로젝트 디렉토리 구조 (v2.1 기준)
 - 📡 API 엔드포인트 요약
 - 🚀 시작하기
 - 📬 API 사용 방법
@@ -16,9 +16,10 @@
 
 ## 프로젝트 소개
 
-> 회원 인증/인가 및 게시글, 댓글 CRUD 기능을 제공하는 게시판 REST API 서버입니다.
+> 회원 인증/인가, 게시글과 댓글 CRUD 그리고 S3를 이용한 파일 첨부 기능을 제공하는 게시판 REST API 서버입니다.
 >> - 사용자는 자체 회원가입 또는 Google 소셜 로그인을 통해 가입할 수 있으며, 게시글, 댓글, 대댓글을 자유롭게 작성하여 소통할 수 있습니다.
 >> - 게시글 목록은 검색과 페이지네이션 기능을 통해 효율적으로 탐색할 수 있습니다.
+>> - 사용자는 자유롭게 게시글에 파일을 첨부하고, 수정하고 또 삭제할 수 있습니다.
 
 
 ## 🔄 버전 이력 및 개선 방향
@@ -38,8 +39,11 @@
   - `Spring Security`, `JWT`, `OAuth 2.0`을 활용한 **토큰 기반 인증/인가** 구현
   - `docker` + `AWS EC2`를 활용한 배포
 
+- **v2.1**
+  - 2025.08.03 ~ 2025.08.20 (18일)
+  - **S3**를 이용한 파일 첨부, 수정, 삭제 기능 추가
 
-## 🧱 주요 기술 스택 (v2 기준)
+## 🧱 주요 기술 스택 (v2.1 기준)
 
 ### ✅ Backend
 
@@ -57,113 +61,242 @@
 
 - **docker**
 - **AWS EC2**
+- **AWS S3**
+- **AWS IAM**
 - **Git**, **GitHub** (버전 관리)
 - **Notion** (기획)
 - **Junit 5** (테스트 프레임워크)
 - **Lombok**
 
-## 📂 프로젝트 디렉토리 구조 (v2 기준)
+## 📂 프로젝트 디렉토리 구조 (v2.1 기준)
 
 
 ```text
-src
-└── main
-    ├── java
-    │   └── hong
-    │       └── postService
-    │           ├── PostServiceApplication.java
-    │           ├── config
-    │           │   ├── Configs.java
-    │           │   ├── CorsConfig.java
-    │           │   └── SecurityConfig.java
-    │           ├── domain
-    │           │   ├── Comment.java
-    │           │   ├── Member.java
-    │           │   ├── Post.java
-    │           │   ├── UserRole.java
-    │           │   └── baseEntity
-    │           │       └── BaseTimeEntity.java
-    │           ├── exception
-    │           │   ├── ErrorResponse.java
-    │           │   ├── comment
-    │           │   │   ├── CommentNotFoundException.java
-    │           │   │   └── InvalidCommentFieldException.java
-    │           │   ├── member
-    │           │   │   ├── DuplicateMemberFieldException.java
-    │           │   │   ├── IllegalEmailFormatException.java
-    │           │   │   ├── InvalidMemberFieldException.java
-    │           │   │   ├── MemberNotFoundException.java
-    │           │   │   └── PasswordMismatchException.java
-    │           │   └── post
-    │           │       ├── InvalidPostFieldException.java
-    │           │       └── PostNotFoundException.java
-    │           ├── repository
-    │           │   ├── commentRepository
-    │           │   │   └── v2
-    │           │   │       └── CommentRepository.java
-    │           │   ├── memberRepository
-    │           │   │   └── v2
-    │           │   │       └── MemberRepository.java
-    │           │   └── postRepository
-    │           │       └── v2
-    │           │           ├── PostRepository.java
-    │           │           ├── PostRepositoryCustom.java
-    │           │           ├── PostRepositoryImpl.java
-    │           │           └── SearchCond.java
-    │           ├── service
-    │           │   ├── commentService
-    │           │   │   ├── dto
-    │           │   │   │   ├── CommentCreateRequest.java
-    │           │   │   │   ├── CommentResponse.java
-    │           │   │   │   └── CommentUpdateRequest.java
-    │           │   │   └── v2
-    │           │   │       └── CommentService.java
-    │           │   ├── memberService
-    │           │   │   ├── dto
-    │           │   │   │   ├── MemberUpdateInfoRequest.java
-    │           │   │   │   ├── OAuthCreateRequest.java
-    │           │   │   │   ├── PasswordUpdateRequest.java
-    │           │   │   │   └── UserCreateRequest.java
-    │           │   │   └── v2
-    │           │   │       └── MemberService.java
-    │           │   ├── postService
-    │           │   │   ├── dto
-    │           │   │   │   ├── PostCreateRequest.java
-    │           │   │   │   ├── PostDetailResponse.java
-    │           │   │   │   ├── PostSummaryResponse.java
-    │           │   │   │   └── PostUpdateRequest.java
-    │           │   │   └── v2
-    │           │   │       └── PostService.java
-    │           │   └── userDetailsService
-    │           │       ├── CustomOAuth2UserService.java
-    │           │       ├── CustomUserDetailsService.java
-    │           │       └── dto
-    │           │           ├── CustomOAuth2User.java
-    │           │           ├── CustomUserDetails.java
-    │           │           ├── GoogleResponse.java
-    │           │           └── OAuth2Response.java
-    │           └── web
-    │               ├── GlobalExceptionHandler.java
-    │               ├── HomeController.java
-    │               ├── comment
-    │               │   └── v2
-    │               │       └── CommentController.java
-    │               ├── jwt
-    │               │   ├── JwtAuthenticationFilter.java
-    │               │   ├── JwtFilter.java
-    │               │   ├── JwtUtil.java
-    │               │   └── LoginRequest.java
-    │               ├── members
-    │               │   ├── dto
-    │               │   │   └── MemberResponse.java
-    │               │   └── v2
-    │               │       └── MemberController.java
-    │               ├── oauth2
-    │               │   ├── CustomAuthenticationEntryPoint.java
-    │               │   └── CustomSuccessHandler.java
-    │               └── posts
-    │                   └── v2
-    │                       └── PostController.java
+my_first-toy-project-post-service/
+├── src/
+│   ├── main/
+│   │   ├── java/
+│   │   │   ├── hong/
+│   │   │       ├── postService/
+│   │   │           ├── config/
+│   │   │           │   ├── Configs.java
+│   │   │           │   ├── CorsConfig.java
+│   │   │           │   ├── S3Config.java
+│   │   │           │   └── SecurityConfig.java
+│   │   │           ├── domain/
+│   │   │           │   ├── baseEntity/
+│   │   │           │   │   └── BaseTimeEntity.java
+│   │   │           │   ├── Comment.java
+│   │   │           │   ├── File.java
+│   │   │           │   ├── Member.java
+│   │   │           │   ├── Post.java
+│   │   │           │   └── UserRole.java
+│   │   │           ├── exception/
+│   │   │           │   ├── comment/
+│   │   │           │   │   ├── CommentNotFoundException.java
+│   │   │           │   │   └── InvalidCommentFieldException.java
+│   │   │           │   ├── file/
+│   │   │           │   │   ├── FileNotFoundException.java
+│   │   │           │   │   └── InvalidFileFieldException.java
+│   │   │           │   ├── member/
+│   │   │           │   │   ├── DuplicateMemberFieldException.java
+│   │   │           │   │   ├── IllegalEmailFormatException.java
+│   │   │           │   │   ├── InvalidMemberFieldException.java
+│   │   │           │   │   ├── MemberNotFoundException.java
+│   │   │           │   │   └── PasswordMismatchException.java
+│   │   │           │   ├── post/
+│   │   │           │   │   ├── InvalidPostFieldException.java
+│   │   │           │   │   └── PostNotFoundException.java
+│   │   │           │   └── ErrorResponse.java
+│   │   │           ├── repository/
+│   │   │           │   ├── commentRepository/
+│   │   │           │   │   ├── v2/
+│   │   │           │   │       └── CommentRepository.java
+│   │   │           │   ├── fileRepository/
+│   │   │           │   │   ├── v2/
+│   │   │           │   │       └── FileRepository.java
+│   │   │           │   ├── memberRepository/
+│   │   │           │   │   ├── v1/
+│   │   │           │   │   │   ├── MemberMapper.java
+│   │   │           │   │   │   ├── UsersRepository.java
+│   │   │           │   │   │   └── UsersRepositoryImpl.java
+│   │   │           │   │   ├── v2/
+│   │   │           │   │       └── MemberRepository.java
+│   │   │           │   ├── postRepository/
+│   │   │           │       ├── v1/
+│   │   │           │       │   ├── BoardRepository.java
+│   │   │           │       │   ├── BoardRepositoryImpl.java
+│   │   │           │       │   └── PostMapper.java
+│   │   │           │       ├── v2/
+│   │   │           │           ├── PostRepository.java
+│   │   │           │           ├── PostRepositoryCustom.java
+│   │   │           │           ├── PostRepositoryImpl.java
+│   │   │           │           └── SearchCond.java
+│   │   │           ├── scheduler/
+│   │   │           │   └── FilePurgeJob.java
+│   │   │           ├── service/
+│   │   │           │   ├── commentService/
+│   │   │           │   │   ├── dto/
+│   │   │           │   │   │   ├── CommentCreateRequest.java
+│   │   │           │   │   │   ├── CommentResponse.java
+│   │   │           │   │   │   └── CommentUpdateRequest.java
+│   │   │           │   │   ├── v2/
+│   │   │           │   │       └── CommentService.java
+│   │   │           │   ├── fileService/
+│   │   │           │   │   ├── dto/
+│   │   │           │   │   │   ├── DownloadUrlResponse.java
+│   │   │           │   │   │   ├── FileCreateRequest.java
+│   │   │           │   │   │   ├── FileResponse.java
+│   │   │           │   │   │   ├── UploadUrlRequest.java
+│   │   │           │   │   │   └── UploadUrlResponse.java
+│   │   │           │   │   ├── v2/
+│   │   │           │   │       └── FileService.java
+│   │   │           │   ├── memberService/
+│   │   │           │   │   ├── dto/
+│   │   │           │   │   │   ├── MemberUpdateInfoRequest.java
+│   │   │           │   │   │   ├── OAuthCreateRequest.java
+│   │   │           │   │   │   ├── PasswordUpdateRequest.java
+│   │   │           │   │   │   └── UserCreateRequest.java
+│   │   │           │   │   ├── v1/
+│   │   │           │   │   │   ├── MemberService.java
+│   │   │           │   │   │   └── MemberServiceImpl.java
+│   │   │           │   │   ├── v2/
+│   │   │           │   │       └── MemberService.java
+│   │   │           │   ├── postService/
+│   │   │           │   │   ├── dto/
+│   │   │           │   │   │   ├── Form.java
+│   │   │           │   │   │   ├── PostCreateRequest.java
+│   │   │           │   │   │   ├── PostDetailResponse.java
+│   │   │           │   │   │   ├── PostSummaryResponse.java
+│   │   │           │   │   │   └── PostUpdateRequest.java
+│   │   │           │   │   ├── v1/
+│   │   │           │   │   │   ├── PostService.java
+│   │   │           │   │   │   └── PostServiceImpl.java
+│   │   │           │   │   ├── v2/
+│   │   │           │   │       └── PostService.java
+│   │   │           │   ├── userDetailsService/
+│   │   │           │       ├── dto/
+│   │   │           │       │   ├── CustomOAuth2User.java
+│   │   │           │       │   ├── CustomUserDetails.java
+│   │   │           │       │   ├── GoogleResponse.java
+│   │   │           │       │   └── OAuth2Response.java
+│   │   │           │       ├── CustomOAuth2UserService.java
+│   │   │           │       └── CustomUserDetailsService.java
+│   │   │           ├── web/
+│   │   │           │   ├── comment/
+│   │   │           │   │   ├── v2/
+│   │   │           │   │       └── CommentController.java
+│   │   │           │   ├── file/
+│   │   │           │   │   ├── dto/
+│   │   │           │   │   ├── v2/
+│   │   │           │   │       └── FileController.java
+│   │   │           │   ├── jwt/
+│   │   │           │   │   ├── JwtAuthenticationFilter.java
+│   │   │           │   │   ├── JwtFilter.java
+│   │   │           │   │   ├── JwtUtil.java
+│   │   │           │   │   └── LoginRequest.java
+│   │   │           │   ├── members/
+│   │   │           │   │   ├── dto/
+│   │   │           │   │   │   ├── AddForm.java
+│   │   │           │   │   │   ├── LoginForm.java
+│   │   │           │   │   │   ├── MemberResponse.java
+│   │   │           │   │   │   ├── MemberUpdateInfo.java
+│   │   │           │   │   │   └── MemberUpdatePassword.java
+│   │   │           │   │   ├── v1/
+│   │   │           │   │   │   └── MemberController.java
+│   │   │           │   │   ├── v2/
+│   │   │           │   │       └── MemberController.java
+│   │   │           │   ├── oauth2/
+│   │   │           │   │   ├── CustomAuthenticationEntryPoint.java
+│   │   │           │   │   └── CustomSuccessHandler.java
+│   │   │           │   ├── posts/
+│   │   │           │   │   ├── v1/
+│   │   │           │   │   │   └── PostController.java
+│   │   │           │   │   ├── v2/
+│   │   │           │   │       └── PostController.java
+│   │   │           │   ├── GlobalExceptionHandler.java
+│   │   │           │   ├── HealthCheck.java
+│   │   │           │   └── HomeController.java
+│   │   │           └── PostServiceApplication.java
+│   │   ├── resources/
+│   │       ├── hong/
+│   │       │   ├── postService/
+│   │       │       ├── repository/
+│   │       │           ├── memberRepository/
+│   │       │           │   └── MemberMapper.xml
+│   │       │           ├── postRepository/
+│   │       │               └── PostMapper.xml
+│   │       ├── static/
+│   │       │   ├── css/
+│   │       │   │   └── bootstrap.min.css
+│   │       │   └── index.html
+│   │       ├── templates/
+│   │       │   ├── css/
+│   │       │   │   └── bootstrap.min.css
+│   │       │   ├── members/
+│   │       │   │   ├── addMemberForm.html
+│   │       │   │   ├── loginForm.html
+│   │       │   │   ├── loginHome.html
+│   │       │   │   ├── updateInfoForm.html
+│   │       │   │   └── updatePasswordForm.html
+│   │       │   ├── posts/
+│   │       │   │   ├── createForm.html
+│   │       │   │   ├── read.html
+│   │       │   │   ├── readAll.html
+│   │       │   │   ├── readSearched.html
+│   │       │   │   └── updateForm.html
+│   │       │   └── home.html
+│   │       ├── application.yml
+│   │       └── errors.properties
+│   ├── test/
+│       ├── java/
+│       │   ├── hong/
+│       │       ├── postService/
+│       │           ├── domain/
+│       │           │   ├── CommentTest.java
+│       │           │   ├── FileTest.java
+│       │           │   ├── MemberTest.java
+│       │           │   └── PostTest.java
+│       │           ├── repository/
+│       │           │   ├── commentRepository/
+│       │           │   │   ├── v2/
+│       │           │   │       └── CommentRepositoryTest.java
+│       │           │   ├── fileRepository/
+│       │           │   │   ├── v2/
+│       │           │   │       └── FileRepositoryTest.java
+│       │           │   ├── memberRepository/
+│       │           │   │   ├── v2/
+│       │           │   │   │   ├── member/
+│       │           │   │   │       └── MemberRepositoryTest.java
+│       │           │   │   └── UsersRepositoryImplTest.java
+│       │           │   ├── postRepository/
+│       │           │       ├── v2/
+│       │           │       │   └── PostRepositoryTest.java
+│       │           │       └── BoardRepositoryImplTest.java
+│       │           ├── service/
+│       │           │   ├── commentService/
+│       │           │   │   ├── v2/
+│       │           │   │       └── CommentServiceTest.java
+│       │           │   ├── memberService/
+│       │           │   │   ├── v2/
+│       │           │   │   │   └── MemberServiceTest.java
+│       │           │   │   └── MemberServiceImplTest.java
+│       │           │   ├── postService/
+│       │           │       ├── v2/
+│       │           │       │   └── PostServiceTest.java
+│       │           │       └── PostServiceImplTest.java
+│       │           ├── TestS3Config.java
+│       │           └── TestSecurityConfig.java
+│       ├── resources/
+│           ├── application.yml
+│           └── schema.sql
+├── README-V1.md
+├── README.md
+├── build.gradle
+├── gradlew
+├── gradlew.bat
+└── settings.gradle
+
 ```
 
 
@@ -192,6 +325,9 @@ src
 | 댓글 상세 조회               | GET    | /v2/comments/{commentId}               | 🔓 불필요 | 누구나 호출 가능  |
 | 댓글 수정                  | PATCH  | /v2/comments/{commentId}               | 🔒 필요  | 작성자만 호출 가능 |
 | 댓글 삭제                  | DELETE | /v2/comments/{commentId}               | 🔒 필요  | 작성자만 호출 가능 |
+| 업로드 Url 발급             | POST   | /v2/files/upload-url                   | 🔒 필요  | 로그인한 사용자   |
+| 다운로드 Url 발급            | POST   | /v2/files/download-url                 | 🔒 필요  | 로그인한 사용자   |
+
 
 ## 🚀 시작하기
 
@@ -433,7 +569,8 @@ http://api.my-post-service.kro.kr
 ```json
 {
   "title": "string", // 제목은 필수
-  "content": "string"
+  "content": "string",
+  "files": [{"originalFileName":  "string", "s3key":  "string"}]
 }
 ```
 
@@ -445,7 +582,7 @@ http://api.my-post-service.kro.kr
   → `Location` 헤더에 생성된 게시글 URI 포함
 
 #### ❌ 예외 응답
-- `400 Bad Request`: 게시글 필드 유효성 검증 실패
+- `400 Bad Request`: 잘못된 게시글 작성 요청
 - `404 Not Found`: 존재하지 않거나 삭제된 사용자 ID
 - `500 Internal Server Error`: 서버 오류
 
@@ -527,8 +664,8 @@ http://api.my-post-service.kro.kr
 - `204 No Content`: 게시글 수정 성공
 
 #### ❌ 예외 응답
-- `400 Bad Request`: 게시글 필드 유효성 검증 실패
-- `404 Not Found`: 게시글 없음 또는 삭제됨
+- `400 Bad Request`: 잘못된 파일 추가/삭제 요청
+- `404 Not Found`: 존재하지 않거나 이미 삭제된 게시글 또는 파일
 - `500 Internal Server Error`: 서버 오류
 
 ### 🗑️ 게시글 삭제
@@ -675,6 +812,47 @@ http://api.my-post-service.kro.kr
 #### ❌ 예외 응답
 - `404 Not Found`: 댓글 없음 또는 삭제됨
 - `500 Internal Server Error`: 서버 오류
+
+### ⬆️ 업로드 url 발급
+
+| Method | Endpoint              | 인증    | 권한 조건    |
+|--------|-----------------------|-------|----------|
+| POST   | /v2/files/upload-urls | 🔒 필요 | 로그인한 사용자 |
+
+#### 📥 Request Body 형식
+```json
+{
+  "originalFileNames": ["string"]
+}
+```
+
+#### 📸 Postman 예시 화면
+![🗑️ 업로드 url 발급 API](./images/업로드_url_발급.png)
+
+#### 📤 성공 응답
+- `200 Ok`: 업로드 url들 발급 성공
+
+#### ❌ 예외 응답
+- `400 Bad Request`: 잘못된 파일 업로드 요청
+- `500 Internal Server Error`: 서버 오류
+
+
+### ⬇️ 다운로드 url 발급
+
+| Method | Endpoint                | 인증    | 권한 조건    |
+|--------|-------------------------|-------|----------|
+| POST   | /v2/files/download-urls | 🔒 필요 | 로그인한 사용자 |
+
+#### 📸 Postman 예시 화면
+![🗑️ 다운로드 url 발급 API](./images/다운로드_url_발급.png)
+
+#### 📤 성공 응답
+- `200 Ok`: 다운로드 url 발급 성공
+
+#### ❌ 예외 응답
+- `400 Bad Request`: 잘못된 파일 다운로드 요청
+- `500 Internal Server Error`: 서버 오류
+
 
 ## 🔗프로젝트 관련 블로그 링크
 
