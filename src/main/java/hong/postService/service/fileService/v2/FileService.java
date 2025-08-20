@@ -19,6 +19,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.net.URL;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.sql.Date;
 import java.time.Duration;
 import java.time.Instant;
@@ -76,14 +78,30 @@ public class FileService {
 
         if (post.getWriter().getId() != requesterId) throw new InvalidMemberFieldException("getDownloadUrl: 권한이 없습니디.");
 
+        String originalFileName = file.getOriginalFileName();
+        String contentDisposition = buildContentDisposition(originalFileName);
+
         String s3Key = file.getS3Key();
         Instant expiresAt = Instant.now().plus(PRESIGN_TTL);
 
         GeneratePresignedUrlRequest generatePresignedUrlRequest = new GeneratePresignedUrlRequest(bucket, s3Key, HttpMethod.GET)
                 .withExpiration(java.util.Date.from(expiresAt));
 
+        generatePresignedUrlRequest.addRequestParameter("response-content-disposition", contentDisposition);
+
         URL url = amazonS3Client.generatePresignedUrl(generatePresignedUrlRequest);
 
         return new DownloadUrlResponse(url.toString(), expiresAt);
+    }
+
+    private String buildContentDisposition(String filename) {
+        // 기본: attachment; filename="name"
+        // RFC 5987 대응(비ASCII) 위해 filename* 도 함께 제공
+        try {
+            String encoded = URLEncoder.encode(filename, StandardCharsets.UTF_8).replaceAll("\\+", "%20");
+            return "attachment; filename=\"" + filename.replace("\"","") + "\"; filename*=UTF-8''" + encoded;
+        } catch (Exception e) {
+            return "attachment; filename=\"" + filename.replace("\"","") + "\"";
+        }
     }
 }
