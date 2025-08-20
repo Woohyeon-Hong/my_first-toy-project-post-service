@@ -136,7 +136,7 @@ public class PostService {
                     amazonS3Client.deleteObject(bucket, finalS3Key);
                 } catch (RuntimeException ex) {
                     //삭제 실패 시 로그만 남기기 - DB 정합성 영향 x이기 때문
-                    log.warn("final object 삭제 실패, final Key = {}",finalS3Key, ex);
+                    log.warn("final key object 삭제 실패, final Key = {}",finalS3Key, ex);
                 }
 
                 throw new InvalidFileFieldException("addFilesWith: s3Key가 중복됨");
@@ -251,6 +251,12 @@ public class PostService {
                 }
 
                 post.removeFile(target);
+
+                try {
+                    amazonS3Client.deleteObject(bucket, target.getS3Key());
+                } catch (RuntimeException e) {
+                    log.warn("object 삭제 실패, final Key = {}",target.getS3Key(), e);
+                }
             }
         }
 

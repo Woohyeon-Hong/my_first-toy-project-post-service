@@ -118,9 +118,9 @@ class PostServiceTest {
         FileCreateRequest request = new FileCreateRequest("example.txt", "post/tmp/abc123.txt");
         files.add(request);
 
-        FileCreateRequest originalFileNameNull = new FileCreateRequest(null, "post/1/abc123.txt");
+        FileCreateRequest originalFileNameNull = new FileCreateRequest(null, "post/tmp/abc123.txt");
         FileCreateRequest s3KeyNull = new FileCreateRequest("example.txt", null);
-        FileCreateRequest wrongOriginalFileName = new FileCreateRequest("example", "post/1/abc123.txt");
+        FileCreateRequest wrongOriginalFileName = new FileCreateRequest("example", "post/tmp/abc123.txt");
         FileCreateRequest wrongS3Key = new FileCreateRequest("example.txt", "post/abc123.txt");
 
         //when
@@ -159,8 +159,8 @@ class PostServiceTest {
 
         ArrayList<FileCreateRequest> fileCreateRequests = new ArrayList<>();
 
-        fileCreateRequests.add(new FileCreateRequest("example1.txt", "post/1/example.txt"));
-        fileCreateRequests.add(new FileCreateRequest("example1.txt", "post/1/example.txt"));
+        fileCreateRequests.add(new FileCreateRequest("example1.txt", "post/tmp/example.txt"));
+        fileCreateRequests.add(new FileCreateRequest("example1.txt", "post/tmp/example.txt"));
 
         //when & then
         assertThatThrownBy(() -> postService.write(memberId, new PostCreateRequest("title", "content", fileCreateRequests)))
