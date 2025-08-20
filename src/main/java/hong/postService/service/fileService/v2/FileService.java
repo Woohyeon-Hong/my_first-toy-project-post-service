@@ -14,7 +14,11 @@ import hong.postService.service.fileService.dto.DownloadUrlResponse;
 import hong.postService.service.fileService.dto.UploadUrlRequest;
 import hong.postService.service.fileService.dto.UploadUrlResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,9 +28,11 @@ import java.nio.charset.StandardCharsets;
 import java.sql.Date;
 import java.time.Duration;
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -103,5 +109,23 @@ public class FileService {
         } catch (Exception e) {
             return "attachment; filename=\"" + filename.replace("\"","") + "\"";
         }
+    }
+
+    @Transactional
+    public int purgeSoftDeletedFilesBefore(LocalDateTime threshold, int batchSize) {
+        Pageable pageable = PageRequest.of(0, batchSize);
+        List<File> targets = fileRepository.findByIsRemovedTrueAndRemovedBefore(threshold, pageable).getContent();
+
+        int success = 0;
+        for (File f : targets) {
+            try {
+                amazonS3Client.deleteObject(bucket, f.getS3Key());
+                success++;
+            } catch (RuntimeException ex) {
+                log.warn("S3 delete failed, key={}", f.getS3Key(), ex);
+            }
+        }
+
+        return success;
     }
 }
