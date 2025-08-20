@@ -71,13 +71,20 @@ public class File extends BaseTimeEntity{
         if (idx == -1 || idx == fileName.length() - 1 || fileName.substring(0, idx).isEmpty()) throw new InvalidFileFieldException("validateOriginalFileName: 형식자가 잘못됐습니다.");
     }
 
+    public static void validateTmpS3KeyFormat(String tmpS3Key) {
+        if (!tmpS3Key.startsWith("post/tmp/")) {
+            throw new InvalidFileFieldException("addFilesWith: 임시 s3Key 포맷이 아닙니다.");
+        }
+    }
+
+
 //비즈니스 로직---------------------------------------------------------------------------------------------------
 
-    public void generateS3Key() {
+    public void updateS3Key(String newS3Key) {
         checkNotRemoved();
-        if (this.s3Key != null) throw new InvalidFileFieldException("registerS3Key: 이미 s3Key가 등록됐습니다.");
+        if (newS3Key == null) throw new InvalidFileFieldException("getRegularS3Key: newS3Key == null");
 
-        this.s3Key = "post/" + post.getId() + "/" + this.storedFileName;
+        this.s3Key = newS3Key;
     }
 
     public void remove() {
