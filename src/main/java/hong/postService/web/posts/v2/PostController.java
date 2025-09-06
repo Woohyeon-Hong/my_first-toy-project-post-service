@@ -87,9 +87,11 @@ public class PostController {
     )
     @GetMapping("/search")
     public ResponseEntity<Page<PostSummaryResponse>> search(
-            @ModelAttribute SearchCond cond,
+            @RequestParam(name = "writer", required = false) String writer,
+            @RequestParam(name = "title", required = false) String title,
             Pageable pageable) {
 
+        SearchCond cond = new SearchCond(writer, title);
         Page<PostSummaryResponse> posts = postService.search(cond, pageable);
 
         return ResponseEntity.ok(posts);
