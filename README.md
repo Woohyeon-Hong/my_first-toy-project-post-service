@@ -623,15 +623,11 @@ http://api.my-post-service.kro.kr
 
 | Method | Endpoint         | 인증     | 권한 조건     |
 |--------|------------------|--------|-----------|
-| GET    | /v2/posts/search | 🔓 불필요 | 누구나 호출 가능 |
+| GET    | /v2/posts/search/ | 🔓 불필요 | 누구나 호출 가능 |
 
-#### 📥 Request Body 형식
-```json
-{
-  "writer": "string", // 작성자 nickname 조건
-  "title": "string" // 제목 조건
-}
-```
+#### 📥 Request Parameters
+- `writer`: (타입: `string`, 선택적)
+-`vtitle`: (타입: `string`, 선택적)
 
 #### 📸 Postman 예시 화면
 ![🔎 게시글 검색 API](./images/게시글_검색.png)
