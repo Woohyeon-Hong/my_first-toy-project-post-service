@@ -143,6 +143,7 @@ public class CommentService {
      * @throws CommentNotFoundException 존재하지 않거나 이미 삭제된 댓글인 경우
      * @throws InvalidCommentFieldException 수정할 내용이 null인 경우
      */
+    @Transactional
     public void update(Long commentId, CommentUpdateRequest updateParam) {
         Comment comment = getComment(commentId);
 
